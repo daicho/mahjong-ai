@@ -18,16 +18,19 @@ mjhai = []
 for i in range(MJHAI_NUM):
     mjhai.append(mjhai_name[int(i / 4)])
 
-# 山の作成 & シャッフル
-yama = list(range(MJHAI_NUM))
-random.shuffle(yama)
+# プレイヤー名
+player_name = ["Player1", "Player2", "Player3"]
 
-#ゲームスタート
+# ゲームスタート
 cur_pos = 0
 tehai = []
 
 oya = 0
 cur_player = oya
+
+# 山の作成 & シャッフル
+yama = list(range(MJHAI_NUM))
+random.shuffle(yama)
 
 # 配牌
 for i in range(PLAYER_NUM):
@@ -46,15 +49,15 @@ while cur_pos < MJHAI_NUM:
         cur_pos += 1
 
         # 表示
-        print("Player" + str(i + 1) + " [残り" + str(MJHAI_NUM - cur_pos) + "]")
+        print(player_name[i] + " [残り" + str(MJHAI_NUM - cur_pos) + "]")
 
         for j in range(13):
             print(mjhai[tehai[i][j]] + " ", end="")
-        print(" " + mjhai[tehai[i][j]])
+        print(" " + mjhai[tehai[i][13]])
 
         for j in range(13):
             print(format(j, "<3d"), end="")
-        print(" " + str(j))
+        print(" " + str(13))
 
         # 入力
         while True:
