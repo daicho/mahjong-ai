@@ -1,63 +1,34 @@
-import random
+from mahjong import *
 
-# 人数
-PLAYER_NUM = 3
+# 全ての牌をセット
+# 筒子・索子
+mjhai_list = []
+for i in range(2):
+    for j in range(1, 10):
+        mjhai_list.extend([MjHai(i, j) for k in range(4)])
 
-# 牌の数
-MJHAI_NUM = 108
+# 萬子
+mjhai_list.extend([MjHai(2, 1) for i in range(4)])
+mjhai_list.extend([MjHai(2, 9) for i in range(4)])
 
-# 牌
-mjhai_name = [
-    "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
-    "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
-    "1m", "9m", "東", "南", "西", "北", "白", "發", "中"
-]
-
-# 全ての牌
-mjhai = []
-for i in range(MJHAI_NUM):
-    mjhai.append(mjhai_name[int(i / 4)])
-
-# プレイヤー名
-player_name = ["Player1", "Player2", "Player3"]
+# 字牌
+for i in range(3, 10):
+    mjhai_list.extend([MjHai(i) for j in range(4)])
 
 # ゲームスタート
-cur_pos = 0
-tehai = []
-
-oya = 0
-cur_player = oya
-
-# 山の作成 & シャッフル
-yama = list(range(MJHAI_NUM))
-random.shuffle(yama)
-
-# 配牌
-for i in range(PLAYER_NUM):
-    tehai.append([])
-
-    for j in range(13):
-        tehai[i].append(yama[cur_pos])
-        cur_pos += 1
+game = Game(3, mjhai_list)
+game.haipai()
 
 # 摸打
-while cur_pos < MJHAI_NUM:
-    for i in range(PLAYER_NUM):
-        # ツモ
-        tehai[i].sort()
-        tehai[i].append(yama[cur_pos])
-        cur_pos += 1
+while len(game.yama) > 0:
+    for i in range(game.player_num):
+        print("Player" + str(i) + " [残り" + str(len(game.yama)) + "]")
+        game.tumo(i)
+        game.show(i)
 
-        # 表示
-        print(player_name[i] + " [残り" + str(MJHAI_NUM - cur_pos) + "]")
-
-        for j in range(13):
-            print(mjhai[tehai[i][j]] + " ", end="")
-        print(" " + mjhai[tehai[i][13]])
-
-        for j in range(13):
+        for j in range(14):
             print(format(j, "<3d"), end="")
-        print(" " + str(13))
+        print()
 
         # 入力
         while True:
@@ -66,16 +37,17 @@ while cur_pos < MJHAI_NUM:
             if select_input == "q":
                 exit()
 
+            # ツモ切り
             elif select_input == "":
-                select = 13
+                select = -1
                 break
 
             select = int(select_input)
-            if select >= 0 and select <= 14:
+            if select >= 0 and select < 14:
                 break
 
         # 打牌
-        tehai[i].pop(select)
+        game.dahai(i, select)
         print()
 
 print("終了")
