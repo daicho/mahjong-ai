@@ -2,7 +2,7 @@ import random
 
 # 麻雀牌
 class MjHai():
-    color_name = ["p", "s", "m", "東", "南", "西", "北", "白", "發", "中"]
+    color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chn"]
 
     def __init__(self, color, number = 0, dora = False):
         self.color = color   # 種類
@@ -11,7 +11,7 @@ class MjHai():
         self.id = self.color * 10 + self.number # ソート用ID
 
     def __str__(self):
-        return (str(self.number) if self.number > 0 else "") + MjHai.color_name[self.color]
+        return MjHai.color_name[self.color] + (str(self.number) if self.number > 0 else "") + ("@" if self.dora else "")
     
     def __lt__(self, other):
         return self.id < other.id
@@ -47,5 +47,5 @@ class Game():
     # 手牌を表示
     def show(self, player):
         for hai in self.tehai[player]:
-            print(str(hai) + " ", end="")
+            print(format(str(hai), "<4s"), end="")
         print()

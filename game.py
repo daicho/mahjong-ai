@@ -1,22 +1,27 @@
-from mahjong import *
+import tkinter as tk
+import mahjong as mj
+
+root = tk.Tk()
+root.title("Iso-kun")
+root.geometry("640x480")
 
 # 全ての牌をセット
 # 筒子・索子
 mjhai_list = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_list.extend([MjHai(i, j) for k in range(4)])
+        mjhai_list.extend([mj.MjHai(i, j) for k in range(4)])
 
 # 萬子
-mjhai_list.extend([MjHai(2, 1) for i in range(4)])
-mjhai_list.extend([MjHai(2, 9) for i in range(4)])
+mjhai_list.extend([mj.MjHai(2, 1) for i in range(4)])
+mjhai_list.extend([mj.MjHai(2, 9) for i in range(4)])
 
 # 字牌
 for i in range(3, 10):
-    mjhai_list.extend([MjHai(i) for j in range(4)])
+    mjhai_list.extend([mj.MjHai(i) for j in range(4)])
 
 # ゲームスタート
-game = Game(3, mjhai_list)
+game = mj.Game(3, mjhai_list)
 game.haipai()
 
 # 摸打
