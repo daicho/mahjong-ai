@@ -11,7 +11,7 @@ class MjHai():
         self.id = self.color * 10 + self.number # ソート用ID
 
     def __str__(self):
-        return MjHai.color_name[self.color] + (str(self.number) if self.number > 0 else "")
+        return (str(self.number) if self.number > 0 else "") + MjHai.color_name[self.color]
     
     def __lt__(self, other):
         return self.id < other.id

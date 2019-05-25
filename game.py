@@ -22,7 +22,7 @@ game.haipai()
 # 摸打
 while len(game.yama) > 0:
     for i in range(game.player_num):
-        print("Player" + str(i) + " [残り" + str(len(game.yama)) + "]")
+        print("Player" + str(i + 1) + " [残り" + str(len(game.yama)) + "]")
         game.tumo(i)
         game.show(i)
 
