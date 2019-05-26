@@ -12,7 +12,7 @@ class MjHai():
         self.name = MjHai.color_name[self.color] + \
                     (str(self.number) if self.number > 0 else "") + \
                     ("@" if self.dora else "")
-    
+
     def __lt__(self, other):
         return self.id < other.id
 

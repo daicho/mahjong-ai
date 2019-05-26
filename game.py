@@ -1,6 +1,7 @@
 import random
 import tkinter as tk
 import mahjong as mj
+import graphic as gp
 
 root = tk.Tk()
 root.title("Iso-kun")
@@ -21,6 +22,7 @@ mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
 for i in range(3, 10):
     mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
+gp.load_image(mjhai_set)
 players = [mj.Player("Player1"), mj.Player("Player2"), mj.Player("Player3")]
 
 # ゲームスタート
@@ -36,6 +38,7 @@ while len(yama) > 0:
         print(player.name + " [残り" + str(len(yama)) + "]")
         player.tumo(yama)
         player.show()
+        gp.show_tehai(root, player.tehai)
 
         # 入力
         while True:
