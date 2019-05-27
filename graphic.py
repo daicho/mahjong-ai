@@ -20,8 +20,8 @@ def show_tehai(canvas, player):
     y = 0
     for hai in player.kawa:
         canvas.create_image(
-            x * MJHAI_WIDTH + 3,
-            y * MJHAI_HEIGHT + 3,
+            x * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
+            y * MJHAI_HEIGHT + 6 * MJHAI_WIDTH + 2,
             image=mjhai_img[hai.name],
             anchor=tk.NW
         )
@@ -32,12 +32,16 @@ def show_tehai(canvas, player):
             y += 1
 
     # 手牌
-    x = 0
-    for hai in player.tehai:
+    for i, hai in enumerate(player.tehai):
+        canvas.create_text(
+            (i - 3.5) * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
+            5 * MJHAI_HEIGHT + 6 * MJHAI_WIDTH - 10,
+            text=str(i)
+        )
+
         canvas.create_image(
-            x * MJHAI_WIDTH + 3,
-            MJHAI_HEIGHT * 5 + 3,
+            (i - 4) * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
+            5 * MJHAI_HEIGHT + 6 * MJHAI_WIDTH + 2,
             image=mjhai_img[hai.name],
             anchor=tk.NW
         )
-        x += 1

@@ -44,7 +44,7 @@ class Player():
 
     # 打牌
     def dahai(self, index):
-        self.kawa.append(self.tehai.pop())
+        self.kawa.append(self.tehai.pop(index))
         self.tehai.sort()
 
     # 手牌を表示
