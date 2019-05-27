@@ -1,3 +1,4 @@
+import sys
 import random
 
 # 麻雀牌
@@ -46,6 +47,26 @@ class Player():
     def dahai(self, index):
         self.kawa.append(self.tehai.pop(index))
         self.tehai.sort()
+
+    # 選択
+    def select(self, players):
+        # 入力
+        while True:
+            select_input = input("> ")
+
+            if select_input == "q":
+                sys.exit()
+
+            # ツモ切り
+            elif select_input == "":
+                select = -1
+                break
+
+            select = int(select_input)
+            if select >= 0 and select < 14:
+                break
+
+        return select
 
     # 手牌を表示
     def show(self):
