@@ -3,14 +3,14 @@ import mahjong as mj
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
-MJHAI_HEIGHT = 40
+MJHAI_HEIGHT = 38
 
 mjhai_img = {}
 
 # 画像ファイル読み込み
 def load_image(mjhai_list):
     for hai in mjhai_list:
-        file_img = "image/" + hai.name + ".gif"
+        file_img = "image/" + hai.name + ".png"
         mjhai_img[hai.name] = tk.PhotoImage(file=file_img)
 
 # 手牌を表示
