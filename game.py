@@ -6,6 +6,8 @@ import graphic as gp
 root = tk.Tk()
 root.title("Iso-kun")
 root.geometry("640x480")
+background = tk.Canvas(bg="green")
+background.pack(fill=tk.BOTH, expand=1)
 
 # 全ての牌をセット
 # 筒子・索子
@@ -35,10 +37,10 @@ for player in players:
 # 摸打
 while len(yama) > 0:
     for player in players:
-        print(player.name + " [残り" + str(len(yama)) + "]")
         player.tumo(yama)
+        print(player.name + " [残り" + str(len(yama)) + "]")
         player.show()
-        gp.show_tehai(root, player.tehai)
+        gp.show_tehai(background, player)
 
         # 入力
         while True:
