@@ -3,12 +3,65 @@ import tkinter as tk
 import mahjong as mj
 import graphic as gp
 
+# 摸打
+def mouda(select):
+    global player
+    global cur_player
+
+    # 打牌
+    player.dahai(select)
+
+    # 終了判定
+    if len(yama) <= 14:
+        root.destroy()
+        sys.exit()
+
+    # 次のプレイヤーへ
+    cur_player = (cur_player + 1) % len(players)
+    player = players[cur_player]
+    player.tumo(yama)
+
+    # 画面描画
+    screen_img = gp.draw_screen(players, cur_player)
+    screen.configure(image=screen_img)
+
+    root.mainloop()
+
+# ウィンドウを作成
 root = tk.Tk()
 root.title("Iso-kun")
 size = 13 * gp.MJHAI_HEIGHT + 5 * gp.MJHAI_WIDTH + 4
 root.geometry(str(size) + "x" + str(size))
-background = tk.Canvas(bg="green")
-background.pack(fill=tk.BOTH, expand=1)
+root.resizable(0, 0)
+
+# 画像表示部
+screen = tk.Label(root)
+screen.grid()
+
+# 選択ボタン
+select_button = []
+select_button.append(tk.Button(root, text="0", command=lambda: mouda(0)))
+select_button.append(tk.Button(root, text="1", command=lambda: mouda(1)))
+select_button.append(tk.Button(root, text="2", command=lambda: mouda(2)))
+select_button.append(tk.Button(root, text="3", command=lambda: mouda(3)))
+select_button.append(tk.Button(root, text="4", command=lambda: mouda(4)))
+select_button.append(tk.Button(root, text="5", command=lambda: mouda(5)))
+select_button.append(tk.Button(root, text="6", command=lambda: mouda(6)))
+select_button.append(tk.Button(root, text="7", command=lambda: mouda(7)))
+select_button.append(tk.Button(root, text="8", command=lambda: mouda(8)))
+select_button.append(tk.Button(root, text="9", command=lambda: mouda(9)))
+select_button.append(tk.Button(root, text="10", command=lambda: mouda(10)))
+select_button.append(tk.Button(root, text="11", command=lambda: mouda(11)))
+select_button.append(tk.Button(root, text="12", command=lambda: mouda(12)))
+select_button.append(tk.Button(root, text="13", command=lambda: mouda(13)))
+
+for i in range(14):
+    select_button[i].place(
+        x = 6 * gp.MJHAI_HEIGHT + (i - 4) * gp.MJHAI_WIDTH + 2,
+        y = 4 * gp.MJHAI_WIDTH + 12 * gp.MJHAI_HEIGHT + 2,
+        width = gp.MJHAI_WIDTH,
+        height = gp.MJHAI_WIDTH
+    )
 
 # 全ての牌をセット
 # 筒子・索子
@@ -35,32 +88,13 @@ random.shuffle(yama)
 for player in players:
     player.haipai(yama)
 
-# 摸打
-while len(yama) > 0:
-    for player in players:
-        player.tumo(yama)
-        print(player.name + " [残り" + str(len(yama)) + "]")
-        player.show()
-        gp.show_tehai(background, player)
+# ゲームスタート
+cur_player = 0
+player = players[cur_player]
+player.tumo(yama)
 
-        # 入力
-        while True:
-            select_input = input("> ")
+# 画面描画
+screen_img = gp.draw_screen(players, cur_player)
+screen.configure(image=screen_img)
 
-            if select_input == "q":
-                exit()
-
-            # ツモ切り
-            elif select_input == "":
-                select = -1
-                break
-
-            select = int(select_input)
-            if select >= 0 and select < 14:
-                break
-
-        # 打牌
-        player.dahai(select)
-        print()
-
-print("終了")
+root.mainloop()
