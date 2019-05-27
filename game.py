@@ -4,28 +4,31 @@ import mahjong as mj
 import graphic as gp
 
 # 摸打
-def mouda(select):
-    global player
-    global cur_player
+def callback(select):
+    def mouda():
+        global player
+        global cur_player
 
-    # 打牌
-    player.dahai(select)
+        # 打牌
+        player.dahai(select)
 
-    # 終了判定
-    if len(yama) <= 14:
-        root.destroy()
-        sys.exit()
+        # 終了判定
+        if len(yama) <= 14:
+            root.destroy()
+            sys.exit()
 
-    # 次のプレイヤーへ
-    cur_player = (cur_player + 1) % len(players)
-    player = players[cur_player]
-    player.tumo(yama)
+        # 次のプレイヤーへ
+        cur_player = (cur_player + 1) % len(players)
+        player = players[cur_player]
+        player.tumo(yama)
 
-    # 画面描画
-    screen_img = gp.draw_screen(players, cur_player)
-    screen.configure(image=screen_img)
+        # 画面描画
+        screen_img = gp.draw_screen(players, cur_player)
+        screen.configure(image=screen_img)
 
-    root.mainloop()
+        root.mainloop()
+
+    return mouda
 
 # ウィンドウを作成
 root = tk.Tk()
@@ -40,22 +43,8 @@ screen.grid()
 
 # 選択ボタン
 select_button = []
-select_button.append(tk.Button(root, text="0", command=lambda: mouda(0)))
-select_button.append(tk.Button(root, text="1", command=lambda: mouda(1)))
-select_button.append(tk.Button(root, text="2", command=lambda: mouda(2)))
-select_button.append(tk.Button(root, text="3", command=lambda: mouda(3)))
-select_button.append(tk.Button(root, text="4", command=lambda: mouda(4)))
-select_button.append(tk.Button(root, text="5", command=lambda: mouda(5)))
-select_button.append(tk.Button(root, text="6", command=lambda: mouda(6)))
-select_button.append(tk.Button(root, text="7", command=lambda: mouda(7)))
-select_button.append(tk.Button(root, text="8", command=lambda: mouda(8)))
-select_button.append(tk.Button(root, text="9", command=lambda: mouda(9)))
-select_button.append(tk.Button(root, text="10", command=lambda: mouda(10)))
-select_button.append(tk.Button(root, text="11", command=lambda: mouda(11)))
-select_button.append(tk.Button(root, text="12", command=lambda: mouda(12)))
-select_button.append(tk.Button(root, text="13", command=lambda: mouda(13)))
-
 for i in range(14):
+    select_button.append(tk.Button(root, text=str(i), command=callback(i)))
     select_button[i].place(
         x = 6 * gp.MJHAI_HEIGHT + (i - 4) * gp.MJHAI_WIDTH + 2,
         y = 4 * gp.MJHAI_WIDTH + 12 * gp.MJHAI_HEIGHT + 2,
