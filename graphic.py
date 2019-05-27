@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image
 import mahjong as mj
 
 # 麻雀牌のサイズ
@@ -10,38 +11,31 @@ mjhai_img = {}
 # 画像ファイル読み込み
 def load_image(mjhai_list):
     for hai in mjhai_list:
-        file_img = "image/" + hai.name + ".png"
-        mjhai_img[hai.name] = tk.PhotoImage(file=file_img)
+        img_name = "image/" + hai.name + ".png"
+        mjhai_img[hai.name] = Image.open(img_name)
 
-# 手牌を表示
-def show_tehai(canvas, player):
-    # 河
+# 手牌の画像を生成
+def draw_tehai(tehai):
+    create_img = Image.new(PIL.RGB, (14 * MJHAI_WIDTH, MJHAI_HEIGHT))
+
+    x = 0
+    for hai in tehai:
+        create_img.paste(mjhai_img[hai.name], (x * MJHAI_WIDTH, 0))
+        x += 1
+
+    return create_img
+
+# 河の画像を生成
+def draw_kawa(kawa):
+    create_img = Image.new(PIL.RGB, (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
+
     x = 0
     y = 0
-    for hai in player.kawa:
-        canvas.create_image(
-            x * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
-            y * MJHAI_HEIGHT + 6 * MJHAI_WIDTH + 2,
-            image=mjhai_img[hai.name],
-            anchor=tk.NW
-        )
-
+    for hai in kawa:
+        create_img.paste(mjhai_img[hai.name], (x * MJHAI_WIDTH, y * MJHAI_HEIGHT))
         x += 1
         if x >= 6:
             x = 0
             y += 1
 
-    # 手牌
-    for i, hai in enumerate(player.tehai):
-        canvas.create_text(
-            (i - 3.5) * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
-            5 * MJHAI_HEIGHT + 6 * MJHAI_WIDTH - 10,
-            text=str(i)
-        )
-
-        canvas.create_image(
-            (i - 4) * MJHAI_WIDTH + 4 * MJHAI_HEIGHT + 2,
-            5 * MJHAI_HEIGHT + 6 * MJHAI_WIDTH + 2,
-            image=mjhai_img[hai.name],
-            anchor=tk.NW
-        )
+    return create_img

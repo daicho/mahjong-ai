@@ -5,11 +5,8 @@ import graphic as gp
 
 root = tk.Tk()
 root.title("Iso-kun")
-root.geometry(
-    str(6 * gp.MJHAI_WIDTH + 8 * gp.MJHAI_HEIGHT + 4) + \
-    "x" + \
-    str(6 * gp.MJHAI_HEIGHT + 6 * gp.MJHAI_WIDTH + 4)
-)
+size = 13 * gp.MJHAI_HEIGHT + 5 * gp.MJHAI_WIDTH + 4
+root.geometry(str(size) + "x" + str(size))
 background = tk.Canvas(bg="green")
 background.pack(fill=tk.BOTH, expand=1)
 
