@@ -1,3 +1,4 @@
+import sys
 import random
 import tkinter as tk
 import mahjong as mj
