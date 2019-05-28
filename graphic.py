@@ -15,7 +15,7 @@ def load_image(mjhai_list):
         mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
 
 # 手牌の画像を生成
-def draw_tehai(tehai, back_flag = False):
+def draw_tehai(tehai, back_flag=False):
     create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
     x = 0
@@ -39,11 +39,17 @@ def draw_tehai(tehai, back_flag = False):
 # 河の画像を生成
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
+    gray_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 63))
 
     x = 0
     y = 0
-    for hai in kawa:
+    for hai in kawa.list:
         create_img.paste(mjhai_img[hai.name], (x * MJHAI_WIDTH, y * MJHAI_HEIGHT))
+
+        # ツモ切り
+        if hai.tumogiri:
+            create_img.paste(gray_img, (x * MJHAI_WIDTH, y * MJHAI_HEIGHT), gray_img)
+
         x += 1
         if x >= 6:
             x = 0
@@ -54,7 +60,7 @@ def draw_kawa(kawa):
 # ゲーム画面の画像を生成
 def draw_screen(players, target):
     size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH
-    create_img = Image.new("RGB", (size, size), (0, 127, 0))
+    create_img = Image.new("RGB", (size, size), "green")
 
     for i, player in enumerate(players):
         kawa_img = draw_kawa(player.kawa)
@@ -73,6 +79,6 @@ def draw_screen(players, target):
 
         # 回転&合成
         rotate_img = paste_img.rotate((i - target) * 90)
-        create_img.paste(rotate_img, (0, 0), rotate_img.split()[3])
+        create_img.paste(rotate_img, (0, 0), rotate_img)
 
     return ImageTk.PhotoImage(create_img)

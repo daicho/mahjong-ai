@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 class MjHai():
     color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chn"]
 
-    def __init__(self, color, number = 0, dora = False):
+    def __init__(self, color, number=0, dora=False):
         self.color = color   # 種類
         self.number = number # 数字
         self.dora = dora     # ドラかどうか
@@ -20,6 +20,19 @@ class MjHai():
 
     def __gt__(self, other):
         return self.id > other.id
+
+# 河の麻雀牌
+class KawaMjHai(MjHai):
+    def __init__(self, color, number=0, dora=False):
+        self.tumogiri = False
+        self.richi = False
+        self.furo = False
+        super().__init__(color, number, dora)
+
+    def setup(self, tumogiri=False, richi=False, furo=False):
+        self.tumogiri = tumogiri
+        self.richi = richi
+        self.furo = furo
 
 # 手牌
 class Tehai(list):
@@ -58,19 +71,17 @@ class Kawa():
         self.list = []
 
     # 追加
-    def append(self, hai):
+    def append(self, hai, tumogiri=False, richi=False, furo=False):
+        hai.__class__ = KawaMjHai
+        hai.setup(tumogiri, richi, furo)
         self.list.append(hai)
 
-    # 取り出し
-    def pop(self, index=-1):
-        return self.list.pop(index)
-
 # プレイヤー
-class Player():
+class Player(metaclass=ABCMeta):
     def __init__(self, name):
         self.name = name
         self.tehai = Tehai()
-        self.kawa = []
+        self.kawa = Kawa()
 
     # 配牌
     def haipai(self, yama):
@@ -84,7 +95,8 @@ class Player():
 
     # 打牌
     def dahai(self, index):
-        self.kawa.append(self.tehai.pop(index))
+        tumogiri = (index == 13 or index == -1)
+        self.kawa.append(self.tehai.pop(index), tumogiri)
         self.tehai.sort()
 
     # 選択
