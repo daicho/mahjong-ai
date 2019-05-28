@@ -58,7 +58,7 @@ class Tehai(list):
             print(format(hai.name, "<4s"), end="")
         print()
 
-        for j in range(len(self)):
+        for j in range(len(self.list)):
             print(format(j, "<4d"), end="")
         print()
 
