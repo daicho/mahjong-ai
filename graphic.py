@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 import mahjong as mj
 
 # 麻雀牌のサイズ
@@ -15,23 +15,23 @@ def load_image(mjhai_list):
         mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
 
 # 手牌の画像を生成
-def draw_tehai(tehai):
-    create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, MJHAI_HEIGHT))
+def draw_tehai(tehai, back_flag = False):
+    create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
     x = 0
     for hai in tehai:
-        create_img.paste(mjhai_img[hai.name], (x * MJHAI_WIDTH, 0))
-        x += 1
+        # 番号
+        draw = ImageDraw.Draw(create_img)
+        w, h = draw.textsize(str(x))
+        draw.text(
+            ((x + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 15),
+            str(x)
+        )
 
-    return create_img
+        # 麻雀牌
+        draw_mjhai = mjhai_back if back_flag else mjhai_img[hai.name]
+        create_img.paste(draw_mjhai, (x * MJHAI_WIDTH, MJHAI_HEIGHT))
 
-# 裏返しの手牌の画像を生成
-def draw_back(tehai):
-    create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, MJHAI_HEIGHT))
-
-    x = 0
-    for hai in tehai:
-        create_img.paste(mjhai_back, (x * MJHAI_WIDTH, 0))
         x += 1
 
     return create_img
@@ -58,7 +58,7 @@ def draw_screen(players, target):
 
     for i, player in enumerate(players):
         kawa_img = draw_kawa(player.kawa)
-        tehai_img = draw_tehai(player.tehai) if i == target else draw_back(player.tehai)
+        tehai_img = draw_tehai(player.tehai, i != target)
 
         # 河と手牌を合成
         paste_img = Image.new("RGBA", (size, size))
@@ -68,7 +68,7 @@ def draw_screen(players, target):
         )
         paste_img.paste(
             tehai_img,
-            (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 12 * MJHAI_HEIGHT)
+            (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 11 * MJHAI_HEIGHT)
         )
 
         # 回転&合成

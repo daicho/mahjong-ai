@@ -37,6 +37,9 @@ class Tehai(list):
             print(format(j, "<4d"), end="")
         print()
 
+    def shanten(self):
+        pass
+
 # プレイヤー
 class Player():
     def __init__(self, name):

@@ -33,7 +33,7 @@ for i in range(3, 10):
     mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
 gp.load_image(mjhai_set)
-players = [mj.Human("Player1"), Isokun("Player2"), TadaAi("Player3")]
+players = [mj.Human("Human"), Isokun("Isokun"), TadaAi("TadaAi")]
 
 # ゲームスタート
 yama = mjhai_set[:]
