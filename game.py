@@ -1,7 +1,7 @@
 import sys
 import random
 import tkinter as tk
-import mahjong as mj
+from mahjong import *
 from learning import Isokun
 from point import TadaAi
 import graphic as gp
@@ -22,18 +22,18 @@ screen.grid()
 mjhai_set = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_set.extend([mj.MjHai(i, j) for k in range(4)])
+        mjhai_set.extend([MjHai(i, j) for k in range(4)])
 
 # 萬子
-mjhai_set.extend([mj.MjHai(2, 1) for i in range(4)])
-mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
+mjhai_set.extend([MjHai(2, 1) for i in range(4)])
+mjhai_set.extend([MjHai(2, 9) for i in range(4)])
 
 # 字牌
 for i in range(3, 10):
-    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
+    mjhai_set.extend([MjHai(i) for j in range(4)])
 
 gp.load_image(mjhai_set)
-players = [mj.Human("Human"), Isokun("Isokun"), TadaAi("TadaAi")]
+players = [Human("Human"), Isokun("Isokun"), TadaAi("TadaAi")]
 
 # ゲームスタート
 yama = mjhai_set[:]
@@ -60,5 +60,3 @@ while len(yama) > 14:
     print()
 
     cur_player = (cur_player + 1) % len(players)
-
-print("終了")

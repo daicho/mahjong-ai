@@ -24,12 +24,24 @@ class MjHai():
 # 手牌
 class Tehai(list):
     def __init__(self):
-        list.__init__(self)
+        self.list = []
         self.menzen = True
+
+    # 追加
+    def append(self, hai):
+        self.list.append(hai)
+
+    # 取り出し
+    def pop(self, index=-1):
+        return self.list.pop(index)
+
+    # 並べ替え
+    def sort(self):
+        self.list.sort()
 
     # 表示
     def show(self):
-        for hai in self:
+        for hai in self.list:
             print(format(hai.name, "<4s"), end="")
         print()
 
@@ -39,6 +51,19 @@ class Tehai(list):
 
     def shanten(self):
         pass
+
+# 河
+class Kawa():
+    def __init__(self):
+        self.list = []
+
+    # 追加
+    def append(self, hai):
+        self.list.append(hai)
+
+    # 取り出し
+    def pop(self, index=-1):
+        return self.list.pop(index)
 
 # プレイヤー
 class Player():

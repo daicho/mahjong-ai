@@ -19,7 +19,7 @@ def draw_tehai(tehai, back_flag = False):
     create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
     x = 0
-    for hai in tehai:
+    for hai in tehai.list:
         # 番号
         draw = ImageDraw.Draw(create_img)
         w, h = draw.textsize(str(x))
