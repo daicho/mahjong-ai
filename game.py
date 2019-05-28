@@ -2,6 +2,8 @@ import sys
 import random
 import tkinter as tk
 import mahjong as mj
+from learning import Isokun
+from point import TadaAi
 import graphic as gp
 
 # ウィンドウを作成
@@ -31,7 +33,7 @@ for i in range(3, 10):
     mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
 gp.load_image(mjhai_set)
-players = [mj.Player("Player1"), mj.Player("Player2"), mj.Player("Player3")]
+players = [mj.Human("Player1"), Isokun("Player2"), TadaAi("Player3")]
 
 # ゲームスタート
 yama = mjhai_set[:]
@@ -52,7 +54,7 @@ while len(yama) > 14:
     screen.configure(image=screen_img)
 
     # 打牌
-    player.show()
+    player.tehai.show()
     select_index = player.select(players)
     player.dahai(select_index)
     print()

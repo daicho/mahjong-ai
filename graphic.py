@@ -51,6 +51,7 @@ def draw_kawa(kawa):
 
     return create_img
 
+# ゲーム画面の画像を生成
 def draw_screen(players, target):
     size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH
     create_img = Image.new("RGB", (size, size), (0, 127, 0))

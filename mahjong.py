@@ -1,5 +1,6 @@
 import sys
 import random
+from abc import ABCMeta, abstractmethod
 
 # 麻雀牌
 class MjHai():
@@ -26,6 +27,16 @@ class Tehai(list):
         list.__init__(self)
         self.menzen = True
 
+    # 表示
+    def show(self):
+        for hai in self:
+            print(format(hai.name, "<4s"), end="")
+        print()
+
+        for j in range(len(self)):
+            print(format(j, "<4d"), end="")
+        print()
+
 # プレイヤー
 class Player():
     def __init__(self, name):
@@ -49,7 +60,14 @@ class Player():
         self.tehai.sort()
 
     # 選択
+    @abstractmethod
     def select(self, players):
+        pass
+
+# 人間
+class Human(Player):
+    # 選択
+    def select(self, players=[]):
         # 入力
         select_input = input(self.name + "> ")
 
@@ -61,13 +79,3 @@ class Player():
             return -1
 
         return int(select_input)
-
-    # 手牌を表示
-    def show(self):
-        for hai in self.tehai:
-            print(format(hai.name, "<4s"), end="")
-        print()
-
-        for j in range(len(self.tehai)):
-            print(format(j, "<4d"), end="")
-        print()
