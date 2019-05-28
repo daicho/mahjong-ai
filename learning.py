@@ -3,7 +3,7 @@ from mahjong import *
 # イーソー君
 class Isokun(Player):
     # 選択
-    def select(self, players=[]):
+    def select(self, players=[], yama=[]):
         return 13
 
 if __name__ == "__main__":

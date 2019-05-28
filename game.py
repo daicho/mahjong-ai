@@ -55,7 +55,7 @@ while len(yama) > 14:
 
     # 打牌
     player.tehai.show()
-    select_index = player.select(players)
+    select_index = player.select(players, yama)
     player.dahai(select_index)
     print()
 

@@ -3,11 +3,11 @@ from mahjong import *
 # イーソー君
 class TadaAi(Player):
     # 選択
-    def select(self, players=[]):
+    def select(self, players=[], yama=[]):
         return 13
 
 if __name__ == "__main__":
-    tada_ai = Isokun("Isokun")
+    tada_ai = TadaAi("TadaAi")
     tada_ai.tehai.extend([
         MjHai(0, 1),
         MjHai(0, 1),

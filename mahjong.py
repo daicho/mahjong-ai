@@ -61,13 +61,13 @@ class Player():
 
     # 選択
     @abstractmethod
-    def select(self, players):
+    def select(self, players, yama):
         pass
 
 # 人間
 class Human(Player):
     # 選択
-    def select(self, players=[]):
+    def select(self, players=[], yama=[]):
         # 入力
         select_input = input(self.name + "> ")
 
