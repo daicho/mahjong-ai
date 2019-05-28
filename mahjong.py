@@ -51,22 +51,16 @@ class Player():
     # 選択
     def select(self, players):
         # 入力
-        while True:
-            select_input = input("> ")
+        select_input = input(self.name + "> ")
 
-            if select_input == "q":
-                sys.exit()
+        if select_input == "q":
+            sys.exit()
 
-            # ツモ切り
-            elif select_input == "":
-                select = -1
-                break
+        # ツモ切り
+        elif select_input == "":
+            return -1
 
-            select = int(select_input)
-            if select >= 0 and select < 14:
-                break
-
-        return select
+        return int(select_input)
 
     # 手牌を表示
     def show(self):

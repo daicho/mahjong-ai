@@ -4,33 +4,6 @@ import tkinter as tk
 import mahjong as mj
 import graphic as gp
 
-# 摸打
-def callback(select):
-    def mouda():
-        global player
-        global cur_player
-
-        # 打牌
-        player.dahai(select)
-
-        # 終了判定
-        if len(yama) <= 14:
-            root.destroy()
-            sys.exit()
-
-        # 次のプレイヤーへ
-        cur_player = (cur_player + 1) % len(players)
-        player = players[cur_player]
-        player.tumo(yama)
-
-        # 画面描画
-        screen_img = gp.draw_screen(players, cur_player)
-        screen.configure(image=screen_img)
-
-        root.mainloop()
-
-    return mouda
-
 # ウィンドウを作成
 root = tk.Tk()
 root.title("Iso-kun")
@@ -41,17 +14,6 @@ root.resizable(0, 0)
 # 画像表示部
 screen = tk.Label(root)
 screen.grid()
-
-# 選択ボタン
-select_button = []
-for i in range(14):
-    select_button.append(tk.Button(root, text=str(i), command=callback(i)))
-    select_button[i].place(
-        x = 6 * gp.MJHAI_HEIGHT + (i - 4) * gp.MJHAI_WIDTH + 2,
-        y = 4 * gp.MJHAI_WIDTH + 12 * gp.MJHAI_HEIGHT + 2,
-        width = gp.MJHAI_WIDTH,
-        height = gp.MJHAI_WIDTH
-    )
 
 # 全ての牌をセット
 # 筒子・索子
@@ -75,16 +37,26 @@ players = [mj.Player("Player1"), mj.Player("Player2"), mj.Player("Player3")]
 yama = mjhai_set[:]
 random.shuffle(yama)
 
+# 配牌
 for player in players:
     player.haipai(yama)
 
-# ゲームスタート
 cur_player = 0
-player = players[cur_player]
-player.tumo(yama)
 
-# 画面描画
-screen_img = gp.draw_screen(players, cur_player)
-screen.configure(image=screen_img)
+while len(yama) > 14:
+    player = players[cur_player]
+    player.tumo(yama)
 
-root.mainloop()
+    # 画面描画
+    screen_img = gp.draw_screen(players, cur_player)
+    screen.configure(image=screen_img)
+
+    # 打牌
+    player.show()
+    select_index = player.select(players)
+    player.dahai(select_index)
+    print()
+
+    cur_player = (cur_player + 1) % len(players)
+
+print("終了")
