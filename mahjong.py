@@ -134,9 +134,9 @@ class Tehai():
             self.shanten = shanten
             self.node = node
 
-    # 面子・搭子の組み合わせを探索
+    # 面子・面子候補の組み合わせを探索
     @staticmethod
-    def combi(table, shanten):
+    def combi(table, shanten, atama):
         tree = []
         shanten_min = 8
 
@@ -149,10 +149,16 @@ class Tehai():
                     table_pop[(i, j + 1)] -= 1
                     table_pop[(i, j + 2)] -= 1
 
+                    for pop_kind in mjhai_all:
+                        if pop_kind >= (i, j):
+                            break
+
+                        table_pop[pop_kind] = 0
+
                     tree.append(Tehai.Node(
                         [(i, j), (i, j + 1), (i, j + 2)],
                         shanten - 2,
-                        Tehai.combi(table_pop, shanten - 2)
+                        Tehai.combi(table_pop, shanten - 2, atama)
                     ))
 
         # 暗刻
@@ -161,10 +167,16 @@ class Tehai():
                 table_pop = copy.deepcopy(table)
                 table_pop[hai_kind] -= 3
 
+                for pop_kind in mjhai_all:
+                    if pop_kind >= hai_kind:
+                        break
+
+                    table_pop[pop_kind] = 0
+
                 tree.append(Tehai.Node(
                     [hai_kind, hai_kind, hai_kind],
                     shanten - 2,
-                    Tehai.combi(table_pop, shanten - 2)
+                    Tehai.combi(table_pop, shanten - 2, atama)
                 ))
         #"""
         # 対子
@@ -173,10 +185,16 @@ class Tehai():
                 table_pop = copy.deepcopy(table)
                 table_pop[hai_kind] -= 2
 
+                for pop_kind in mjhai_all:
+                    if pop_kind >= hai_kind:
+                        break
+
+                    table_pop[pop_kind] = 0
+
                 tree.append(Tehai.Node(
                     [hai_kind, hai_kind],
-                    shanten - 1,
-                    Tehai.combi(table_pop, shanten - 1)
+                    shanten - 1 if atama else 2,
+                    Tehai.combi(table_pop, shanten - 1, True)
                 ))
 
         # 嵌張塔子
@@ -187,10 +205,16 @@ class Tehai():
                     table_pop[(i, j)] -= 1
                     table_pop[(i, j + 2)] -= 1
 
+                    for pop_kind in mjhai_all:
+                        if pop_kind >= (i, j):
+                            break
+
+                        table_pop[pop_kind] = 0
+
                     tree.append(Tehai.Node(
                         [(i, j), (i, j + 2)],
                         shanten - 1,
-                        Tehai.combi(table_pop, shanten - 1)
+                        Tehai.combi(table_pop, shanten - 1, atama)
                     ))
 
         # 両面・辺張塔子
@@ -201,10 +225,16 @@ class Tehai():
                     table_pop[(i, j)] -= 1
                     table_pop[(i, j + 1)] -= 1
 
+                    for pop_kind in mjhai_all:
+                        if pop_kind >= (i, j):
+                            break
+
+                        table_pop[pop_kind] = 0
+
                     tree.append(Tehai.Node(
                         [(i, j), (i, j + 1)],
                         shanten - 1,
-                        Tehai.combi(table_pop, shanten - 1)
+                        Tehai.combi(table_pop, shanten - 1, atama)
                     ))
         #"""
         return tree
@@ -257,7 +287,7 @@ class Tehai():
 
     # シャンテン数計算
     def shanten(self):
-        return Tehai.shanten_min(Tehai.combi(self.table, 8))
+        return Tehai.shanten_min(Tehai.combi(self.table, 8, False))
 
 # 河
 class Kawa():
