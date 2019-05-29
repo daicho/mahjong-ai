@@ -91,8 +91,20 @@ class Tehai():
 
         return shanten_num
 
+    # シャンテン数計算
+    def shanten_7toitu(self):
+        shanten_num = 6
+
+        for color in range(0, 10):
+            for number in range(0, 10):
+                mjhai_num = self.find(MjHai(color, number))
+                if mjhai_num >= 2:
+                    shanten_num -= 1
+
+        return shanten_num
+
     def shanten(self):
-        return self.shanten_kokushi()
+        return self.shanten_7toitu()
 
 # 河
 class Kawa():

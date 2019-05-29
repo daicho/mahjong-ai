@@ -5,7 +5,7 @@ import tkinter as tk
 from PIL import ImageTk
 from mahjong import *
 from graphic import *
-from learning import Isokun
+from learning import Isokun, Rentaro, Tsuchida
 from point import TadaAi
 
 # ウィンドウを作成
@@ -35,7 +35,7 @@ for i in range(3, 10):
     mjhai_list.extend([MjHai(i) for j in range(4)])
 
 load_image(mjhai_list)
-players = [Isokun("Rentaro1"), Isokun("Rentaro2"), Isokun("Rentaro3")]
+players = [Tsuchida("Tsuchida1"), Tsuchida("Tsuchida1"), Tsuchida("Tsuchida1")]
 view = 0 # 視点
 
 # ゲームスタート

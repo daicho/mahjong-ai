@@ -5,6 +5,13 @@ from mahjong import *
 class Isokun(Player):
     # 選択
     def select(self, players=[], yama=[]):
+        select_index = 13
+        return select_index
+
+# れんたろう
+class Rentaro(Player):
+    # 選択
+    def select(self, players=[], yama=[]):
         select_index = -1
         shanten_min = 13
 
@@ -12,7 +19,25 @@ class Isokun(Player):
             pop_tehai = copy.deepcopy(self.tehai)
             pop_tehai.pop(i)
 
-            shanten_num = pop_tehai.shanten()
+            shanten_num = pop_tehai.shanten_kokushi()
+            if shanten_num <= shanten_min:
+                select_index = i
+                shanten_min = shanten_num
+
+        return select_index
+
+# 土田
+class Tsuchida(Player):
+    # 選択
+    def select(self, players=[], yama=[]):
+        select_index = -1
+        shanten_min = 13
+
+        for i, hai in enumerate(self.tehai.list):
+            pop_tehai = copy.deepcopy(self.tehai)
+            pop_tehai.pop(i)
+
+            shanten_num = pop_tehai.shanten_7toitu()
             if shanten_num <= shanten_min:
                 select_index = i
                 shanten_min = shanten_num
