@@ -60,7 +60,7 @@ if __name__ == "__main__":
         MjHai(0, 8),
         MjHai(0, 9),
         MjHai(0, 9),
-        MjHai(0, 9),
+        MjHai(0, 9)
     ])
 
     isokun.tehai.show()

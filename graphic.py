@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
-import mahjong as mj
+from mahjong import *
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
@@ -9,12 +9,13 @@ MJHAI_HEIGHT = 38
 font_file = "font/YuGothB.ttc"
 
 mjhai_img = {}
-mjhai_back = Image.open("image/back.png")
+mjhai_img["back"] = Image.open("image/back.png")
 
 # 画像ファイル読み込み
-def load_image(mjhai_list):
-    for hai in mjhai_list:
-        mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
+def load_image(mjhai_set):
+    for hai in mjhai_set:
+        if hai.name not in mjhai_img:
+            mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
 
 # 手牌の画像を生成
 def draw_tehai(tehai, back_flag=False):
@@ -33,7 +34,7 @@ def draw_tehai(tehai, back_flag=False):
         )
 
         # 麻雀牌
-        draw_mjhai = mjhai_back if back_flag else mjhai_img[hai.name]
+        draw_mjhai = mjhai_img["back"] if back_flag else mjhai_img[hai.name]
         create_img.paste(draw_mjhai, (x * MJHAI_WIDTH, MJHAI_HEIGHT))
 
         x += 1
@@ -81,6 +82,7 @@ def draw_screen(players, target, open=False):
             (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 11 * MJHAI_HEIGHT)
         )
 
+        # プレイヤー名
         name_draw = ImageDraw.Draw(paste_img)
         name_draw.font = ImageFont.truetype(font_file, 16)
 
@@ -90,14 +92,16 @@ def draw_screen(players, target, open=False):
             player.name
         )
 
-        shaten_draw = ImageDraw.Draw(paste_img)
-        shaten_draw.font = ImageFont.truetype(font_file, 16)
+        # シャンテン数
+        if open:
+            shaten_draw = ImageDraw.Draw(paste_img)
+            shaten_draw.font = ImageFont.truetype(font_file, 16)
 
-        w, h = shaten_draw.textsize("{}シャンテン".format(player.tehai.shanten()))
-        shaten_draw.text(
-            (size - w - 3, size - h - 3),
-            "{}シャンテン".format(player.tehai.shanten())
-        )
+            w, h = shaten_draw.textsize("{}シャンテン".format(player.tehai.shanten()))
+            shaten_draw.text(
+                (size - w - 3, size - h - 3),
+                "{}シャンテン".format(player.tehai.shanten())
+            )
 
         # 回転&合成
         rotate_img = paste_img.rotate((i - target) * 90)

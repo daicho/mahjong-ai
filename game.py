@@ -35,7 +35,7 @@ for i in range(3, 10):
     mjhai_list.extend([MjHai(i) for j in range(4)])
 
 load_image(mjhai_list)
-players = [Tsuchida("Tsuchida1"), Tsuchida("Tsuchida1"), Tsuchida("Tsuchida1")]
+players = [Human("Human"), Rentaro("Rentaro"), Tsuchida("Tsuchida")]
 view = 0 # 視点
 
 # ゲームスタート
@@ -52,9 +52,10 @@ while len(yama) > 14:
     player.tumo(yama)
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
-    screen.configure(image=screen_img)
-    root.update()
+    if cur_player == view:
+        screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
+        screen.configure(image=screen_img)
+        root.update()
     #time.sleep(0.5)
 
     if player.tehai.shanten() == -1:
@@ -68,9 +69,9 @@ while len(yama) > 14:
     print()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
-    screen.configure(image=screen_img)
-    root.update()
+    #screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
+    #screen.configure(image=screen_img)
+    #root.update()
     #time.sleep(0.5)
 
     cur_player = (cur_player + 1) % len(players)
