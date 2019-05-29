@@ -12,7 +12,7 @@ from point import TadaAi
 root = tk.Tk()
 root.title("Iso-kun")
 size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH + 4
-root.geometry(str(size) + "x" + str(size))
+root.geometry(str(size) + "x" + str(size) + "+0+0")
 root.resizable(0, 0)
 
 # 画像表示部
@@ -35,7 +35,7 @@ for i in range(3, 10):
     mjhai_list.extend([MjHai(i) for j in range(4)])
 
 load_image(mjhai_list)
-players = [Human("Human"), Isokun("Isokun"), TadaAi("TadaAi")]
+players = [Isokun("Rentaro1"), Isokun("Rentaro2"), Isokun("Rentaro3")]
 view = 0 # 視点
 
 # ゲームスタート
@@ -55,13 +55,13 @@ while len(yama) > 14:
     screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
+    #time.sleep(0.5)
 
     if player.tehai.shanten() == -1:
         print("アガリ！")
         break
 
     # 打牌
-    print("{}シャンテン".format(str(player.tehai.shanten_kokushi())))
     player.tehai.show()
     select_index = player.select(players, yama)
     player.dahai(select_index)
@@ -71,11 +71,12 @@ while len(yama) > 14:
     screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
+    #time.sleep(0.5)
 
-    #time.sleep(1)
     cur_player = (cur_player + 1) % len(players)
 
 print("終了")
 
-while input("> ") != "q":
-    root.update()
+root.mainloop()
+#while input("> ") != "q":
+#    root.update()

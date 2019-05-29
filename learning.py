@@ -13,7 +13,7 @@ class Isokun(Player):
             pop_tehai.pop(i)
 
             shanten_num = pop_tehai.shanten()
-            if shanten_num < shanten_min:
+            if shanten_num <= shanten_min:
                 select_index = i
                 shanten_min = shanten_num
 
