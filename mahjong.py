@@ -10,10 +10,13 @@ class MjHai():
         self.color = color   # 種類
         self.number = number # 数字
         self.dora = dora     # ドラかどうか
-        self.id = self.color * 10 + self.number # ソート用ID
+        self.id = self.color * 10 * 2 + self.number * 2 + int(self.dora) # 識別用ID
         self.name = MjHai.color_name[self.color] + \
                     (str(self.number) if self.number > 0 else "") + \
                     ("@" if self.dora else "")
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __lt__(self, other):
         return self.id < other.id
@@ -35,7 +38,7 @@ class KawaMjHai(MjHai):
         self.furo = furo
 
 # 手牌
-class Tehai(list):
+class Tehai():
     def __init__(self):
         self.list = []
         self.menzen = True
@@ -62,8 +65,34 @@ class Tehai(list):
             print(format(j, "<4d"), end="")
         print()
 
+    # 検索
+    def find(self, find_hai):
+        count = 0
+        for hai in self.list:
+            if hai == find_hai:
+                count += 1
+
+        return count
+
+    # シャンテン数計算
+    def shanten_kokushi(self):
+        shanten_num = 13
+        toitu = False
+
+        for color in range(0, 10):
+            for number in [0, 1, 9]:
+                mjhai_num = self.find(MjHai(color, number))
+                if mjhai_num:
+                    shanten_num -= 1
+
+                if mjhai_num >= 2 and not toitu:
+                    shanten_num -= 1
+                    toitu = True
+
+        return shanten_num
+
     def shanten(self):
-        pass
+        return self.shanten_kokushi()
 
 # 河
 class Kawa():
@@ -75,6 +104,19 @@ class Kawa():
         hai.__class__ = KawaMjHai
         hai.setup(tumogiri, richi, furo)
         self.list.append(hai)
+
+class Yama():
+    def __init__(self, mjhai_set):
+        self.list = mjhai_set[:]
+        random.shuffle(self.list)
+    
+    # 取り出し
+    def pop(self):
+        return self.list.pop()
+
+    # 残り個数
+    def __len__(self):
+        return len(self.list)
 
 # プレイヤー
 class Player(metaclass=ABCMeta):

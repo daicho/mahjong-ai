@@ -1,10 +1,23 @@
+import copy
 from mahjong import *
 
 # イーソー君
 class Isokun(Player):
     # 選択
     def select(self, players=[], yama=[]):
-        return 13
+        select_index = -1
+        shanten_min = 13
+
+        for i, hai in enumerate(self.tehai.list):
+            pop_tehai = copy.deepcopy(self.tehai)
+            pop_tehai.pop(i)
+
+            shanten_num = pop_tehai.shanten()
+            if shanten_num < shanten_min:
+                select_index = i
+                shanten_min = shanten_num
+
+        return select_index
 
 if __name__ == "__main__":
     isokun = Isokun("Isokun")
