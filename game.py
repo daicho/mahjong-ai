@@ -67,8 +67,15 @@ while len(yama) > 14:
     player.dahai(select_index)
     print()
 
+    # 画面描画
+    screen_img = ImageTk.PhotoImage(draw_screen(players, view, True))
+    screen.configure(image=screen_img)
+    root.update()
+
     #time.sleep(1)
     cur_player = (cur_player + 1) % len(players)
 
 print("終了")
-root.mainloop()
+
+while input("> ") != "q":
+    root.update()
