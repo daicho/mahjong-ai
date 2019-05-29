@@ -10,7 +10,7 @@ from point import TadaAi
 
 # ウィンドウを作成
 root = tk.Tk()
-root.title("Iso-kun")
+root.title("Mahjong")
 size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH + 4
 root.geometry(str(size) + "x" + str(size) + "+0+0")
 root.resizable(0, 0)
