@@ -93,7 +93,7 @@ def draw_screen(players, target, open=False):
         )
 
         # シャンテン数
-        if open:
+        if i == target or open:
             shaten_draw = ImageDraw.Draw(paste_img)
             shaten_draw.font = ImageFont.truetype(font_file, 16)
 
