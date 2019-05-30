@@ -1,5 +1,9 @@
 import copy
-from .core import *
+
+if __name__ == "__main__":
+    from core import *
+else:
+    from .core import *
 
 # イーソー君
 class Isokun(Player):
@@ -42,7 +46,7 @@ if __name__ == "__main__":
         MjHai(0, 8),
         MjHai(0, 9),
         MjHai(0, 9),
-        MjHai(0, 9)
+        MjHai(0, 9),
     ])
 
     isokun.tehai.show()

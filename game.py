@@ -62,7 +62,7 @@ while len(yama) > 14:
         screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
         screen.configure(image=screen_img)
         root.update()
-    #time.sleep(0.5)
+        #time.sleep(0.5)
 
     if player.tehai.shanten() == -1:
         print("アガリ！")

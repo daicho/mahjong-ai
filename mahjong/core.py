@@ -1,6 +1,7 @@
 import sys
 import copy
 import random
+import collections
 from abc import ABCMeta, abstractmethod
 
 """
@@ -104,6 +105,17 @@ class Tehai():
     # 面子・面子候補の組み合わせを探索
     @staticmethod
     def combi(table, shanten, count, atama):
+        # テーブルを切り取り
+        def cut(table, until):
+            cut_table = copy.deepcopy(table)
+
+            for pop_kind in mjhai_all:
+                if pop_kind >= until:
+                    break
+                cut_table[pop_kind] = 0
+
+            return cut_table
+
         tree = []
         shanten_min = 8
 
@@ -111,18 +123,11 @@ class Tehai():
             # 雀頭
             for hai_kind in mjhai_all:
                 if table[hai_kind] >= 2:
-                    table_pop = copy.deepcopy(table)
+                    table_pop = cut(table, hai_kind)
                     table_pop[hai_kind] -= 2
 
-                    for pop_kind in mjhai_all:
-                        if pop_kind >= hai_kind:
-                            break
-                        table_pop[pop_kind] = 0
-
                     tree.append(Tehai.Node(
-                        [hai_kind, hai_kind],
-                        0,
-                        shanten - 1,
+                        (hai_kind, hai_kind), 0, shanten - 1,
                         Tehai.combi(table_pop, shanten - 1, count, True)
                     ))
 
@@ -131,38 +136,24 @@ class Tehai():
             for i in range(3):
                 for j in range(1, 8):
                     if table[(i, j)] and table[(i, j + 1)] and table[(i, j + 2)]:
-                        table_pop = copy.deepcopy(table)
+                        table_pop = cut(table, (i, j))
                         table_pop[(i, j)] -= 1
                         table_pop[(i, j + 1)] -= 1
                         table_pop[(i, j + 2)] -= 1
 
-                        for pop_kind in mjhai_all:
-                            if pop_kind >= (i, j):
-                                break
-                            table_pop[pop_kind] = 0
-
                         tree.append(Tehai.Node(
-                            [(i, j), (i, j + 1), (i, j + 2)],
-                            1,
-                            shanten - 2,
+                            ((i, j), (i, j + 1), (i, j + 2)), 1, shanten - 2,
                             Tehai.combi(table_pop, shanten - 2, count + 1, atama)
                         ))
 
             # 暗刻
             for hai_kind in mjhai_all:
                 if table[hai_kind] >= 3:
-                    table_pop = copy.deepcopy(table)
+                    table_pop = cut(table, hai_kind)
                     table_pop[hai_kind] -= 3
 
-                    for pop_kind in mjhai_all:
-                        if pop_kind >= hai_kind:
-                            break
-                        table_pop[pop_kind] = 0
-
                     tree.append(Tehai.Node(
-                        [hai_kind, hai_kind, hai_kind],
-                        2,
-                        shanten - 2,
+                        (hai_kind, hai_kind, hai_kind), 2, shanten - 2,
                         Tehai.combi(table_pop, shanten - 2, count + 1, atama)
                     ))
 
@@ -170,20 +161,12 @@ class Tehai():
             for i in range(3):
                 for j in range(2, 8):
                     if table[(i, j)] and table[(i, j + 1)]:
-                        table_pop = copy.deepcopy(table)
+                        table_pop = cut(table, (i, j))
                         table_pop[(i, j)] -= 1
                         table_pop[(i, j + 1)] -= 1
 
-                        for pop_kind in mjhai_all:
-                            if pop_kind >= (i, j):
-                                break
-
-                            table_pop[pop_kind] = 0
-
                         tree.append(Tehai.Node(
-                            [(i, j), (i, j + 1)],
-                            3,
-                            shanten - 1,
+                            ((i, j), (i, j + 1)), 3, shanten - 1,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
@@ -191,20 +174,12 @@ class Tehai():
             for i in range(3):
                 for j in [1, 8]:
                     if table[(i, j)] and table[(i, j + 1)]:
-                        table_pop = copy.deepcopy(table)
+                        table_pop = cut(table, (i, j))
                         table_pop[(i, j)] -= 1
                         table_pop[(i, j + 1)] -= 1
 
-                        for pop_kind in mjhai_all:
-                            if pop_kind >= (i, j):
-                                break
-
-                            table_pop[pop_kind] = 0
-
                         tree.append(Tehai.Node(
-                            [(i, j), (i, j + 1)],
-                            4,
-                            shanten - 1,
+                            ((i, j), (i, j + 1)), 4, shanten - 1,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
@@ -212,38 +187,23 @@ class Tehai():
             for i in range(3):
                 for j in range(1, 8):
                     if table[(i, j)] and table[(i, j + 2)]:
-                        table_pop = copy.deepcopy(table)
+                        table_pop = cut(table, (i, j))
                         table_pop[(i, j)] -= 1
                         table_pop[(i, j + 2)] -= 1
 
-                        for pop_kind in mjhai_all:
-                            if pop_kind >= (i, j):
-                                break
-
-                            table_pop[pop_kind] = 0
-
                         tree.append(Tehai.Node(
-                            [(i, j), (i, j + 2)],
-                            5,
-                            shanten - 1,
+                            ((i, j), (i, j + 2)), 5, shanten - 1,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
             # 対子
             for hai_kind in mjhai_all:
                 if table[hai_kind] >= 2:
-                    table_pop = copy.deepcopy(table)
+                    table_pop = cut(table, hai_kind)
                     table_pop[hai_kind] -= 2
 
-                    for pop_kind in mjhai_all:
-                        if pop_kind >= hai_kind:
-                            break
-                        table_pop[pop_kind] = 0
-
                     tree.append(Tehai.Node(
-                        [hai_kind, hai_kind],
-                        6,
-                        shanten - 1,
+                        (hai_kind, hai_kind), 6, shanten - 1,
                         Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                     ))
 
@@ -271,14 +231,9 @@ class Tehai():
         self.list = []
         self.menzen = True
 
-        self.table = {}
-        for hai_kind in mjhai_all:
-            self.table[hai_kind] = 0
-
     # 追加
     def append(self, hai):
         self.list.append(hai)
-        self.table[hai.kind] += 1
 
     # 結合
     def extend(self, hais):
@@ -288,7 +243,6 @@ class Tehai():
     # 番号で取り出し
     def pop(self, index=-1):
         hai_pop = self.list.pop(index)
-        self.table[hai_pop.kind] -= 1
         return hai_pop
 
     # 牌を指定して取り出し
@@ -314,16 +268,16 @@ class Tehai():
         print()
 
     # 通常手のシャンテン数計算
-    def shanten_normal(self):
-        return Tehai.shanten_min(Tehai.combi(self.table, 8, 0, False))
+    def shanten_normal(self, table):
+        return Tehai.shanten_min(Tehai.combi(table, 8, 0, False))
 
     # 国士無双のシャンテン数計算
-    def shanten_kokushi(self):
+    def shanten_kokushi(self, table):
         shanten_num = 13
         toitu = False
 
         for hai_kind in mjhai_yaochu:
-            mjhai_num = self.table[hai_kind]
+            mjhai_num = table[hai_kind]
 
             if mjhai_num:
                 shanten_num -= 1
@@ -335,11 +289,11 @@ class Tehai():
         return shanten_num
 
     # 七対子のシャンテン数計算
-    def shanten_7toitu(self):
+    def shanten_7toitu(self, table):
         shanten_num = 6
 
         for hai_kind in mjhai_all:
-            mjhai_num = self.table[hai_kind]
+            mjhai_num = table[hai_kind]
             if mjhai_num >= 2:
                 shanten_num -= 1
 
@@ -347,7 +301,12 @@ class Tehai():
 
     # シャンテン数計算
     def shanten(self):
-        return min(self.shanten_normal(), self.shanten_7toitu(), self.shanten_kokushi())
+        kind_list = []
+        for hai in self.list:
+            kind_list.append(hai.kind)
+
+        table = collections.Counter(kind_list)
+        return min(self.shanten_normal(table), self.shanten_7toitu(table), self.shanten_kokushi(table))
 
 # 河
 class Kawa():
@@ -421,20 +380,20 @@ class Human(Player):
 if __name__ == "__main__":
     tehai = Tehai()
     tehai.extend([
-        MjHai(0, 1),
-        MjHai(0, 1),
-        MjHai(0, 1),
+        MjHai(0, 2),
         MjHai(0, 2),
         MjHai(0, 3),
+        MjHai(0, 3),
+        MjHai(0, 4),
         MjHai(0, 4),
         MjHai(0, 5),
         MjHai(0, 5),
         MjHai(0, 6),
+        MjHai(0, 6),
+        MjHai(0, 7),
         MjHai(0, 7),
         MjHai(0, 8),
-        MjHai(0, 9),
-        MjHai(0, 9),
-        MjHai(0, 9)
+        MjHai(0, 8),
     ])
 
     tehai.show()

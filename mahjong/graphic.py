@@ -1,6 +1,10 @@
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
-from .core import *
+
+if __name__ == "__main__":
+    from core import *
+else:
+    from .core import *
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
@@ -18,23 +22,24 @@ def load_image(mjhai_set):
             mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
 
 # 手牌の画像を生成
-def draw_tehai(tehai, back_flag=False):
+def draw_tehai(tehai, back=False):
     create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
     x = 0
     for hai in tehai.list:
         # 番号
-        number_draw = ImageDraw.Draw(create_img)
-        number_draw.font = ImageFont.truetype(font_file, 12)
+        if not back:
+            number_draw = ImageDraw.Draw(create_img)
+            number_draw.font = ImageFont.truetype(font_file, 12)
 
-        w, h = number_draw.textsize(str(x))
-        number_draw.text(
-            ((x + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 16),
-            str(x)
-        )
+            w, h = number_draw.textsize(str(x))
+            number_draw.text(
+                ((x + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 16),
+                str(x)
+            )
 
         # 麻雀牌
-        draw_mjhai = mjhai_img["back"] if back_flag else mjhai_img[hai.name]
+        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
         create_img.paste(draw_mjhai, (x * MJHAI_WIDTH, MJHAI_HEIGHT))
 
         x += 1

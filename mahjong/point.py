@@ -1,4 +1,7 @@
-from .core import *
+if __name__ == "__main__":
+    from core import *
+else:
+    from .core import *
 
 # 多田AI
 class TadaAi(Player):
@@ -8,7 +11,7 @@ class TadaAi(Player):
 
 if __name__ == "__main__":
     tada_ai = TadaAi("TadaAi")
-    tada_ai.extend([
+    tada_ai.tehai.extend([
         MjHai(0, 1),
         MjHai(0, 1),
         MjHai(0, 1),
@@ -22,7 +25,7 @@ if __name__ == "__main__":
         MjHai(0, 8),
         MjHai(0, 9),
         MjHai(0, 9),
-        MjHai(0, 9)
+        MjHai(0, 9),
     ])
 
     tada_ai.tehai.show()
