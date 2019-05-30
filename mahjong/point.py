@@ -1,6 +1,6 @@
-from mahjong import *
+from mahjong.core import *
 
-# イーソー君
+# 多田AI
 class TadaAi(Player):
     # 選択
     def select(self, players=[], yama=[]):
