@@ -1,5 +1,5 @@
 import copy
-from mahjong.core import *
+from .core import *
 
 # イーソー君
 class Isokun(Player):

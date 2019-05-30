@@ -93,6 +93,7 @@ class Tehai():
       6...対子
     """
 
+    # 面子・面子候補探索用のノード
     class Node():
         def __init__(self, elememt, kind, shanten, node):
             self.element = elememt

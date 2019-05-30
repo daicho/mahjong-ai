@@ -1,4 +1,4 @@
-from mahjong.core import *
+from .core import *
 
 # 多田AI
 class TadaAi(Player):

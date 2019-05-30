@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
-from mahjong.core import *
+from .core import *
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
