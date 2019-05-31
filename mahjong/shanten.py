@@ -37,7 +37,7 @@ def combi(table, shanten, count, atama):
 
         return cut_table
 
-    tree = []
+    tree = Node((), -1, 8, 4, None, [])
     shanten_min = 8
 
     if not atama:
@@ -47,9 +47,9 @@ def combi(table, shanten, count, atama):
                 table_pop = cut(table, hai_kind)
                 table_pop[hai_kind] -= 2
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (hai_kind, hai_kind), 0, shanten - 1, count, tree,
-                    combi(table_pop, shanten - 1, count, True)
+                    combi(table_pop, shanten - 1, count, True).children
                 ))
 
     if count < 4:
@@ -61,9 +61,9 @@ def combi(table, shanten, count, atama):
                 table_pop[i + 1] -= 1
                 table_pop[i + 2] -= 1
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (i, i + 1, i + 2), 1, shanten - 2, count + 1, tree,
-                    combi(table_pop, shanten - 2, count + 1, atama)
+                    combi(table_pop, shanten - 2, count + 1, atama).children
                 ))
 
         # 暗刻
@@ -72,9 +72,9 @@ def combi(table, shanten, count, atama):
                 table_pop = cut(table, hai_kind)
                 table_pop[hai_kind] -= 3
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (hai_kind, hai_kind, hai_kind), 2, shanten - 2, count + 1, tree,
-                    combi(table_pop, shanten - 2, count + 1, atama)
+                    combi(table_pop, shanten - 2, count + 1, atama).children
                 ))
 
         # 両面塔子
@@ -85,9 +85,9 @@ def combi(table, shanten, count, atama):
                     table_pop[i] -= 1
                     table_pop[i + 1] -= 1
 
-                    tree.append(Node(
+                    tree.children.append(Node(
                         (i, i + 1), 3, shanten - 1, count + 1, tree,
-                        combi(table_pop, shanten - 1, count + 1, atama)
+                        combi(table_pop, shanten - 1, count + 1, atama).children
                     ))
 
         # 辺張塔子
@@ -97,9 +97,9 @@ def combi(table, shanten, count, atama):
                 table_pop[i] -= 1
                 table_pop[i + 1] -= 1
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (i, i + 1), 4, shanten - 1, count + 1, tree,
-                    combi(table_pop, shanten - 1, count + 1, atama)
+                    combi(table_pop, shanten - 1, count + 1, atama).children
                 ))
 
         # 嵌張塔子
@@ -109,9 +109,9 @@ def combi(table, shanten, count, atama):
                 table_pop[i] -= 1
                 table_pop[i + 2] -= 1
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (i, i + 2), 5, shanten - 1, count + 1, tree,
-                    combi(table_pop, shanten - 1, count + 1, atama)
+                    combi(table_pop, shanten - 1, count + 1, atama).children
                 ))
 
         # 対子
@@ -120,22 +120,22 @@ def combi(table, shanten, count, atama):
                 table_pop = cut(table, hai_kind)
                 table_pop[hai_kind] -= 2
 
-                tree.append(Node(
+                tree.children.append(Node(
                     (hai_kind, hai_kind), 6, shanten - 1, count + 1, tree,
-                    combi(table_pop, shanten - 1, count + 1, atama)
+                    combi(table_pop, shanten - 1, count + 1, atama).children
                 ))
 
     return tree
 
 # シャンテン数と使用面子数が最小となる組み合わせを探索
 def combi_min(tree):
-    node_min = Node((), -1, 8, 4, None, None)
+    node_min = Node((), -1, 8, 4, None, [])
 
-    for leaf in tree:
+    for leaf in tree.children:
         if leaf.score < node_min.score:
             node_min = leaf
 
-        child_min = combi_min(leaf.children)
+        child_min = combi_min(leaf)
         if child_min.score < node_min.score:
             node_min = child_min
 
@@ -146,7 +146,7 @@ for i in range(1, 10):
     suhai.extend([i for j in range(4)])
 
 combi_rt = []
-for i in range(1, 6):
+for i in range(1, 4):
     combi_rt.extend(dict.fromkeys(itertools.combinations(suhai, i)))
 
 combi_table = []
