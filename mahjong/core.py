@@ -96,11 +96,13 @@ class Tehai():
 
     # 面子・面子候補探索用のノード
     class Node():
-        def __init__(self, elememt, kind, shanten, node):
+        def __init__(self, elememt, kind, shanten, count, parent, children):
             self.element = elememt
             self.kind = kind
             self.shanten = shanten
-            self.node = node
+            self.count = count
+            self.parent = parent
+            self.children = children
 
     # 面子・面子候補の組み合わせを探索
     @staticmethod
@@ -127,7 +129,7 @@ class Tehai():
                     table_pop[hai_kind] -= 2
 
                     tree.append(Tehai.Node(
-                        (hai_kind, hai_kind), 0, shanten - 1,
+                        (hai_kind, hai_kind), 0, shanten - 1, count, tree,
                         Tehai.combi(table_pop, shanten - 1, count, True)
                     ))
 
@@ -142,7 +144,7 @@ class Tehai():
                         table_pop[(i, j + 2)] -= 1
 
                         tree.append(Tehai.Node(
-                            ((i, j), (i, j + 1), (i, j + 2)), 1, shanten - 2,
+                            ((i, j), (i, j + 1), (i, j + 2)), 1, shanten - 2, count + 1, tree,
                             Tehai.combi(table_pop, shanten - 2, count + 1, atama)
                         ))
 
@@ -153,7 +155,7 @@ class Tehai():
                     table_pop[hai_kind] -= 3
 
                     tree.append(Tehai.Node(
-                        (hai_kind, hai_kind, hai_kind), 2, shanten - 2,
+                        (hai_kind, hai_kind, hai_kind), 2, shanten - 2, count + 1, tree,
                         Tehai.combi(table_pop, shanten - 2, count + 1, atama)
                     ))
 
@@ -166,7 +168,7 @@ class Tehai():
                         table_pop[(i, j + 1)] -= 1
 
                         tree.append(Tehai.Node(
-                            ((i, j), (i, j + 1)), 3, shanten - 1,
+                            ((i, j), (i, j + 1)), 3, shanten - 1, count + 1, tree,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
@@ -179,7 +181,7 @@ class Tehai():
                         table_pop[(i, j + 1)] -= 1
 
                         tree.append(Tehai.Node(
-                            ((i, j), (i, j + 1)), 4, shanten - 1,
+                            ((i, j), (i, j + 1)), 4, shanten - 1, count + 1, tree,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
@@ -192,7 +194,7 @@ class Tehai():
                         table_pop[(i, j + 2)] -= 1
 
                         tree.append(Tehai.Node(
-                            ((i, j), (i, j + 2)), 5, shanten - 1,
+                            ((i, j), (i, j + 2)), 5, shanten - 1, count + 1, tree,
                             Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                         ))
 
@@ -203,7 +205,7 @@ class Tehai():
                     table_pop[hai_kind] -= 2
 
                     tree.append(Tehai.Node(
-                        (hai_kind, hai_kind), 6, shanten - 1,
+                        (hai_kind, hai_kind), 6, shanten - 1, count + 1, tree,
                         Tehai.combi(table_pop, shanten - 1, count + 1, atama)
                     ))
 
@@ -214,16 +216,9 @@ class Tehai():
     def shanten_min(tree):
         s_min = 8
 
-        if len(tree) == 0:
-            return s_min
-
         for leaf in tree:
-            if leaf.shanten < s_min:
-                s_min = leaf.shanten
-
-            shanten = Tehai.shanten_min(leaf.node)
-            if shanten < s_min:
-                s_min = shanten
+            child_min = Tehai.shanten_min(leaf.children)
+            s_min = min(s_min, leaf.shanten, child_min)
 
         return s_min
 
