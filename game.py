@@ -5,15 +5,6 @@ import tkinter as tk
 from PIL import ImageTk
 import mahjong as mj
 
-"""
-import mahjong.core as mj
-import mahjong.graphic as gp
-
-from mahjong.core import Human
-from mahjong.learning import Isokun, Fast
-from mahjong.point import TadaAi
-"""
-
 # ウィンドウを作成
 root = tk.Tk()
 root.title("Mahjong")
@@ -41,7 +32,7 @@ for i in range(3, 10):
     mjhai_list.extend([mj.MjHai(i) for j in range(4)])
 
 mj.load_image(mjhai_list)
-players = [mj.Human("Human"), mj.Isokun("Iso-kun"), mj.TadaAi("Tada Ai")]
+players = [mj.Fast("Fast1"), mj.Fast("Fast2"), mj.Fast("Fast3")]
 view = 0 # 視点
 
 # ゲームスタート

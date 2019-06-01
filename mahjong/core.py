@@ -1,4 +1,5 @@
 import sys
+import os
 import copy
 import random
 import pickle
@@ -49,7 +50,8 @@ for i in range(3, 10):
     mjhai_yaochu.append((i, 0))
 
 # シャンテン数計算テーブルを読み込み
-table_file = open("mahjong/shanten_table.bin", "rb")
+this_path = os.path.dirname(os.path.abspath(__file__))
+table_file = open(this_path + "/shanten_table.bin", "rb")
 combi_table = pickle.load(table_file)
 table_file.close()
 
@@ -440,7 +442,7 @@ class Yama():
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
-    def __init__(self, name):
+    def __init__(self, name=""):
         self.name = name
         self.tehai = Tehai()
         self.kawa = Kawa()
