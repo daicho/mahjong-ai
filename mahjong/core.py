@@ -269,7 +269,7 @@ class Tehai():
                     if table[(i, j)] == 1 and sum(table[(i, j + k)] for k in [-2, -1, 1, 2]) == 0:
                         table[(i, j)] = 0
 
-            for i in range(4, 10):
+            for i in range(3, 10):
                 if table[(i, 0)] == 1:
                     table[(i, 0)] = 0
 
@@ -277,7 +277,7 @@ class Tehai():
         def elements_jihai(table):
             combi_jihai = [0, 0]
 
-            for i in range(4, 10):
+            for i in range(3, 10):
                 if table[(i, 0)] >= 3:
                     combi_jihai[0] += 1
 
@@ -489,21 +489,19 @@ if __name__ == "__main__":
     tehai = Tehai()
     tehai.extend([
         MjHai(0, 1),
-        MjHai(0, 1),
-        MjHai(0, 1),
         MjHai(0, 2),
-        MjHai(0, 3),
-        MjHai(0, 4),
+        MjHai(0, 2),
+        MjHai(0, 5),
         MjHai(0, 7),
-        MjHai(0, 8),
-        MjHai(0, 9),
+        MjHai(1, 3),
         MjHai(1, 4),
-        MjHai(1, 4),
-        MjHai(1, 4),
-        MjHai(1, 4),
-        MjHai(1, 7),
+        MjHai(1, 5),
         MjHai(3, 0),
         MjHai(3, 0),
+        MjHai(3, 0),
+        MjHai(4, 0),
+        MjHai(4, 0),
+        MjHai(4, 0),
     ])
 
     tehai.show()

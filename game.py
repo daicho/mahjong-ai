@@ -32,7 +32,7 @@ for i in range(3, 10):
     mjhai_list.extend([mj.MjHai(i) for j in range(4)])
 
 mj.load_image(mjhai_list)
-players = [mj.Fast("Fast1"), mj.Fast("Fast2"), mj.Fast("Fast3")]
+players = [mj.Human("Human"), mj.Fast("Tenari1"), mj.Fast("Tenari2")]
 view = 0 # 視点
 
 # ゲームスタート
@@ -75,6 +75,10 @@ while len(yama) > 14:
 
 print("終了")
 
-root.mainloop()
-#while input("> ") != "q":
-#    root.update()
+screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
+screen.configure(image=screen_img)
+root.update()
+
+#root.mainloop()
+while input("> ") != "q":
+    root.update()
