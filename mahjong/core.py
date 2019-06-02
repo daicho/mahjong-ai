@@ -60,13 +60,23 @@ class MjHai():
     color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chn"]
 
     def __init__(self, color, number=0, dora=False):
-        self.color = color   # 種類
-        self.number = number # 数字
-        self.kind = (color, number)
-        self.dora = dora     # ドラかどうか
+        self.color = color    # 種類
+        self.number = number  # 数字
+        self.dora = dora      # ドラかどうか
+
+        self.whose = None     # 誰のものか
+        self.tumogiri = False # ツモ切り
+        self.richi = False    # リーチ
+        self.furo = False     # 副露
+
         self.name = MjHai.color_name[self.color] + \
                     (str(self.number) if self.number > 0 else "") + \
                     ("@" if self.dora else "")
+
+    def put_kawa(self, tumogiri=False, richi=False, furo=False):
+        self.tumogiri = tumogiri
+        self.richi = richi
+        self.furo = furo
 
     # 比較演算子
     def __eq__(self, other):
@@ -77,19 +87,6 @@ class MjHai():
 
     def __gt__(self, other):
         return (self.color, self.number, self.dora) > (other.color, other.number, other.dora)
-
-# 河の麻雀牌
-class KawaMjHai(MjHai):
-    def __init__(self, color, number=0, dora=False, tumogiri=False, richi=False, furo=False):
-        self.tumogiri = tumogiri
-        self.richi = richi
-        self.furo = furo
-        super().__init__(color, number, dora)
-
-    def setup(self, tumogiri=False, richi=False, furo=False):
-        self.tumogiri = tumogiri
-        self.richi = richi
-        self.furo = furo
 
 # 手牌
 class Tehai():
@@ -223,13 +220,18 @@ class Tehai():
 
     def __init__(self):
         self.list = []
+        self.furo = []
         self.table = collections.Counter()
         self.menzen = True
+
+    # 残り個数
+    def __len__(self):
+        return len(self.list)
 
     # 追加
     def append(self, hai):
         self.list.append(hai)
-        self.table[hai.kind] += 1
+        self.table[(hai.color, hai.number)] += 1
 
     # まとめて追加
     def extend(self, hais):
@@ -239,7 +241,7 @@ class Tehai():
     # 番号で取り出し
     def pop(self, index=-1):
         hai = self.list.pop(index)
-        self.table[hai.kind] -= 1
+        self.table[(hai.color, hai.number)] -= 1
         return hai
 
     # 並べ替え
@@ -261,13 +263,13 @@ class Tehai():
         # シャンテン数計算テーブル用のキーを作成
         def create_key(table, color):
             # 前後の0は切り取り
-            start = 0
             for i in range(1, 10):
                 if table[(color, i)] != 0:
                     start = i
                     break
+            else: # 全て0だったら
+                return (0,)
 
-            end = 0
             for i in range(9, 0, -1):
                 if table[(color, i)] != 0:
                     end = i
@@ -370,8 +372,7 @@ class Kawa():
 
     # 追加
     def append(self, hai, tumogiri=False, richi=False, furo=False):
-        hai.__class__ = KawaMjHai
-        hai.setup(tumogiri, richi, furo)
+        hai.put_kawa(tumogiri, richi, furo)
         self.list.append(hai)
 
 # 山
@@ -390,8 +391,9 @@ class Yama():
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
-    def __init__(self, name=""):
+    def __init__(self, name, chicha):
         self.name = name
+        self.chicha = chicha
         self.tehai = Tehai()
         self.kawa = Kawa()
         self.richi = False
@@ -404,13 +406,33 @@ class Player(metaclass=ABCMeta):
 
     # 自摸
     def tumo(self, yama):
-        self.tehai.append(yama.pop())
+        pop_hai = yama.pop()
+        pop_hai.whose = self
+        self.tehai.append(pop_hai)
 
     # 打牌
     def dahai(self, index):
-        tumogiri = (index == 13 or index == -1)
+        tumogiri = (index == 13 - len(self.tehai.furo) or index == -1)
         self.kawa.append(self.tehai.pop(index), tumogiri, self.richi)
         self.tehai.sort()
+
+    # ツモ和了
+    def agari_tumo(self):
+        if self.tehai.shanten() == -1:
+            return True
+        else:
+            return False
+
+    # ロン和了
+    def agari_ron(self, player):
+        self.tehai.append(player.kawa.list[-1])
+
+        if self.tehai.shanten() == -1:
+            player.kawa.list[-1].furo = True
+            return True
+        else:
+            self.tehai.pop()
+            return False
 
     # 選択
     @abstractmethod

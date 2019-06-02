@@ -15,7 +15,7 @@ screen = tk.Label(root)
 screen.grid()
 
 # プレイヤー
-players = [mj.Tenari("Tenari1"), mj.Tenari("Tenari2"), mj.Tenari("Tenari3")]
+players = [mj.Tenari("Tenari1", 0), mj.Tenari("Tenari2", 1), mj.Tenari("Tenari3", 2)]
 
 # 全ての牌をセット
 # 筒子・索子
@@ -47,18 +47,20 @@ while len(yama) > 14:
     player = players[cur_player]
     player.tumo(yama)
 
-    if player.tehai.shanten() == -1:
-        print("アガリ！")
-        break
+    # コンソール表示
+    print("{} [残り{}]".format(player.name, len(yama) - 14))
+    player.tehai.show()
 
     # 画面描画
     screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
 
-    # コンソール表示
-    print("{} [残り{}]".format(player.name, len(yama) - 14))
-    player.tehai.show()
+    # ツモ判定
+    if player.agari_tumo():
+        print()
+        print("{}：ツモ".format(player.name))
+        break
 
     # 打牌
     select_index = player.select(players, mjhai_set)
@@ -69,6 +71,19 @@ while len(yama) > 14:
     screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
+
+    # ロン判定
+    end_flag = False
+    for check_player in players:
+        # 自身は判定しない
+        if check_player != player:
+            if check_player.agari_ron(player):
+                print("{}→{}：ロン".format(player.name, check_player.name))
+                end_flag = True
+                break
+    
+    if end_flag:
+        break
 
     # 次のプレイヤーへ
     cur_player = (cur_player + 1) % len(players)

@@ -28,25 +28,31 @@ def draw_tehai(tehai, back=False):
     x = 0
     for i, hai in enumerate(tehai.list):
         # ツモった牌は離す
-        if i == 13:
+        if i == 13 - len(tehai.furo):
             x += int(MJHAI_WIDTH / 4)
-
-        # 麻雀牌
-        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
-        create_img.paste(draw_mjhai, (x, MJHAI_HEIGHT))
 
         # 番号
         if not back:
             number_draw = ImageDraw.Draw(create_img)
             number_draw.font = ImageFont.truetype(FONT_FILE, 12)
-
             w, h = number_draw.textsize(str(i))
+
             number_draw.text(
                 (x + (MJHAI_WIDTH - w) / 2, MJHAI_HEIGHT - h - 4),
                 str(i)
             )
 
-        x += MJHAI_WIDTH
+        # 麻雀牌
+        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
+
+        # 他家からの牌は横にする
+        if hai.furo:
+            rotate_img = draw_mjhai.rotate(90, expand=True)
+            create_img.paste(rotate_img, (x, 2 * MJHAI_HEIGHT - MJHAI_WIDTH))
+            x += MJHAI_HEIGHT
+        else:
+            create_img.paste(draw_mjhai, (x, MJHAI_HEIGHT))
+            x += MJHAI_WIDTH
 
     return create_img
 
@@ -90,15 +96,15 @@ def draw_kawa(kawa):
     return create_img
 
 # ゲーム画面の画像を生成
-def draw_screen(players, target, open=False):
+def draw_screen(players, view, open=False):
     size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH
     create_img = Image.new("RGB", (size, size), "green")
 
-    for i, player in enumerate(players):
+    for player in players:
         paste_img = Image.new("RGBA", (size, size))
 
         # 手牌
-        tehai_img = draw_tehai(player.tehai, False if open else i != target)
+        tehai_img = draw_tehai(player.tehai, False if open else player.chicha != view)
         paste_img.paste(
             tehai_img,
             (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 11 * MJHAI_HEIGHT)
@@ -114,26 +120,26 @@ def draw_screen(players, target, open=False):
         # プレイヤー名
         name_draw = ImageDraw.Draw(paste_img)
         name_draw.font = ImageFont.truetype(FONT_FILE, 16)
-
         w, h = name_draw.textsize(player.name)
+
         name_draw.text(
             ((size - w) / 2, 5 * MJHAI_WIDTH + 7 * MJHAI_HEIGHT - h - 5),
             player.name
         )
 
         # シャンテン数
-        if i == target or open:
+        if i == view or open:
             shaten_draw = ImageDraw.Draw(paste_img)
             shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
-
             w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
+
             shaten_draw.text(
                 (size - w - 3, size - h - 3),
                 "{}ST".format(player.tehai.shanten())
             )
 
         # 回転&合成
-        rotate_img = paste_img.rotate((i - target) * 90)
+        rotate_img = paste_img.rotate((player.chicha - view) * 90)
         create_img.paste(rotate_img, (0, 0), rotate_img)
 
     return create_img
