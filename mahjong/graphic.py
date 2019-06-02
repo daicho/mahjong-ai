@@ -23,10 +23,18 @@ for mjhai_file in mjhai_files:
 
 # 手牌の画像を生成
 def draw_tehai(tehai, back=False):
-    create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
+    create_img = Image.new("RGBA", (15 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
-    i = 0
-    for hai in tehai.list:
+    x = 0
+    for i, hai in enumerate(tehai.list):
+        # ツモった牌は離す
+        if i == 13:
+            x += int(MJHAI_WIDTH / 4)
+
+        # 麻雀牌
+        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
+        create_img.paste(draw_mjhai, (x, MJHAI_HEIGHT))
+
         # 番号
         if not back:
             number_draw = ImageDraw.Draw(create_img)
@@ -34,15 +42,11 @@ def draw_tehai(tehai, back=False):
 
             w, h = number_draw.textsize(str(i))
             number_draw.text(
-                ((i + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 16),
+                (x + (MJHAI_WIDTH - w) / 2, MJHAI_HEIGHT - h - 4),
                 str(i)
             )
 
-        # 麻雀牌
-        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
-        create_img.paste(draw_mjhai, (i * MJHAI_WIDTH, MJHAI_HEIGHT))
-
-        i += 1
+        x += MJHAI_WIDTH
 
     return create_img
 

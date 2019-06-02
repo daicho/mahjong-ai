@@ -15,7 +15,7 @@ screen = tk.Label(root)
 screen.grid()
 
 # プレイヤー
-players = [mj.Tenari("Tenari"), mj.Tenari("Tenari"), mj.Tenari("Tenari")]
+players = [mj.Tenari("Tenari1"), mj.Tenari("Tenari2"), mj.Tenari("Tenari3")]
 
 # 全ての牌をセット
 # 筒子・索子
@@ -57,7 +57,7 @@ while len(yama) > 14:
     root.update()
 
     # コンソール表示
-    print("{} [残り{}]".format(player.name, len(yama)))
+    print("{} [残り{}]".format(player.name, len(yama) - 14))
     player.tehai.show()
 
     # 打牌
