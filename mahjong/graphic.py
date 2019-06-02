@@ -1,69 +1,87 @@
+import os
+import copy
+import glob
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
-
-if __name__ == "__main__":
-    from core import *
-else:
-    from .core import *
+from .core import *
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
 MJHAI_HEIGHT = 38
 
-font_file = "font/YuGothB.ttc"
-
-mjhai_img = {}
-mjhai_img["back"] = Image.open("image/back.png")
+# フォントファイル
+THIS_PATH = os.path.dirname(os.path.abspath(__file__))
+FONT_FILE = THIS_PATH + "/font/YuGothB.ttc"
 
 # 画像ファイル読み込み
-def load_image(mjhai_set):
-    for hai in mjhai_set:
-        if hai.name not in mjhai_img:
-            mjhai_img[hai.name] = Image.open("image/" + hai.name + ".png")
+mjhai_img = {}
+mjhai_files = glob.glob(THIS_PATH + "/mjhai/*.png") # ファイル一覧を取得
+
+for mjhai_file in mjhai_files:
+    img_key, ext = os.path.splitext(os.path.basename(mjhai_file)) # ファイル名を抽出
+    mjhai_img[img_key] = Image.open(mjhai_file)
 
 # 手牌の画像を生成
 def draw_tehai(tehai, back=False):
     create_img = Image.new("RGBA", (14 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
-    x = 0
+    i = 0
     for hai in tehai.list:
         # 番号
         if not back:
             number_draw = ImageDraw.Draw(create_img)
-            number_draw.font = ImageFont.truetype(font_file, 12)
+            number_draw.font = ImageFont.truetype(FONT_FILE, 12)
 
-            w, h = number_draw.textsize(str(x))
+            w, h = number_draw.textsize(str(i))
             number_draw.text(
-                ((x + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 16),
-                str(x)
+                ((i + 0.5) * MJHAI_WIDTH - w / 2, MJHAI_HEIGHT - 16),
+                str(i)
             )
 
         # 麻雀牌
         draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
-        create_img.paste(draw_mjhai, (x * MJHAI_WIDTH, MJHAI_HEIGHT))
+        create_img.paste(draw_mjhai, (i * MJHAI_WIDTH, MJHAI_HEIGHT))
 
-        x += 1
+        i += 1
 
     return create_img
 
 # 河の画像を生成
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
-    gray_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
+    tumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
+    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 0, 0, 47))
 
     x = 0
     y = 0
+    already_richi = False
+
     for hai in kawa.list:
-        create_img.paste(mjhai_img[hai.name], (x * MJHAI_WIDTH, y * MJHAI_HEIGHT))
+        paste_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT))
+        paste_img.paste(mjhai_img[hai.name])
 
-        # ツモ切り
+        # ツモ切りは暗くする
         if hai.tumogiri:
-            create_img.paste(gray_img, (x * MJHAI_WIDTH, y * MJHAI_HEIGHT), gray_img)
+            paste_img.paste(tumogiri_img, (0, 0), tumogiri_img)
 
-        x += 1
-        if x >= 6:
+        # 鳴かれた牌は赤くする
+        if hai.furo:
+            paste_img.paste(furo_img, (0, 0), furo_img)
+
+        # リーチ宣言牌は横にする
+        if not already_richi and hai.richi:
+            already_richi = True
+            rotate_img = paste_img.rotate(90, expand=True)
+            create_img.paste(rotate_img, (x, y + MJHAI_HEIGHT - MJHAI_WIDTH))
+            x += MJHAI_HEIGHT
+        else:
+            create_img.paste(paste_img, (x, y))
+            x += MJHAI_WIDTH
+
+        # 6枚で改行
+        if x >= 6 * MJHAI_WIDTH:
             x = 0
-            y += 1
+            y += MJHAI_HEIGHT
 
     return create_img
 
@@ -73,23 +91,25 @@ def draw_screen(players, target, open=False):
     create_img = Image.new("RGB", (size, size), "green")
 
     for i, player in enumerate(players):
-        kawa_img = draw_kawa(player.kawa)
-        tehai_img = draw_tehai(player.tehai, False if open else i != target)
-
-        # 河と手牌を合成
         paste_img = Image.new("RGBA", (size, size))
-        paste_img.paste(
-            kawa_img,
-            (6 * MJHAI_HEIGHT, 5 * MJHAI_WIDTH + 7 * MJHAI_HEIGHT)
-        )
+
+        # 手牌
+        tehai_img = draw_tehai(player.tehai, False if open else i != target)
         paste_img.paste(
             tehai_img,
             (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 11 * MJHAI_HEIGHT)
         )
 
+        # 河
+        kawa_img = draw_kawa(player.kawa)
+        paste_img.paste(
+            kawa_img,
+            (6 * MJHAI_HEIGHT, 5 * MJHAI_WIDTH + 7 * MJHAI_HEIGHT)
+        )
+
         # プレイヤー名
         name_draw = ImageDraw.Draw(paste_img)
-        name_draw.font = ImageFont.truetype(font_file, 16)
+        name_draw.font = ImageFont.truetype(FONT_FILE, 16)
 
         w, h = name_draw.textsize(player.name)
         name_draw.text(
@@ -100,12 +120,12 @@ def draw_screen(players, target, open=False):
         # シャンテン数
         if i == target or open:
             shaten_draw = ImageDraw.Draw(paste_img)
-            shaten_draw.font = ImageFont.truetype(font_file, 16)
+            shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
 
-            w, h = shaten_draw.textsize("{}シャンテン".format(player.tehai.shanten()))
+            w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
             shaten_draw.text(
                 (size - w - 3, size - h - 3),
-                "{}シャンテン".format(player.tehai.shanten())
+                "{}ST".format(player.tehai.shanten())
             )
 
         # 回転&合成

@@ -50,8 +50,8 @@ for i in range(3, 10):
     mjhai_yaochu.append((i, 0))
 
 # シャンテン数計算テーブルを読み込み
-this_path = os.path.dirname(os.path.abspath(__file__))
-table_file = open(this_path + "/shanten_table.bin", "rb")
+THIS_PATH = os.path.dirname(os.path.abspath(__file__))
+table_file = open(THIS_PATH + "/shanten_table.bin", "rb")
 combi_table = pickle.load(table_file)
 table_file.close()
 
@@ -68,6 +68,7 @@ class MjHai():
                     (str(self.number) if self.number > 0 else "") + \
                     ("@" if self.dora else "")
 
+    # 比較演算子
     def __eq__(self, other):
         return (self.color, self.number, self.dora) == (other.color, other.number, other.dora)
 
@@ -79,10 +80,10 @@ class MjHai():
 
 # 河の麻雀牌
 class KawaMjHai(MjHai):
-    def __init__(self, color, number=0, dora=False):
-        self.tumogiri = False
-        self.richi = False
-        self.furo = False
+    def __init__(self, color, number=0, dora=False, tumogiri=False, richi=False, furo=False):
+        self.tumogiri = tumogiri
+        self.richi = richi
+        self.furo = furo
         super().__init__(color, number, dora)
 
     def setup(self, tumogiri=False, richi=False, furo=False):
@@ -115,7 +116,7 @@ class Tehai():
 
     # 面子・面子候補の組み合わせを探索
     @staticmethod
-    def combi(table, shanten, count, atama):
+    def combi(table, shanten, count, jantou):
         # テーブルを切り取り
         def cut_table(table, until):
             cut_table = copy.deepcopy(table)
@@ -128,9 +129,8 @@ class Tehai():
             return cut_table
 
         tree = Tehai.Node((), -1, 8, 4, None, [])
-        shanten_min = 8
 
-        if not atama:
+        if not jantou:
             # 雀頭
             for hai_kind in mjhai_all:
                 if table[hai_kind] >= 2:
@@ -142,6 +142,7 @@ class Tehai():
                         Tehai.combi(table_pop, shanten - 1, count, True).children
                     ))
 
+        # 面子・面子候補は4つまで
         if count < 4:
             # 順子
             for i in range(3):
@@ -154,7 +155,7 @@ class Tehai():
 
                         tree.children.append(Tehai.Node(
                             ((i, j), (i, j + 1), (i, j + 2)), 1, shanten - 2, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 2, count + 1, atama).children
+                            Tehai.combi(table_pop, shanten - 2, count + 1, jantou).children
                         ))
 
             # 暗刻
@@ -165,7 +166,7 @@ class Tehai():
 
                     tree.children.append(Tehai.Node(
                         (hai_kind, hai_kind, hai_kind), 2, shanten - 2, count + 1, tree,
-                        Tehai.combi(table_pop, shanten - 2, count + 1, atama).children
+                        Tehai.combi(table_pop, shanten - 2, count + 1, jantou).children
                     ))
 
             # 両面塔子
@@ -178,7 +179,7 @@ class Tehai():
 
                         tree.children.append(Tehai.Node(
                             ((i, j), (i, j + 1)), 3, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, atama).children
+                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
                         ))
 
             # 辺張塔子
@@ -191,7 +192,7 @@ class Tehai():
 
                         tree.children.append(Tehai.Node(
                             ((i, j), (i, j + 1)), 4, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, atama).children
+                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
                         ))
 
             # 嵌張塔子
@@ -204,7 +205,7 @@ class Tehai():
 
                         tree.children.append(Tehai.Node(
                             ((i, j), (i, j + 2)), 5, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, atama).children
+                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
                         ))
 
             # 対子
@@ -215,36 +216,31 @@ class Tehai():
 
                     tree.children.append(Tehai.Node(
                         (hai_kind, hai_kind), 6, shanten - 1, count + 1, tree,
-                        Tehai.combi(table_pop, shanten - 1, count + 1, atama).children
+                        Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
                     ))
 
         return tree
 
     def __init__(self):
         self.list = []
+        self.table = collections.Counter()
         self.menzen = True
 
     # 追加
     def append(self, hai):
         self.list.append(hai)
+        self.table[hai.kind] += 1
 
-    # 結合
+    # まとめて追加
     def extend(self, hais):
         for hai in hais:
             self.append(hai)
 
     # 番号で取り出し
     def pop(self, index=-1):
-        hai_pop = self.list.pop(index)
-        return hai_pop
-
-    # 牌を指定して取り出し
-    def pop_mjhai(self, mjhai):
-        for i, hai in enumerate(self.list):
-            if hai == mjhai:
-                return self.pop(i)
-
-        return None
+        hai = self.list.pop(index)
+        self.table[hai.kind] -= 1
+        return hai
 
     # 並べ替え
     def sort(self):
@@ -260,46 +256,18 @@ class Tehai():
             print(format(j, "<4d"), end="")
         print()
 
-    # 通常手のシャンテン数計算
-    def shanten_normal(self, table):
-        # 孤立牌の除去
-        def delete_alone(table):
-            for i in range(3):
-                for j in range(1, 10):
-                    if table[(i, j)] == 1 and sum(table[(i, j + k)] for k in [-2, -1, 1, 2]) == 0:
-                        table[(i, j)] = 0
-
-            for i in range(3, 10):
-                if table[(i, 0)] == 1:
-                    table[(i, 0)] = 0
-
-        # 字牌の面子・面子候補を探索
-        def elements_jihai(table):
-            combi_jihai = [0, 0]
-
-            for i in range(3, 10):
-                if table[(i, 0)] >= 3:
-                    combi_jihai[0] += 1
-
-                if table[(i, 0)] == 2:
-                    combi_jihai[1] += 1
-
-            return [tuple(combi_jihai), tuple(combi_jihai)]
-
+    # 通常手のシャンテン数
+    def shanten_normal(self):
         # シャンテン数計算テーブル用のキーを作成
         def create_key(table, color):
-            all_zero = True
-
-            # テーブル用のキーを作成
+            # 前後の0は切り取り
+            start = 0
             for i in range(1, 10):
                 if table[(color, i)] != 0:
                     start = i
-                    all_zero = False
                     break
 
-            if all_zero:
-                return (0,)
-
+            end = 0
             for i in range(9, 0, -1):
                 if table[(color, i)] != 0:
                     end = i
@@ -311,110 +279,89 @@ class Tehai():
 
             return tuple(combi_key)
 
-        shanten_num = 8
+        # 雀頭を考慮しないシャンテン数
+        def shanten_without_jantou(table):
+            shanten_min = 8
 
-        opti_table = copy.deepcopy(table)
-        delete_alone(opti_table)
+            # 孤立牌を除去
+            opti_table = copy.deepcopy(table)
+            for i in range(3):
+                for j in range(1, 10):
+                    if opti_table[(i, j)] == 1 and sum(opti_table[(i, j + k)] for k in [-2, -1, 1, 2]) == 0:
+                        opti_table[(i, j)] = 0
 
-        combi_all = itertools.product(
-            combi_table[create_key(opti_table, 0)],
-            combi_table[create_key(opti_table, 1)],
-            combi_table[create_key(opti_table, 2)],
-            elements_jihai(opti_table),
-        )
+            # 字牌の面子・面子候補
+            jihai_combi = [0, 0]
+            for i in range(3, 10):
+                if opti_table[(i, 0)] >= 3:
+                    jihai_combi[0] += 1
 
-        for cur_combi in combi_all:
-            cur_shanten = 8
-            count = 0
+                if opti_table[(i, 0)] == 2:
+                    jihai_combi[1] += 1
 
-            for i in range(2):
-                for j in range(4):
-                    for k in range(cur_combi[j][i]):
-                        cur_shanten -= 2 if i == 0 else 1
-                        count = count + 1
-                        if count >= 4:
-                            break
+            # 全ての面子・面子候補の組み合わせ
+            combi_all = itertools.product([tuple(jihai_combi)], *(combi_table[create_key(opti_table, i)] for i in range(3)))
 
-                    else:
-                        continue
-                    break
-                else:
-                    continue
-                break
+            for cur_combi in combi_all:
+                cur_shanten = 8
+                count = 0
 
-            if cur_shanten < shanten_num:
-                shanten_num = cur_shanten
-
-        for hai_kind in mjhai_all:
-            if opti_table[hai_kind] >= 2:
-                temp_table = copy.deepcopy(opti_table)
-                temp_table[hai_kind] -= 2
-                delete_alone(temp_table)
-
-                combi_all = itertools.product(
-                    combi_table[create_key(temp_table, 0)],
-                    combi_table[create_key(temp_table, 1)],
-                    combi_table[create_key(temp_table, 2)],
-                    elements_jihai(temp_table),
-                )
-
-                for cur_combi in combi_all:
-                    cur_shanten = 7
-                    count = 0
-
-                    for i in range(2):
-                        for j in range(4):
-                            for k in range(cur_combi[j][i]):
-                                cur_shanten -= 2 if i == 0 else 1
-                                count = count + 1
-                                if count >= 4:
-                                    break
-
-                            else:
-                                continue
+                # 面子から取り出し
+                for i in range(2):
+                    for elememt in cur_combi:
+                        # 面子・面子候補は4つまで
+                        if count + elememt[i] >= 4:
+                            cur_shanten -= (2 if i == 0 else 1) * (4 - count)
+                            count = 4
                             break
                         else:
-                            continue
-                        break
+                            cur_shanten -= (2 if i == 0 else 1) * elememt[i]
+                            count = count + elememt[i]
 
-                    if cur_shanten < shanten_num:
-                        shanten_num = cur_shanten
+                shanten_min = min(shanten_min, cur_shanten)
+
+            return shanten_min
+
+        # 雀頭候補を考慮しないシャンテン数
+        shanten_min = shanten_without_jantou(self.table)
+
+        # 全ての雀頭候補を取り出してシャンテン数を計算
+        for hai_kind in mjhai_all:
+            if self.table[hai_kind] >= 2:
+                self.table[hai_kind] -= 2
+                shanten_min = min(shanten_min, shanten_without_jantou(self.table) - 1)
+                self.table[hai_kind] += 2
+
+        return shanten_min
+
+    # 七対子のシャンテン数
+    def shanten_7toitu(self):
+        shanten_num = 6
+
+        for hai_kind in mjhai_all:
+            if self.table[hai_kind] >= 2:
+                shanten_num -= 1
 
         return shanten_num
 
-    # 国士無双のシャンテン数計算
-    def shanten_kokushi(self, table):
+    # 国士無双のシャンテン数
+    def shanten_kokushi(self):
         shanten_num = 13
         toitu = False
 
         for hai_kind in mjhai_yaochu:
-            if table[hai_kind]:
+            if self.table[hai_kind]:
                 shanten_num -= 1
 
-            if table[hai_kind] >= 2 and not toitu:
+            if self.table[hai_kind] >= 2 and not toitu:
                 shanten_num -= 1
                 toitu = True
 
         return shanten_num
 
-    # 七対子のシャンテン数計算
-    def shanten_7toitu(self, table):
-        shanten_num = 6
-
-        for hai_kind in mjhai_all:
-            if table[hai_kind] >= 2:
-                shanten_num -= 1
-
-        return shanten_num
-
-    # シャンテン数計算
+    # シャンテン数
     def shanten(self):
-        kind_list = []
-        for hai in self.list:
-            kind_list.append(hai.kind)
-
-        table = collections.Counter(kind_list)
-        return min(self.shanten_normal(table), self.shanten_7toitu(table), self.shanten_kokushi(table))
+        return min(self.shanten_normal(), self.shanten_7toitu(), self.shanten_kokushi())
 
 # 河
 class Kawa():
@@ -427,6 +374,7 @@ class Kawa():
         hai.setup(tumogiri, richi, furo)
         self.list.append(hai)
 
+# 山
 class Yama():
     def __init__(self, mjhai_set):
         self.list = mjhai_set[:]
@@ -461,18 +409,22 @@ class Player(metaclass=ABCMeta):
     # 打牌
     def dahai(self, index):
         tumogiri = (index == 13 or index == -1)
-        self.kawa.append(self.tehai.pop(index), tumogiri)
+        self.kawa.append(self.tehai.pop(index), tumogiri, self.richi)
         self.tehai.sort()
 
     # 選択
     @abstractmethod
-    def select(self, players, yama):
+    def select(self, players, mjhai_set):
         pass
 
 # 人間
 class Human(Player):
     # 選択
-    def select(self, players=[], yama=[]):
+    def select(self, players, mjhai_set):
+        # リーチをしていたらツモ切り
+        if self.richi:
+            return -1
+
         # 入力
         select_input = input(self.name + "> ")
 
@@ -484,33 +436,3 @@ class Human(Player):
             return -1
 
         return int(select_input)
-
-if __name__ == "__main__":
-    tehai = Tehai()
-    tehai.extend([
-        MjHai(0, 1),
-        MjHai(0, 2),
-        MjHai(0, 2),
-        MjHai(0, 5),
-        MjHai(0, 7),
-        MjHai(1, 3),
-        MjHai(1, 4),
-        MjHai(1, 5),
-        MjHai(3, 0),
-        MjHai(3, 0),
-        MjHai(3, 0),
-        MjHai(4, 0),
-        MjHai(4, 0),
-        MjHai(4, 0),
-    ])
-
-    tehai.show()
-
-    kind_list = []
-    for hai in tehai.list:
-        kind_list.append(hai.kind)
-
-    table = collections.Counter(kind_list)
-    print(table)
-
-    print("{}シャンテン".format(tehai.shanten()))

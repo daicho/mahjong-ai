@@ -1,6 +1,4 @@
-import sys
 import time
-import random
 import tkinter as tk
 from PIL import ImageTk
 import mahjong as mj
@@ -9,58 +7,61 @@ import mahjong as mj
 root = tk.Tk()
 root.title("Mahjong")
 size = 13 * mj.MJHAI_HEIGHT + 5 * mj.MJHAI_WIDTH + 4
-root.geometry(str(size) + "x" + str(size) + "+0+0")
+root.geometry("{}x{}+0+0".format(size, size))
 root.resizable(0, 0)
 
 # 画像表示部
 screen = tk.Label(root)
 screen.grid()
 
+# プレイヤー
+players = [mj.Tenari("Tenari"), mj.Tenari("Tenari"), mj.Tenari("Tenari")]
+
 # 全ての牌をセット
 # 筒子・索子
-mjhai_list = []
+mjhai_set = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_list.extend([mj.MjHai(i, j) for k in range(4)])
+        mjhai_set.extend([mj.MjHai(i, j) for k in range(4)])
 
 # 萬子
-mjhai_list.extend([mj.MjHai(2, 1) for i in range(4)])
-mjhai_list.extend([mj.MjHai(2, 9) for i in range(4)])
+mjhai_set.extend([mj.MjHai(2, 1) for i in range(4)])
+mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
 
 # 字牌
 for i in range(3, 10):
-    mjhai_list.extend([mj.MjHai(i) for j in range(4)])
+    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
-mj.load_image(mjhai_list)
-players = [mj.Human("Human"), mj.Fast("Tenari1"), mj.Fast("Tenari2")]
-view = 0 # 視点
-
-# ゲームスタート
-yama = mj.Yama(mjhai_list)
+# 山積み
+yama = mj.Yama(mjhai_set)
 
 # 配牌
 for player in players:
     player.haipai(yama)
 
+view = 0 # 視点
 cur_player = 0
 
 while len(yama) > 14:
+    # 自摸
     player = players[cur_player]
     player.tumo(yama)
-
-    # 画面描画
-    screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
-    screen.configure(image=screen_img)
-    root.update()
-    #time.sleep(0.5)
 
     if player.tehai.shanten() == -1:
         print("アガリ！")
         break
 
-    # 打牌
+    # 画面描画
+    screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
+    screen.configure(image=screen_img)
+    root.update()
+
+    # コンソール表示
+    print("{} [残り{}]".format(player.name, len(yama)))
     player.tehai.show()
-    select_index = player.select(players, yama)
+
+    # 打牌
+    select_index = player.select(players, mjhai_set)
     player.dahai(select_index)
     print()
 
@@ -68,17 +69,16 @@ while len(yama) > 14:
     screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
-    #time.sleep(0.5)
 
     # 次のプレイヤーへ
     cur_player = (cur_player + 1) % len(players)
 
-print("終了")
-
+# 手牌をオープンして描画
 screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
 screen.configure(image=screen_img)
 root.update()
 
-#root.mainloop()
-while input("> ") != "q":
-    root.update()
+print("終了")
+root.mainloop()
+#while input("> ") != "q":
+#    root.update()
