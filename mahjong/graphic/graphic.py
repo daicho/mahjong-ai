@@ -8,6 +8,7 @@ from .. import core
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
 MJHAI_HEIGHT = 38
+SCREEN_SIZE = 12 * MJHAI_HEIGHT + 7 * MJHAI_WIDTH
 
 # フォントファイル
 THIS_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -96,25 +97,24 @@ def draw_kawa(kawa):
     return create_img
 
 # ゲーム画面の画像を生成
-def draw_screen(players, view, open=False):
-    size = 13 * MJHAI_HEIGHT + 5 * MJHAI_WIDTH
-    create_img = Image.new("RGB", (size, size), "green")
+def draw_screen(players, view, yama, open=False):
+    create_img = Image.new("RGB", (SCREEN_SIZE, SCREEN_SIZE), "green")
 
     for player in players:
-        paste_img = Image.new("RGBA", (size, size))
+        paste_img = Image.new("RGBA", (SCREEN_SIZE, SCREEN_SIZE))
 
         # 手牌
         tehai_img = draw_tehai(player.tehai, False if open else player.chicha != view)
         paste_img.paste(
             tehai_img,
-            (6 * MJHAI_HEIGHT - 4 * MJHAI_WIDTH, 5 * MJHAI_WIDTH + 11 * MJHAI_HEIGHT)
+            (6 * MJHAI_HEIGHT - int(3.5 * MJHAI_WIDTH), 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT)
         )
 
         # 河
         kawa_img = draw_kawa(player.kawa)
         paste_img.paste(
             kawa_img,
-            (6 * MJHAI_HEIGHT, 5 * MJHAI_WIDTH + 7 * MJHAI_HEIGHT)
+            (6 * MJHAI_HEIGHT + int(0.5 * MJHAI_WIDTH), 7 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT)
         )
 
         # プレイヤー名
@@ -123,7 +123,7 @@ def draw_screen(players, view, open=False):
         w, h = name_draw.textsize(player.name)
 
         name_draw.text(
-            ((size - w) / 2, 5 * MJHAI_WIDTH + 7 * MJHAI_HEIGHT - h - 5),
+            ((SCREEN_SIZE - w) / 2, 7 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - h - 5),
             player.name
         )
 
@@ -134,12 +134,24 @@ def draw_screen(players, view, open=False):
             w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
 
             shaten_draw.text(
-                (size - w - 3, size - h - 3),
+                (SCREEN_SIZE - w - 3, SCREEN_SIZE - h - 3),
                 "{}ST".format(player.tehai.shanten())
             )
 
         # 回転&合成
         rotate_img = paste_img.rotate((player.chicha - view) * 90)
         create_img.paste(rotate_img, (0, 0), rotate_img)
+
+    # ドラ
+    for i in range(5):
+        if i == 0:
+            paste_img = mjhai_img[yama.list[0].name]
+        else:
+            paste_img = mjhai_img["back"]
+
+        create_img.paste(
+            paste_img,
+            (6 * MJHAI_HEIGHT + (i + 1) * MJHAI_WIDTH, int((SCREEN_SIZE - MJHAI_HEIGHT) / 2))
+        )
 
     return create_img

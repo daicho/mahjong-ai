@@ -89,18 +89,7 @@ class MjHai():
 
 # 手牌
 class Tehai():
-    """
-    kind:
-      0...雀頭
-      1...順子
-      2...暗刻
-      3...両面塔子
-      4...辺張塔子
-      5...嵌張塔子
-      6...対子
-    """
-
-    # 面子・面子候補探索用のノード
+    # 面子探索用のノード
     class Node():
         def __init__(self, elememt, kind, shanten, count, parent, children):
             self.element = elememt
@@ -327,11 +316,11 @@ class Tehai():
         shanten_min = shanten_without_jantou(self.table)
 
         # 全ての雀頭候補を取り出してシャンテン数を計算
-        for hai_kind in mjhai_all:
-            if self.table[hai_kind] >= 2:
-                self.table[hai_kind] -= 2
+        for key in self.table:
+            if self.table[key] >= 2:
+                self.table[key] -= 2
                 shanten_min = min(shanten_min, shanten_without_jantou(self.table) - 1)
-                self.table[hai_kind] += 2
+                self.table[key] += 2
 
         return shanten_min
 
@@ -339,8 +328,8 @@ class Tehai():
     def shanten_7toitu(self):
         shanten_num = 6
 
-        for hai_kind in mjhai_all:
-            if self.table[hai_kind] >= 2:
+        for key in self.table:
+            if self.table[key] >= 2:
                 shanten_num -= 1
 
         return shanten_num
@@ -363,6 +352,56 @@ class Tehai():
     # シャンテン数
     def shanten(self):
         return min(self.shanten_normal(), self.shanten_7toitu(), self.shanten_kokushi())
+
+    # 和了時の面子の組み合わせを探索
+    def combi_agari(self):
+        combi_list = []
+
+        # 全ての雀頭候補を取り出す
+        for key in self.table:
+            if self.table[key] >= 2:
+                self.table[key] -= 2
+
+                # 0...順子 1...暗刻
+                mentu_combi = itertools.product([0, 1], repeat=4)
+
+                # 左から順番に面子を取り出し
+                for cur_combi in mentu_combi:
+                    append_combi = [[(key, key)], [], []]
+                    temp_table = copy.deepcopy(self.table)
+
+                    for mentu in cur_combi:
+                        # 開始点
+                        for hai_kind in mjhai_all:
+                            if temp_table[hai_kind]:
+                                i, j = hai_kind
+                                break
+
+                        if mentu == 0:
+                            # 順子
+                            if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
+                                append_combi[1].append(tuple((i, j + k) for k in range(3)))
+                                for k in range(3):
+                                    temp_table[(i, j + k)] -= 1
+                            else:
+                                break
+                        else:
+                            # 暗刻
+                            if temp_table[(i, j)] >= 3:
+                                append_combi[2].append(tuple((i, j) for k in range(3)))
+                                temp_table[(i, j)] -= 3
+                            else:
+                                break
+                    else:
+                        combi_list.append(append_combi)
+
+                self.table[key] += 2
+
+        return combi_list
+
+    # 役
+    def yaku(self):
+        pass
 
 # 河
 class Kawa():

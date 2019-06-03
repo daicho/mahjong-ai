@@ -9,8 +9,7 @@ import mahjong.graphic as gp
 # ウィンドウを作成
 root = tk.Tk()
 root.title("Mahjong")
-size = 13 * gp.MJHAI_HEIGHT + 5 * gp.MJHAI_WIDTH + 4
-root.geometry("{}x{}+0+0".format(size, size))
+root.geometry("{0}x{0}+0+0".format(gp.SCREEN_SIZE + 4))
 root.resizable(0, 0)
 
 # 画像表示部
@@ -55,7 +54,7 @@ while len(yama) > 14:
     player.tehai.show()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
     screen.configure(image=screen_img)
     root.update()
 
@@ -63,6 +62,7 @@ while len(yama) > 14:
     if player.agari_tumo():
         print()
         print("{}：ツモ".format(player.name))
+        print(player.tehai.combi_agari())
         break
 
     # 打牌
@@ -71,7 +71,7 @@ while len(yama) > 14:
     print()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
     screen.configure(image=screen_img)
     root.update()
 
@@ -82,6 +82,7 @@ while len(yama) > 14:
         if check_player != player:
             if check_player.agari_ron(player):
                 print("{}→{}：ロン".format(player.name, check_player.name))
+                print(check_player.tehai.combi_agari())
                 end_flag = True
                 break
     
@@ -92,7 +93,7 @@ while len(yama) > 14:
     cur_player = (cur_player + 1) % len(players)
 
 # 手牌をオープンして描画
-screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
+screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
 screen.configure(image=screen_img)
 root.update()
 
