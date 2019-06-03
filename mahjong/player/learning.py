@@ -1,8 +1,8 @@
 import copy
-from .core import *
+from .. import core
 
 # イーソー君
-class Isokun(Player):
+class Isokun(core.Player):
     # 選択
     def select(self, players, mjhai_set):
         # リーチをしていたらツモ切り
@@ -12,7 +12,7 @@ class Isokun(Player):
         return random.randrange(0, 14)
 
 # 手なりAI
-class Tenari(Player):
+class Tenari(core.Player):
     # 選択
     def select(self, players, mjhai_set):
         # リーチをしていたらツモ切り

@@ -51,9 +51,8 @@ for i in range(3, 10):
 
 # シャンテン数計算テーブルを読み込み
 THIS_PATH = os.path.dirname(os.path.abspath(__file__))
-table_file = open(THIS_PATH + "/shanten_table.bin", "rb")
-combi_table = pickle.load(table_file)
-table_file.close()
+with open(THIS_PATH + "/shanten_table.bin", "rb") as table_file:
+    combi_table = pickle.load(table_file)
 
 # 麻雀牌
 class MjHai():
@@ -324,7 +323,7 @@ class Tehai():
 
             return shanten_min
 
-        # 雀頭候補を考慮しないシャンテン数
+        # 雀頭なしのシャンテン数
         shanten_min = shanten_without_jantou(self.table)
 
         # 全ての雀頭候補を取り出してシャンテン数を計算
@@ -438,23 +437,3 @@ class Player(metaclass=ABCMeta):
     @abstractmethod
     def select(self, players, mjhai_set):
         pass
-
-# 人間
-class Human(Player):
-    # 選択
-    def select(self, players, mjhai_set):
-        # リーチをしていたらツモ切り
-        if self.richi:
-            return -1
-
-        # 入力
-        select_input = input(self.name + "> ")
-
-        if select_input == "q":
-            sys.exit()
-
-        # ツモ切り
-        elif select_input == "":
-            return -1
-
-        return int(select_input)

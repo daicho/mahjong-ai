@@ -1,12 +1,15 @@
 import time
 import tkinter as tk
 from PIL import ImageTk
-import mahjong as mj
+
+import mahjong.core as mj
+import mahjong.player as mp
+import mahjong.graphic as gp
 
 # ウィンドウを作成
 root = tk.Tk()
 root.title("Mahjong")
-size = 13 * mj.MJHAI_HEIGHT + 5 * mj.MJHAI_WIDTH + 4
+size = 13 * gp.MJHAI_HEIGHT + 5 * gp.MJHAI_WIDTH + 4
 root.geometry("{}x{}+0+0".format(size, size))
 root.resizable(0, 0)
 
@@ -15,7 +18,7 @@ screen = tk.Label(root)
 screen.grid()
 
 # プレイヤー
-players = [mj.Tenari("Tenari1", 0), mj.Tenari("Tenari2", 1), mj.Tenari("Tenari3", 2)]
+players = [mp.Tenari("Tenari1", 0), mp.Tenari("Tenari2", 1), mp.Tenari("Tenari3", 2)]
 
 # 全ての牌をセット
 # 筒子・索子
@@ -52,7 +55,7 @@ while len(yama) > 14:
     player.tehai.show()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
 
@@ -68,7 +71,7 @@ while len(yama) > 14:
     print()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
     screen.configure(image=screen_img)
     root.update()
 
@@ -89,7 +92,7 @@ while len(yama) > 14:
     cur_player = (cur_player + 1) % len(players)
 
 # 手牌をオープンして描画
-screen_img = ImageTk.PhotoImage(mj.draw_screen(players, view, True))
+screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, True))
 screen.configure(image=screen_img)
 root.update()
 

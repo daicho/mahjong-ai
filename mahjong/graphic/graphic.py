@@ -3,7 +3,7 @@ import copy
 import glob
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
-from .core import *
+from .. import core
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
@@ -128,7 +128,7 @@ def draw_screen(players, view, open=False):
         )
 
         # シャンテン数
-        if i == view or open:
+        if player.chicha == view or open:
             shaten_draw = ImageDraw.Draw(paste_img)
             shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
             w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))

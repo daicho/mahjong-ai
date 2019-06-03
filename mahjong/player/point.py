@@ -1,7 +1,7 @@
-from .core import *
+from .. import core
 
 # 多田AI
-class TadaAi(Player):
+class TadaAi(core.Player):
     # 選択
     def select(self, players, mjhai_set):
         # リーチをしていたらツモ切り
