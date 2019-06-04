@@ -410,6 +410,9 @@ class Tehai():
         if self.shanten() > -1:
             return []
 
+        if self.shanten_kokushi() == -1:
+            return [[31]]
+
         # 和了時の面子の組み合わせを探索
         combi_agari = []
 
@@ -568,6 +571,8 @@ class Tehai():
             for yaku in yakus:
                 print(yaku_list[yaku].name)
             print()
+
+        return yaku_agari
 
 # 河
 class Kawa():
