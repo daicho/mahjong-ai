@@ -1,4 +1,3 @@
-import sys
 import os
 import copy
 import random
@@ -48,6 +47,63 @@ for i in range(3):
 # 字牌
 for i in range(3, 10):
     mjhai_yaochu.append((i, 0))
+
+# 役
+class Yaku():
+    def __init__(self, name, fan):
+        self.name = name
+        self.fan = fan
+
+# 役一覧
+yaku_list = {
+     0: Yaku("ドラ", (1, 1)),
+     1: Yaku("裏ドラ", (1, 0)),
+     2: Yaku("赤ドラ", (1, 1)),
+     3: Yaku("ガリ", (1, 1)),
+     4: Yaku("立直", (1, 0)),
+     5: Yaku("門前清自摸和", (1, 0)),
+     6: Yaku("一発", (1, 0)),
+     7: Yaku("平和", (1, 0)),
+     8: Yaku("一盃口", (1, 0)),
+     9: Yaku("タンヤオ", (1, 1)),
+    10: Yaku("役牌", (1, 1)),
+    11: Yaku("海底摸月", (1, 1)),
+    12: Yaku("河底撈魚", (1, 1)),
+    13: Yaku("嶺上開花", (1, 1)),
+    14: Yaku("槍槓", (1, 1)),
+    15: Yaku("ダブル立直", (1, 0)),
+    16: Yaku("一気通貫", (2, 1)),
+    17: Yaku("チャンタ", (2, 1)),
+    18: Yaku("三色同順", (2, 1)),
+    19: Yaku("三色同刻", (2, 2)),
+    20: Yaku("三暗刻", (2, 2)),
+    21: Yaku("三槓子", (2, 2)),
+    22: Yaku("対々和", (2, 2)),
+    23: Yaku("小三元", (2, 2)),
+    24: Yaku("混老頭", (2, 2)),
+    25: Yaku("七対子", (2, 0)),
+    26: Yaku("二盃口", (3, 0)),
+    27: Yaku("純チャン", (3, 2)),
+    28: Yaku("混一色", (3, 2)),
+    29: Yaku("流し満貫", (5, 0)),
+    30: Yaku("清一色", (6, 5)),
+    31: Yaku("国士無双", (13, 0)),
+    32: Yaku("四暗刻", (13, 0)),
+    33: Yaku("字一色", (13, 13)),
+    34: Yaku("大三元", (13, 13)),
+    35: Yaku("大四喜", (26, 26)),
+    36: Yaku("小四喜", (13, 13)),
+    37: Yaku("緑一色", (13, 13)),
+    38: Yaku("清老頭", (13, 13)),
+    39: Yaku("四槓子", (13, 13)),
+    40: Yaku("九蓮宝燈", (13, 0)),
+    41: Yaku("天和", (13, 0)),
+    42: Yaku("地和", (13, 0)),
+    43: Yaku("人和", (13, 0)),
+    44: Yaku("国士無双十三面待ち", (26, 0)),
+    45: Yaku("四暗刻単騎待ち", (26, 0)),
+    46: Yaku("純正九蓮宝燈", (26, 0)),
+}
 
 # シャンテン数計算テーブルを読み込み
 THIS_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -351,6 +407,9 @@ class Tehai():
 
     # 役
     def yaku(self):
+        if self.shanten() > -1:
+            return []
+
         # 和了時の面子の組み合わせを探索
         combi_agari = []
 
@@ -397,26 +456,114 @@ class Tehai():
         print(combi_agari)
 
         # 役の一覧
-        yaku_list = []
+        yaku_agari = []
+        yaku_common = []
+
+        # タンヤオ
+        for hai_kind in mjhai_yaochu:
+            if self.table[hai_kind] > 0:
+                break
+        else:
+            yaku_common.append(9)
+
+        # 混一色・清一色
+        append_id = 30
+        for i in range(3):
+            for key in self.table:
+                if self.table[key] > 0 and key[0] != i:
+                    if key[0] >= 3:
+                        append_id = 28
+                    else:
+                        break
+            else:
+                yaku_common.append(append_id)
+
+        # 混老頭・清老頭
+        routou = False
+        append_id = 38
+        for key in self.table:
+            if self.table[key] > 0:
+                if 2 <= key[1] <= 8:
+                    break
+                elif key[0] >= 3:
+                    append_id = 24
+        else:
+            routou = True
+            yaku_common.append(append_id)
 
         for cur_combi in combi_agari:
-            append_list = []
+            yaku_append = yaku_common[:]
 
             # 平和
             if len(cur_combi[1]) == 4:
-                append_list.append(1)
+                yaku_append.append(7)
+
+            # 一盃口
+            if len(cur_combi[1]) != len(set(cur_combi[1])):
+                yaku_append.append(8)
+
+            # 一気通貫
+            for i in range(3):
+                for j in range(3):
+                    if not ((i, j * 3 + 1), (i, j * 3 + 2), (i, j * 3 + 3)) in cur_combi[1]:
+                        break
+                else:
+                    yaku_append.append(16)
+
+            # 三色同順
+            for i in range(1, 10):
+                for j in range(3):
+                    if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
+                        break
+                else:
+                    yaku_append.append(18)
+
+            # 三色同刻
+            for i in range(1, 10):
+                for j in range(3):
+                    if not ((j, i), (j, i), (j, i)) in cur_combi[2]:
+                        break
+                else:
+                    yaku_append.append(19)
+
+            # 役牌
+            for anko in cur_combi[2]:
+                if anko[0][0] >= 3:
+                    yaku_append.append(10)
+
+            # チャンタ・純チャン
+            if not routou:
+                append_id = 27
+                for elements in cur_combi:
+                    for element in elements:
+                        for hai_kind in element:
+                            if hai_kind[1] == 1 or hai_kind[1] == 9:
+                                break
+                            elif hai_kind[0] >= 3:
+                                append_id = 17
+                                break
+                        else:
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    yaku_append.append(append_id)
 
             # 三暗刻
             if len(cur_combi[2]) == 3:
-                append_list.append(2)
+                yaku_append.append(20)
 
             # 四暗刻
             if len(cur_combi[2]) == 4:
-                append_list.append(3)
+                yaku_append.append(32)
 
-            yaku_list.append(append_list)
+            yaku_agari.append(yaku_append)
 
-        print(yaku_list)
+        for yakus in yaku_agari:
+            for yaku in yakus:
+                print(yaku_list[yaku].name)
+            print()
 
 # 河
 class Kawa():
@@ -432,7 +579,7 @@ class Kawa():
 class Yama():
     def __init__(self, mjhai_set):
         self.list = mjhai_set[:]
-        #random.shuffle(self.list)
+        random.shuffle(self.list)
     
     # 取り出し
     def pop(self):

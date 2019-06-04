@@ -18,6 +18,7 @@ screen.grid()
 
 # プレイヤー
 players = [mp.Tenari("Tenari1", 0), mp.Tenari("Tenari2", 1), mp.Tenari("Tenari3", 2)]
+#players = [mp.Human("Human", 0), mp.Tenari("Tenari1", 1), mp.Tenari("Tenari2", 2)]
 
 # 全ての牌をセット
 # 筒子・索子
@@ -31,8 +32,8 @@ mjhai_set.extend([mj.MjHai(2, 1) for i in range(4)])
 mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
 
 # 字牌
-#for i in range(3, 10):
-#    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
+for i in range(3, 10):
+    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
 # 山積み
 yama = mj.Yama(mjhai_set)
@@ -42,9 +43,12 @@ for player in players:
     player.haipai(yama)
 
 view = 0 # 視点
+open_tehai = True
 cur_player = 0
 
 while len(yama) > 14:
+    #view = cur_player
+
     # 自摸
     player = players[cur_player]
     player.tumo(yama)
@@ -54,7 +58,7 @@ while len(yama) > 14:
     player.tehai.show()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, open_tehai))
     screen.configure(image=screen_img)
     root.update()
 
@@ -62,7 +66,7 @@ while len(yama) > 14:
     if player.agari_tumo():
         print()
         print("{}：ツモ".format(player.name))
-        check_player.tehai.yaku()
+        player.tehai.yaku()
         break
 
     # 打牌
@@ -71,7 +75,7 @@ while len(yama) > 14:
     print()
 
     # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, open_tehai))
     screen.configure(image=screen_img)
     root.update()
 
@@ -84,7 +88,6 @@ while len(yama) > 14:
                 print("{}→{}：ロン".format(player.name, check_player.name))
                 check_player.tehai.yaku()
                 end_flag = True
-                break
     
     if end_flag:
         break
@@ -93,7 +96,7 @@ while len(yama) > 14:
     cur_player = (cur_player + 1) % len(players)
 
 # 手牌をオープンして描画
-screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True))
+screen_img = ImageTk.PhotoImage(gp.draw_screen(players, view, yama, True, True))
 screen.configure(image=screen_img)
 root.update()
 

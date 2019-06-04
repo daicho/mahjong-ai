@@ -97,14 +97,14 @@ def draw_kawa(kawa):
     return create_img
 
 # ゲーム画面の画像を生成
-def draw_screen(players, view, yama, open=False):
+def draw_screen(players, view, yama, open_tehai=False, uradora=False):
     create_img = Image.new("RGB", (SCREEN_SIZE, SCREEN_SIZE), "green")
 
     for player in players:
         paste_img = Image.new("RGBA", (SCREEN_SIZE, SCREEN_SIZE))
 
         # 手牌
-        tehai_img = draw_tehai(player.tehai, False if open else player.chicha != view)
+        tehai_img = draw_tehai(player.tehai, False if open_tehai else player.chicha != view)
         paste_img.paste(
             tehai_img,
             (6 * MJHAI_HEIGHT - int(3.5 * MJHAI_WIDTH), 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT)
@@ -128,7 +128,7 @@ def draw_screen(players, view, yama, open=False):
         )
 
         # シャンテン数
-        if player.chicha == view or open:
+        if player.chicha == view or open_tehai:
             shaten_draw = ImageDraw.Draw(paste_img)
             shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
             w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
@@ -143,15 +143,16 @@ def draw_screen(players, view, yama, open=False):
         create_img.paste(rotate_img, (0, 0), rotate_img)
 
     # ドラ
-    for i in range(5):
-        if i == 0:
-            paste_img = mjhai_img[yama.list[0].name]
-        else:
-            paste_img = mjhai_img["back"]
+    for i in range(2):
+        for j in range(5):
+            if (uradora or i == 0) and j == 0:
+                paste_img = mjhai_img[yama.list[i + j * 2].name]
+            else:
+                paste_img = mjhai_img["back"]
 
-        create_img.paste(
-            paste_img,
-            (6 * MJHAI_HEIGHT + (i + 1) * MJHAI_WIDTH, int((SCREEN_SIZE - MJHAI_HEIGHT) / 2))
-        )
+            create_img.paste(
+                paste_img,
+                (6 * MJHAI_HEIGHT + (j + 1) * MJHAI_WIDTH, int((SCREEN_SIZE) / 2 + (i - 1) * MJHAI_HEIGHT))
+            )
 
     return create_img

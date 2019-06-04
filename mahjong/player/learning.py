@@ -59,6 +59,7 @@ class Tenari(core.Player):
 
         # 待ち牌が2枚以上残っていたらリーチ
         if self.tehai.shanten() <= 0 and effect_max >= 2:
+            print("リーチ")
             self.richi = True
 
         return select_index
