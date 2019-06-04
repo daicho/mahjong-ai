@@ -1,9 +1,9 @@
-import os
-import copy
-import random
-import pickle
-import itertools
 import collections
+import copy
+import itertools
+import os
+import pickle
+import random
 from abc import ABCMeta, abstractmethod
 
 """
@@ -503,16 +503,16 @@ class Tehai():
             if len(cur_combi[1]) == 4:
                 yaku_append.append(7)
 
-            # 一盃口
+            # 一盃口・二盃口
             append_id = 0
             for i in range(3):
-                for j in range(1, 7):
+                for j in range(1, 8):
                     if cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 4:
                         append_id = 26
 
                     elif cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 2:
                         if (append_id == 0):
-                            append_id  = 8
+                            append_id = 8
                         else:
                             append_id = 26
             
@@ -528,7 +528,7 @@ class Tehai():
                     yaku_append.append(16)
 
             # 三色同順
-            for i in range(1, 7):
+            for i in range(1, 8):
                 for j in range(3):
                     if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
                         break
