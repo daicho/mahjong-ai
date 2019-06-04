@@ -491,6 +491,10 @@ class Tehai():
             routou = True
             yaku_common.append(append_id)
 
+        # 七対子
+        if self.shanten_7toitu() == -1:
+            yaku_agari.append(yaku_common + [25])
+
         for cur_combi in combi_agari:
             yaku_append = yaku_common[:]
 
