@@ -31,8 +31,8 @@ mjhai_set.extend([mj.MjHai(2, 1) for i in range(4)])
 mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
 
 # 字牌
-for i in range(3, 10):
-    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
+#for i in range(3, 10):
+#    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
 
 # 山積み
 yama = mj.Yama(mjhai_set)
@@ -62,7 +62,7 @@ while len(yama) > 14:
     if player.agari_tumo():
         print()
         print("{}：ツモ".format(player.name))
-        print(player.tehai.combi_agari())
+        check_player.tehai.yaku()
         break
 
     # 打牌
@@ -82,7 +82,7 @@ while len(yama) > 14:
         if check_player != player:
             if check_player.agari_ron(player):
                 print("{}→{}：ロン".format(player.name, check_player.name))
-                print(check_player.tehai.combi_agari())
+                check_player.tehai.yaku()
                 end_flag = True
                 break
     

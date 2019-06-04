@@ -217,14 +217,10 @@ class Tehai():
         return len(self.list)
 
     # 追加
-    def append(self, hai):
-        self.list.append(hai)
-        self.table[(hai.color, hai.number)] += 1
-
-    # まとめて追加
-    def extend(self, hais):
+    def append(self, *hais):
         for hai in hais:
-            self.append(hai)
+            self.list.append(hai)
+            self.table[(hai.color, hai.number)] += 1
 
     # 番号で取り出し
     def pop(self, index=-1):
@@ -353,9 +349,10 @@ class Tehai():
     def shanten(self):
         return min(self.shanten_normal(), self.shanten_7toitu(), self.shanten_kokushi())
 
-    # 和了時の面子の組み合わせを探索
-    def combi_agari(self):
-        combi_list = []
+    # 役
+    def yaku(self):
+        # 和了時の面子の組み合わせを探索
+        combi_agari = []
 
         # 全ての雀頭候補を取り出す
         for key in self.table:
@@ -393,15 +390,33 @@ class Tehai():
                             else:
                                 break
                     else:
-                        combi_list.append(append_combi)
+                        combi_agari.append(append_combi)
 
                 self.table[key] += 2
 
-        return combi_list
+        print(combi_agari)
 
-    # 役
-    def yaku(self):
-        pass
+        # 役の一覧
+        yaku_list = []
+
+        for cur_combi in combi_agari:
+            append_list = []
+
+            # 平和
+            if len(cur_combi[1]) == 4:
+                append_list.append(1)
+
+            # 三暗刻
+            if len(cur_combi[2]) == 3:
+                append_list.append(2)
+
+            # 四暗刻
+            if len(cur_combi[2]) == 4:
+                append_list.append(3)
+
+            yaku_list.append(append_list)
+
+        print(yaku_list)
 
 # 河
 class Kawa():
@@ -417,7 +432,7 @@ class Kawa():
 class Yama():
     def __init__(self, mjhai_set):
         self.list = mjhai_set[:]
-        random.shuffle(self.list)
+        #random.shuffle(self.list)
     
     # 取り出し
     def pop(self):
