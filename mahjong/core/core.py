@@ -456,8 +456,6 @@ class Tehai():
 
                 self.table[key] += 2
 
-        print(combi_agari)
-
         # 役の一覧
         yaku_agari = []
         yaku_common = []
@@ -506,8 +504,20 @@ class Tehai():
                 yaku_append.append(7)
 
             # 一盃口
-            if len(cur_combi[1]) != len(set(cur_combi[1])):
-                yaku_append.append(8)
+            append_id = 0
+            for i in range(3):
+                for j in range(1, 7):
+                    if cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 4:
+                        append_id = 26
+
+                    elif cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 2:
+                        if (append_id == 0):
+                            append_id  = 8
+                        else:
+                            append_id = 26
+            
+            if append_id:
+                yaku_append.append(append_id)
 
             # 一気通貫
             for i in range(3):
@@ -518,7 +528,7 @@ class Tehai():
                     yaku_append.append(16)
 
             # 三色同順
-            for i in range(1, 10):
+            for i in range(1, 7):
                 for j in range(3):
                     if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
                         break
@@ -566,11 +576,6 @@ class Tehai():
                 yaku_append.append(32)
 
             yaku_agari.append(yaku_append)
-
-        for yakus in yaku_agari:
-            for yaku in yakus:
-                print(yaku_list[yaku].name)
-            print()
 
         return yaku_agari
 

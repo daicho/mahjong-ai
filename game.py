@@ -19,6 +19,7 @@ screen.grid()
 # プレイヤー
 players = [mp.Tenari("Tenari1", 0), mp.Tenari("Tenari2", 1), mp.Tenari("Tenari3", 2)]
 #players = [mp.Human("Human", 0), mp.Tenari("Tenari1", 1), mp.Tenari("Tenari2", 2)]
+#players = [mp.Human("Human1", 0), mp.Human("Human2", 1), mp.Human("Human3", 2)]
 
 # 全ての牌をセット
 # 筒子・索子
@@ -66,7 +67,13 @@ while len(yama) > 14:
     if player.agari_tumo():
         print()
         print("{}：ツモ".format(player.name))
-        player.tehai.yaku()
+
+        yaku_agari = player.tehai.yaku()
+        for yakus in yaku_agari:
+            for yaku in yakus:
+                print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
+            print()
+
         break
 
     # 打牌
@@ -85,9 +92,14 @@ while len(yama) > 14:
         # 自身は判定しない
         if check_player != player:
             if check_player.agari_ron(player):
-                print("{}→{}：ロン".format(player.name, check_player.name))
-                check_player.tehai.yaku()
                 end_flag = True
+                print("{}→{}：ロン".format(player.name, check_player.name))
+
+                yaku_agari = check_player.tehai.yaku()
+                for yakus in yaku_agari:
+                    for yaku in yakus:
+                        print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
+                    print()
     
     if end_flag:
         break

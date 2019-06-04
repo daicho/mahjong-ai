@@ -3,20 +3,24 @@ import mahjong.core as mj
 tehai = mj.Tehai()
 
 tehai.append(
-    mj.MjHai(0, 1),
-    mj.MjHai(0, 9),
-    mj.MjHai(1, 1),
-    mj.MjHai(1, 9),
-    mj.MjHai(2, 1),
-    mj.MjHai(2, 9),
-    mj.MjHai(3, 0),
-    mj.MjHai(4, 0),
-    mj.MjHai(5, 0),
-    mj.MjHai(6, 0),
-    mj.MjHai(7, 0),
-    mj.MjHai(8, 0),
-    mj.MjHai(9, 0),
-    mj.MjHai(9, 0),
+    mj.MjHai(0, 2),
+    mj.MjHai(0, 2),
+    mj.MjHai(0, 3),
+    mj.MjHai(0, 3),
+    mj.MjHai(0, 4),
+    mj.MjHai(0, 4),
+    mj.MjHai(0, 5),
+    mj.MjHai(0, 5),
+    mj.MjHai(0, 6),
+    mj.MjHai(0, 6),
+    mj.MjHai(0, 7),
+    mj.MjHai(0, 7),
+    mj.MjHai(0, 8),
+    mj.MjHai(0, 8),
 )
 
-tehai.yaku()
+yaku_agari = tehai.yaku()
+for yakus in yaku_agari:
+    for yaku in yakus:
+        print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
+    print()
