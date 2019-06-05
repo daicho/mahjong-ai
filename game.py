@@ -33,7 +33,11 @@ for i in range(3, 10):
 
 # プレイヤー
 players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
+#players = [mp.Human("Tenari1"), mp.Human("Tenari2"), mp.Human("Tenari3")]
+
 game = mj.Game(mjhai_set, players)
+print(game.kyoku_name())
+print()
 
 # 配牌
 for player in game.players:
@@ -43,7 +47,7 @@ view = 0 # 視点
 open_tehai = True
 
 while len(game.yama) > 0:
-    #view = game.cur_player
+    #view = game.cur_player.chicha
 
     # 自摸
     game.cur_player.tumo()

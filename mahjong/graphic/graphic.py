@@ -120,11 +120,11 @@ def draw_screen(game, view, open_tehai=False, uradora=False):
         # プレイヤー名
         name_draw = ImageDraw.Draw(paste_img)
         name_draw.font = ImageFont.truetype(FONT_FILE, 16)
-        w, h = name_draw.textsize(player.name)
+        w, h = name_draw.textsize("{} [{}]".format(player.name, player.point))
 
         name_draw.text(
-            ((SCREEN_SIZE - w) / 2, 7 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - h - 5),
-            player.name
+            ((SCREEN_SIZE - w) / 2, 6.5 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - h / 2),
+            "{} [{}]".format(player.name, player.point)
         )
 
         # シャンテン数
@@ -142,6 +142,16 @@ def draw_screen(game, view, open_tehai=False, uradora=False):
         rotate_img = paste_img.rotate((player.chicha - view) * 90)
         create_img.paste(rotate_img, (0, 0), rotate_img)
 
+    # 局
+    kyoku_draw = ImageDraw.Draw(create_img)
+    kyoku_draw.font = ImageFont.truetype(FONT_FILE, 24)
+    w, h = kyoku_draw.textsize(game.kyoku_name())
+
+    kyoku_draw.text(
+        ((SCREEN_SIZE - w) / 2, 6 * MJHAI_HEIGHT + MJHAI_WIDTH),
+        game.kyoku_name()
+    )
+
     # ドラ
     for i in range(2):
         for j in range(5):
@@ -152,7 +162,7 @@ def draw_screen(game, view, open_tehai=False, uradora=False):
 
             create_img.paste(
                 paste_img,
-                (6 * MJHAI_HEIGHT + (j + 1) * MJHAI_WIDTH, int((SCREEN_SIZE) / 2 + (i - 1) * MJHAI_HEIGHT))
+                (6 * MJHAI_HEIGHT + (j + 1) * MJHAI_WIDTH, 6 * MJHAI_WIDTH + (i + 4) * MJHAI_HEIGHT)
             )
 
     return create_img

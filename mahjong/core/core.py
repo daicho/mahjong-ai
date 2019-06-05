@@ -665,6 +665,8 @@ class Player(metaclass=ABCMeta):
         self.name = name
         self.tehai = Tehai()
         self.kawa = Kawa()
+
+        self.point = 35000
         self.richi = False
 
     def setup(self, chicha, game):
@@ -701,10 +703,11 @@ class Player(metaclass=ABCMeta):
 
     # ロン・明槓・ポン・チーチェック
     def check_other(self, player):
-        self.tehai.append(player.kawa.list[-1])
+        check_hai = player.kawa.list[-1]
+        self.tehai.append(check_hai)
 
         if self.tehai.shanten() == -1:
-            player.kawa.list[-1].furo = True
+            check_hai.furo = True
             return self.agari_ron
         else:
             self.tehai.pop()
@@ -773,7 +776,7 @@ class Game():
         self.yama = Yama(mjhai_set)
     
     def kyoku_name(self):
-        return "{}{}局".format(bakaze_name[self.bakaze], self.kyoku + 1)
+        return "{}{}局".format(Game.bakaze_name[self.bakaze], self.kyoku + 1)
 
     def next_player(self):
         self.cur = (self.cur + 1) % self.players_num
