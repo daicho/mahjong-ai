@@ -4,34 +4,26 @@ from .. import core
 # イーソー君
 class Isokun(core.Player):
     # 選択
-    def select(self, players, mjhai_set):
-        # リーチをしていたらツモ切り
-        if self.richi:
-            return -1
-
-        return random.randrange(0, 14)
+    def select(self):
+        return 13
 
 # 手なりAI
 class Tenari(core.Player):
     # 選択
-    def select(self, players, mjhai_set):
-        # リーチをしていたらツモ切り
-        if self.richi:
-            return -1
-
+    def select(self):
         select_index = -1
         effect_max = 0
         cur_shanten = self.tehai.shanten()
 
         # 残っている牌
-        remain_hai = mjhai_set[:]
+        remain_hai = self.game.mjhai_set[:]
 
         # 自身の手牌
         for hai in self.tehai.list:
             remain_hai.remove(hai)
 
         # 河
-        for player in players:
+        for player in self.game.players:
             for hai in player.kawa.list:
                 remain_hai.remove(hai)
 
@@ -63,3 +55,9 @@ class Tenari(core.Player):
             self.richi = True
 
         return select_index
+
+    def agari_tumo(self):
+        return True
+
+    def agari_ron(self, player):
+        return True

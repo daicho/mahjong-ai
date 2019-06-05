@@ -4,11 +4,7 @@ from .. import core
 # 人間
 class Human(core.Player):
     # 選択
-    def select(self, players, mjhai_set):
-        # リーチをしていたらツモ切り
-        if self.richi:
-            return -1
-
+    def select(self):
         # 入力
         while True:
             select_input = input(self.name + "> ")

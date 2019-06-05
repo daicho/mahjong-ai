@@ -648,7 +648,7 @@ class Kawa():
 # 山
 class Yama():
     def __init__(self, mjhai_set):
-        self.list = mjhai_set[:]
+        self.list = copy.deepcopy(mjhai_set)
         random.shuffle(self.list)
     
     # 取り出し
@@ -657,54 +657,124 @@ class Yama():
 
     # 残り個数
     def __len__(self):
-        return len(self.list)
+        return len(self.list) - 14
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
-    def __init__(self, name, chicha):
+    def __init__(self, name):
         self.name = name
-        self.chicha = chicha
         self.tehai = Tehai()
         self.kawa = Kawa()
         self.richi = False
 
+    def setup(self, chicha, game):
+        self.chicha = chicha
+        self.game = game
+
     # 配牌
-    def haipai(self, yama):
+    def haipai(self):
         for i in range(13):
-            self.tumo(yama)
+            self.tumo()
         self.tehai.sort()
 
     # 自摸
-    def tumo(self, yama):
-        pop_hai = yama.pop()
+    def tumo(self):
+        pop_hai = self.game.yama.pop()
         pop_hai.whose = self
         self.tehai.append(pop_hai)
 
     # 打牌
-    def dahai(self, index):
-        tumogiri = (index == 13 - len(self.tehai.furo) or index == -1)
+    def dahai(self):
+        # リーチをしていたらツモ切り
+        index = -1 if self.richi else self.select()
+
+        tumogiri = (index == 13 - len(self.tehai.furo) * 3 or index == -1)
         self.kawa.append(self.tehai.pop(index), tumogiri, self.richi)
         self.tehai.sort()
 
-    # ツモ和了
-    def agari_tumo(self):
+    # ツモ・暗槓・加槓チェック
+    def check_self(self):
         if self.tehai.shanten() == -1:
-            return True
+            return self.agari_tumo
         else:
             return False
 
-    # ロン和了
-    def agari_ron(self, player):
+    # ロン・明槓・ポン・チーチェック
+    def check_other(self, player):
         self.tehai.append(player.kawa.list[-1])
 
         if self.tehai.shanten() == -1:
             player.kawa.list[-1].furo = True
-            return True
+            return self.agari_ron
         else:
             self.tehai.pop()
             return False
 
     # 選択
     @abstractmethod
-    def select(self, players, mjhai_set):
+    def select(self):
         pass
+
+    # ツモ和了
+    @abstractmethod
+    def agari_tumo(self):
+        pass
+
+    # ロン和了
+    @abstractmethod
+    def agari_ron(self, player):
+        pass
+
+    """
+    # 暗槓
+    @abstractmethod
+    def ankan(self):
+        pass
+
+    # 明槓
+    @abstractmethod
+    def minkan(self, player):
+        pass
+
+    # 加槓
+    @abstractmethod
+    def kakan(self):
+        pass
+
+    # ポン
+    @abstractmethod
+    def pon(self, player):
+        pass
+
+    # チー
+    @abstractmethod
+    def chi(self, player):
+        pass
+    """
+
+# ゲーム
+class Game():
+    bakaze_name = ["東", "南", "西", "北"]
+
+    def __init__(self, mjhai_set, players):
+        self.mjhai_set = mjhai_set
+        self.players_num = len(players)
+        self.players = random.sample(players, self.players_num)
+
+        for i, player in enumerate(self.players):
+            player.setup(i, self)
+
+        self.bakaze = 0
+        self.kyoku = 0
+
+        self.cur = self.kyoku
+        self.cur_player = self.players[self.cur]
+
+        self.yama = Yama(mjhai_set)
+    
+    def kyoku_name(self):
+        return "{}{}局".format(bakaze_name[self.bakaze], self.kyoku + 1)
+
+    def next_player(self):
+        self.cur = (self.cur + 1) % self.players_num
+        self.cur_player = self.players[self.cur]

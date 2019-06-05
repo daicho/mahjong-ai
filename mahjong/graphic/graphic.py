@@ -29,7 +29,7 @@ def draw_tehai(tehai, back=False):
     x = 0
     for i, hai in enumerate(tehai.list):
         # ツモった牌は離す
-        if i == 13 - len(tehai.furo):
+        if i == 13 - len(tehai.furo) * 3:
             x += int(MJHAI_WIDTH / 4)
 
         # 番号
@@ -97,10 +97,10 @@ def draw_kawa(kawa):
     return create_img
 
 # ゲーム画面の画像を生成
-def draw_screen(players, view, yama, open_tehai=False, uradora=False):
+def draw_screen(game, view, open_tehai=False, uradora=False):
     create_img = Image.new("RGB", (SCREEN_SIZE, SCREEN_SIZE), "green")
 
-    for player in players:
+    for player in game.players:
         paste_img = Image.new("RGBA", (SCREEN_SIZE, SCREEN_SIZE))
 
         # 手牌
@@ -146,7 +146,7 @@ def draw_screen(players, view, yama, open_tehai=False, uradora=False):
     for i in range(2):
         for j in range(5):
             if (uradora or i == 0) and j == 0:
-                paste_img = mjhai_img[yama.list[i + j * 2].name]
+                paste_img = mjhai_img[game.yama.list[i + j * 2].name]
             else:
                 paste_img = mjhai_img["back"]
 

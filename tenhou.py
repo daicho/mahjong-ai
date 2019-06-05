@@ -8,15 +8,15 @@ import mahjong as mj
 mjhai_set = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_set.extend([mj.MjHai(i, j) for k in range(4)])
+        mjhai_set.extend(mj.MjHai(i, j) for k in range(4))
 
 # 萬子
-mjhai_set.extend([mj.MjHai(2, 1) for i in range(4)])
-mjhai_set.extend([mj.MjHai(2, 9) for i in range(4)])
+mjhai_set.extend(mj.MjHai(2, 1) for i in range(4))
+mjhai_set.extend(mj.MjHai(2, 9) for i in range(4))
 
 # 字牌
 for i in range(3, 10):
-    mjhai_set.extend([mj.MjHai(i) for j in range(4)])
+    mjhai_set.extend(mj.MjHai(i) for j in range(4))
 
 # 試行回数
 number = 10000
@@ -27,7 +27,7 @@ start_time = time.time() # 開始時間
 for i in range(number):
     # 配牌
     tehai = mj.Tehai()
-    tehai.extend(random.sample(mjhai_set, 14))
+    tehai.append(*random.sample(mjhai_set, 14))
 
     # シャンテン数計算
     shanten = tehai.shanten()
