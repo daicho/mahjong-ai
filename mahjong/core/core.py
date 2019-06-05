@@ -431,15 +431,18 @@ class Tehai():
 
                     for mentu in cur_combi:
                         # 開始点
-                        for hai_kind in mjhai_all:
-                            if temp_table[hai_kind]:
-                                i, j = hai_kind
-                                break
+                        for i in range(10):
+                            for j in range(10):
+                                if temp_table[(i, j)]:
+                                    break
+                            else:
+                                continue
+                            break
 
                         if mentu == 0:
                             # 順子
                             if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
-                                append_combi[1].append(tuple((i, j + k) for k in range(3)))
+                                append_combi[1].append(((i, j), (i, j + 1), (i, j + 2)))
                                 for k in range(3):
                                     temp_table[(i, j + k)] -= 1
                             else:
@@ -447,7 +450,7 @@ class Tehai():
                         else:
                             # 暗刻
                             if temp_table[(i, j)] >= 3:
-                                append_combi[2].append(tuple((i, j) for k in range(3)))
+                                append_combi[2].append(((i, j), (i, j), (i, j)))
                                 temp_table[(i, j)] -= 3
                             else:
                                 break
@@ -456,124 +459,177 @@ class Tehai():
 
                 self.table[key] += 2
 
-        # 役の一覧
+        # 全ての組み合わせでの役
         yaku_agari = []
         yaku_common = []
+        yakuman = False
 
-        # タンヤオ
-        for hai_kind in mjhai_yaochu:
-            if self.table[hai_kind] > 0:
+        # 役満から先に調べる
+        # 字一色
+        for key in self.table:
+            if self.table[key] > 0 and key[0] < 3:
                 break
         else:
-            yaku_common.append(9)
+            yaku_common.append(33)
 
-        # 混一色・清一色
-        append_id = 30
-        for i in range(3):
-            for key in self.table:
-                if self.table[key] > 0 and key[0] != i:
-                    if key[0] >= 3:
-                        append_id = 28
-                    else:
-                        break
-            else:
-                yaku_common.append(append_id)
-
-        # 混老頭・清老頭
-        routou = False
-        append_id = 38
+        # 緑一色
         for key in self.table:
-            if self.table[key] > 0:
-                if 2 <= key[1] <= 8:
-                    break
-                elif key[0] >= 3:
-                    append_id = 24
+            if self.table[key] > 0 and not key in [(1, 2), (1, 3), (1, 4), (1, 6), (1, 8), (8, 0)]:
+                break
         else:
-            routou = True
-            yaku_common.append(append_id)
+            yaku_common.append(37)
 
-        # 七対子
-        if self.shanten_7toitu() == -1:
-            yaku_agari.append(yaku_common + [25])
+        # 九蓮宝燈
+        for i in range(3):
+            for j in range(1, 10):
+                if self.table[(i, j)] < (3 if j == 1 or j == 9 else 1):
+                    break
+            else:
+                yaku_common.append(40)
 
-        for cur_combi in combi_agari:
-            yaku_append = yaku_common[:]
+        if len(yaku_common):
+            yakuman = True
+        else:
+            # タンヤオ
+            for key in self.table:
+                if self.table[key] > 0 and not 2 <= key[1] <= 8:
+                    break
+            else:
+                yaku_common.append(9)
 
-            # 平和
-            if len(cur_combi[1]) == 4:
-                yaku_append.append(7)
-
-            # 一盃口・二盃口
-            append_id = 0
+            # 混一色・清一色
+            append_id = 30
             for i in range(3):
-                for j in range(1, 8):
-                    if cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 4:
-                        append_id = 26
-
-                    elif cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 2:
-                        if (append_id == 0):
-                            append_id = 8
-                        else:
-                            append_id = 26
-            
-            if append_id:
-                yaku_append.append(append_id)
-
-            # 一気通貫
-            for i in range(3):
-                for j in range(3):
-                    if not ((i, j * 3 + 1), (i, j * 3 + 2), (i, j * 3 + 3)) in cur_combi[1]:
-                        break
-                else:
-                    yaku_append.append(16)
-
-            # 三色同順
-            for i in range(1, 8):
-                for j in range(3):
-                    if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
-                        break
-                else:
-                    yaku_append.append(18)
-
-            # 三色同刻
-            for i in range(1, 10):
-                for j in range(3):
-                    if not ((j, i), (j, i), (j, i)) in cur_combi[2]:
-                        break
-                else:
-                    yaku_append.append(19)
-
-            # 役牌
-            for anko in cur_combi[2]:
-                if anko[0][0] >= 3:
-                    yaku_append.append(10)
-
-            # チャンタ・純チャン
-            if not routou:
-                append_id = 27
-                for elements in cur_combi:
-                    for element in elements:
-                        for hai_kind in element:
-                            if hai_kind[1] == 1 or hai_kind[1] == 9:
-                                break
-                            elif hai_kind[0] >= 3:
-                                append_id = 17
-                                break
+                for key in self.table:
+                    if self.table[key] > 0 and key[0] != i:
+                        if key[0] >= 3:
+                            append_id = 28
                         else:
                             break
-                    else:
-                        continue
-                    break
                 else:
-                    yaku_append.append(append_id)
+                    yaku_common.append(append_id)
 
-            # 三暗刻
-            if len(cur_combi[2]) == 3:
-                yaku_append.append(20)
+            # 混老頭・清老頭
+            routou = False
+            append_id = 38
+            for key in self.table:
+                if self.table[key] > 0:
+                    if key[0] >= 3:
+                        append_id = 24
+                    if 2 <= key[1] <= 8:
+                        break
+            else:
+                routou = True
+                yaku_common.append(append_id)
+
+            # 七対子
+            if self.shanten_7toitu() == -1:
+                yaku_agari.append(yaku_common + [25])
+
+        for cur_combi in combi_agari:
+            yaku_append = yaku_common[:] if yakuman else []
 
             # 四暗刻
             if len(cur_combi[2]) == 4:
                 yaku_append.append(32)
+
+            # 大四喜
+            for i in range(3, 7):
+                if not ((i, 0), (i, 0), (i, 0)) in cur_combi[2]:
+                    break
+            else:
+                yaku_append.append(35)
+            
+            # 小四喜
+            for i in range(3, 7):
+                if cur_combi[0][0] == ((i, 0), (i, 0)):
+                    for j in range(3, 7):
+                        if j != i and not ((j, 0), (j, 0), (j, 0)) in cur_combi[2]:
+                            break
+                    else:
+                        yaku_append.append(36)
+                    
+            # 大三元
+            for i in range(7, 10):
+                if not ((i, 0), (i, 0), (i, 0)) in cur_combi[2]:
+                    break
+            else:
+                yaku_append.append(34)
+
+            if len(yaku_append) == 0:
+                yaku_append = yaku_common[:]
+
+                # 平和
+                if len(cur_combi[1]) == 4:
+                    yaku_append.append(7)
+
+                # 一盃口・二盃口
+                append_id = 0
+                for i in range(3):
+                    for j in range(1, 8):
+                        if cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 4:
+                            append_id = 26
+
+                        elif cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 2:
+                            if (append_id == 0):
+                                append_id = 8
+                            else:
+                                append_id = 26
+                
+                if append_id:
+                    yaku_append.append(append_id)
+
+                # 一気通貫
+                for i in range(3):
+                    for j in range(3):
+                        if not ((i, j * 3 + 1), (i, j * 3 + 2), (i, j * 3 + 3)) in cur_combi[1]:
+                            break
+                    else:
+                        yaku_append.append(16)
+
+                # 三色同順
+                for i in range(1, 8):
+                    for j in range(3):
+                        if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
+                            break
+                    else:
+                        yaku_append.append(18)
+
+                # 三色同刻
+                for i in range(1, 10):
+                    for j in range(3):
+                        if not ((j, i), (j, i), (j, i)) in cur_combi[2]:
+                            break
+                    else:
+                        yaku_append.append(19)
+
+                # 役牌
+                for anko in cur_combi[2]:
+                    if anko[0][0] >= 3:
+                        yaku_append.append(10)
+
+                # チャンタ・純チャン
+                if not routou:
+                    append_id = 27
+                    for elements in cur_combi:
+                        for element in elements:
+                            for hai_kind in element:
+                                if hai_kind[1] == 1 or hai_kind[1] == 9:
+                                    break
+                                elif hai_kind[0] >= 3:
+                                    append_id = 17
+                                    break
+                            else:
+                                break
+                        else:
+                            continue
+                        break
+                    else:
+                        yaku_append.append(append_id)
+
+                # 三暗刻
+                if len(cur_combi[2]) == 3:
+                    yaku_append.append(20)
 
             yaku_agari.append(yaku_append)
 
