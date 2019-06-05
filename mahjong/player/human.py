@@ -25,3 +25,9 @@ class Human(core.Player):
                 break
 
         return int(select_input)
+
+    def agari_tumo(self):
+        return True
+
+    def agari_ron(self, player):
+        return True
