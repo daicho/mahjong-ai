@@ -54,10 +54,16 @@ class Tenari(core.Player):
         for hai in self.tehai.list:
             remain_hai.remove(hai)
 
-        # 河
         for player in self.game.players:
+            # 副露
+            for cur_furo in player.tehai.furo:
+                for hai in cur_furo:
+                    remain_hai.remove(hai)
+
+            # 河
             for hai in player.kawa.list:
-                remain_hai.remove(hai)
+                if not hai.furo:
+                    remain_hai.remove(hai)
 
         # ドラ
         remain_hai.remove(self.game.yama.list[0])

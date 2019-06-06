@@ -675,7 +675,7 @@ class Yama():
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
-    def __init__(self, name):
+    def __init__(self, name=""):
         self.name = name
         self.tehai = Tehai()
         self.kawa = Kawa()
@@ -700,7 +700,6 @@ class Player(metaclass=ABCMeta):
 
     # 打牌
     def dahai(self):
-        self.tehai.show()
         # リーチをしていたらツモ切り
         index = -1 if self.richi else self.select()
         pop_hai = self.tehai.pop(index)
@@ -827,7 +826,7 @@ class Player(metaclass=ABCMeta):
 
 # ゲーム
 class Game():
-    bakaze_name = ["東", "南", "西", "北"]
+    kaze_name = ["東", "南", "西", "北"]
 
     def __init__(self, mjhai_set, players):
         self.mjhai_set = mjhai_set
@@ -847,7 +846,7 @@ class Game():
 
     # 局を表す文字列
     def kyoku_name(self):
-        return "{}{}局".format(Game.bakaze_name[self.bakaze], self.kyoku + 1)
+        return "{}{}局".format(Game.kaze_name[self.bakaze], self.kyoku + 1)
 
     # 配牌
     def haipai(self):

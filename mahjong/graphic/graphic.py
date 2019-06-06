@@ -34,7 +34,7 @@ def draw_side(img):
 
 # 手牌の画像を生成
 def draw_tehai(tehai, back=False):
-    create_img = Image.new("RGBA", (15 * MJHAI_WIDTH + 4 * MJHAI_HEIGHT, 2 * MJHAI_HEIGHT))
+    create_img = Image.new("RGBA", (14 * MJHAI_WIDTH + 4 * MJHAI_HEIGHT, 2 * MJHAI_HEIGHT))
 
     x = 0
     for i, hai in enumerate(tehai.list):
