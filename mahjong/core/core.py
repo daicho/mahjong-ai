@@ -5,6 +5,7 @@ import os
 import pickle
 import random
 from abc import ABCMeta, abstractmethod
+from .. import graphic as gp
 
 """
 color:
@@ -843,6 +844,7 @@ class Game():
         self.cur_player = self.players[self.cur]
 
         self.yama = Yama(mjhai_set)
+        self.screen = gp.Screen(self, 1, True)
 
     # 局を表す文字列
     def kyoku_name(self):
@@ -853,14 +855,19 @@ class Game():
         for player in self.players:
             player.haipai()
 
+        self.screen.draw()
+
     # ツモ
     def tumo(self):
         self.cur_player.tumo()
+        self.screen.draw()
+
         return self.cur_player.check_self()
 
     # 打牌
     def dahai(self):
         self.cur_player.dahai()
+        self.screen.draw()
 
         for check_player in self.players:
             # 自身は判定しない

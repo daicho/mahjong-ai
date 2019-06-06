@@ -1,9 +1,10 @@
 import os
+import time
 import copy
 import glob
 import tkinter as tk
-from PIL import Image, ImageDraw, ImageFont, ImageChops
-from .. import core
+from PIL import Image, ImageDraw, ImageFont, ImageTk
+from .. import core as mj
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30
@@ -119,14 +120,14 @@ def draw_kawa(kawa):
     return create_img
 
 # ゲーム画面の画像を生成
-def draw_screen(game, view, open_tehai=False, uradora=False):
+def draw_screen(game, view, open=False, uradora=False):
     create_img = Image.new("RGB", (SCREEN_SIZE, SCREEN_SIZE), "green")
 
     for player in game.players:
         paste_img = Image.new("RGBA", (SCREEN_SIZE, SCREEN_SIZE))
 
         # 手牌
-        tehai_img = draw_tehai(player.tehai, False if open_tehai else player.chicha != view)
+        tehai_img = draw_tehai(player.tehai, False if open else player.chicha != view)
         paste_img.paste(
             tehai_img,
             (SCREEN_SIZE - tehai_img.size[0], 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT)
@@ -150,7 +151,7 @@ def draw_screen(game, view, open_tehai=False, uradora=False):
         )
 
         # シャンテン数
-        if player.chicha == view or open_tehai:
+        if player.chicha == view or open:
             shaten_draw = ImageDraw.Draw(paste_img)
             shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
             w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
@@ -188,3 +189,31 @@ def draw_screen(game, view, open_tehai=False, uradora=False):
             )
 
     return create_img
+
+class Screen():
+    def __init__(self, game, view, open=False):
+        self.game = game
+        self.view = view
+        self.open = open
+
+        # ウィンドウを作成
+        self.root = tk.Tk()
+        self.root.title("Mahjong")
+        self.root.geometry("{0}x{0}+0+0".format(SCREEN_SIZE + 4))
+        self.root.resizable(0, 0)
+
+        # 表示部
+        self.taku = tk.Label(self.root)
+        self.taku.grid()
+
+    # 画面描画
+    def draw(self):
+        screen_img = ImageTk.PhotoImage(draw_screen(self.game, self.view, self.open))
+        self.taku.configure(image=screen_img)
+        self.root.update()
+
+    # 流局後画面描画
+    def draw_open(self):
+        screen_img = ImageTk.PhotoImage(draw_screen(self.game, self.view, True, True))
+        self.taku.configure(image=screen_img)
+        self.root.update()

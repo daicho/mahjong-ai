@@ -1,20 +1,6 @@
-import time
-import tkinter as tk
-from PIL import ImageTk
-
 import mahjong.core as mj
 import mahjong.player as mp
 import mahjong.graphic as gp
-
-# ウィンドウを作成
-root = tk.Tk()
-root.title("Mahjong")
-root.geometry("{0}x{0}+0+0".format(gp.SCREEN_SIZE + 4))
-root.resizable(0, 0)
-
-# 画像表示部
-screen = tk.Label(root)
-screen.grid()
 
 # 全ての牌をセット
 # 筒子・索子
@@ -45,12 +31,7 @@ print()
 # 配牌
 game.haipai()
 
-view = 1 # 視点
-open_tehai = True
-
 while len(game.yama) > 0:
-    #view = game.cur_player.chicha
-
     # ツモ
     if game.tumo():
         print("{}：ツモ".format(game.cur_player.name))
@@ -60,11 +41,6 @@ while len(game.yama) > 0:
     print("{} [残り{}]".format(game.cur_player.name, len(game.yama)))
     game.cur_player.tehai.show()
 
-    # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
-    screen.configure(image=screen_img)
-    root.update()
-
     # 打牌
     ron_player = game.dahai()
     if ron_player is not None:
@@ -72,11 +48,6 @@ while len(game.yama) > 0:
         break
 
     print()
-    
-    # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
-    screen.configure(image=screen_img)
-    root.update()
 
     # 次のプレイヤーへ
     game.next_player()
@@ -84,10 +55,5 @@ else:
     print("流局")
 
 # 手牌をオープンして描画
-screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, True, True))
-screen.configure(image=screen_img)
-root.update()
-
-root.mainloop()
-#while input("> ") != "q":
-#    root.update()
+game.screen.draw_open()
+game.screen.root.mainloop()
