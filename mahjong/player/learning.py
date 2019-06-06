@@ -115,6 +115,10 @@ class Tenari(core.Player):
 
     # 明槓
     def minkan(self, player):
+        # 門前だったら明槓しない
+        if self.tehai.menzen:
+            return False
+
         check_hai = player.kawa.list[-1]
         temp_tehai = copy.deepcopy(self.tehai)
 

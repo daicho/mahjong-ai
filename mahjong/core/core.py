@@ -866,10 +866,9 @@ class Game():
             # 自身は判定しない
             if check_player != self.cur_player:
                 if check_player.check_other(self.cur_player):
-                    return True
-                    break
+                    return check_player
         else:
-            return False
+            return None
 
     # プレイヤーのツモ順を変更
     def change_player(self, chicha):

@@ -66,8 +66,9 @@ while len(game.yama) > 0:
     root.update()
 
     # 打牌
-    if game.dahai():
-        print("{}：ロン".format(game.cur_player.name))
+    ron_player = game.dahai()
+    if ron_player is not None:
+        print("{}→{}：ロン".format(game.cur_player.name, ron_player.name))
         break
 
     print()
