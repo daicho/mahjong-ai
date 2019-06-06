@@ -809,6 +809,11 @@ class Game():
     def kyoku_name(self):
         return "{}{}局".format(Game.bakaze_name[self.bakaze], self.kyoku + 1)
 
+    # 配牌
+    def haipai(self):
+        for player in self.players:
+            player.haipai()
+
     # ツモ
     def tumo(self):
         self.cur_player.tumo()

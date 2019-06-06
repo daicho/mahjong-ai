@@ -2,7 +2,7 @@ import os
 import copy
 import glob
 import tkinter as tk
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageChops
 from .. import core
 
 # 麻雀牌のサイズ
@@ -84,7 +84,7 @@ def draw_tehai(tehai, back=False):
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
     tumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
-    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 0, 0, 47))
+    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 63, 47))
 
     x = 0
     y = 0

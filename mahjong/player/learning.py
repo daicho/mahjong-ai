@@ -102,7 +102,7 @@ class Tenari(core.Player):
 
     # 明槓
     def minkan(self, player):
-        return False
+        return True
 
     # 加槓
     def kakan(self):

@@ -40,8 +40,7 @@ print(game.kyoku_name())
 print()
 
 # 配牌
-for player in game.players:
-    player.haipai()
+game.haipai()
 
 view = 0 # 視点
 open_tehai = True
