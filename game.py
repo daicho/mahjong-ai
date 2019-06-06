@@ -32,8 +32,11 @@ for i in range(3, 10):
     mjhai_set.extend(mj.MjHai(i) for j in range(4))
 
 # プレイヤー
-players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
+#players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
 #players = [mp.Human("Human1"), mp.Human("Human2"), mp.Human("Human3")]
+
+human = mp.Human("Human")
+players = [human, mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
 
 game = mj.Game(mjhai_set, players)
 print(game.kyoku_name())
@@ -42,8 +45,8 @@ print()
 # 配牌
 game.haipai()
 
-view = 0 # 視点
-open_tehai = True
+view = human.chicha # 視点
+open_tehai = False
 
 while len(game.yama) > 0:
     #view = game.cur_player.chicha

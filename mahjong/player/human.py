@@ -5,7 +5,7 @@ from .. import core
 class Human(core.Player):
     # 確認メッセージを表示
     def confirm(self, message, default_yes=True):
-        select_input = input("{} [{}]> ".format(message, "Y/n" if default_yes else "y/N"))
+        select_input = input("{}：{} [{}]> ".format(self.name, message, "Y/n" if default_yes else "y/N"))
 
         if select_input == "":
             return default_yes
@@ -40,7 +40,7 @@ class Human(core.Player):
 
     # 立直
     def call_richi(self):
-        return True
+        return self.confirm("立直する？", True)
 
     # ツモ和了
     def agari_tumo(self):

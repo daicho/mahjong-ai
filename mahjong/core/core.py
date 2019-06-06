@@ -706,7 +706,7 @@ class Player(metaclass=ABCMeta):
         pop_hai = self.tehai.pop(index)
 
         # 立直
-        if self.tehai.shanten() == 0 and self.tehai.menzen:
+        if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
             self.richi = self.call_richi()
 
         tumogiri = (index == 13 - len(self.tehai.furo) * 3 or index == -1)
