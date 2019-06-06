@@ -27,24 +27,20 @@ number:
 # 全種の牌
 mjhai_all = []
 
-# 数牌
 for i in range(3):
     for j in range(1, 10):
         mjhai_all.append((i, j))
 
-# 字牌
 for i in range(3, 10):
     mjhai_all.append((i, 0))
 
 # 幺九牌
 mjhai_yaochu = []
 
-# 数牌
 for i in range(3):
     for j in [1, 9]:
         mjhai_yaochu.append((i, j))
 
-# 字牌
 for i in range(3, 10):
     mjhai_yaochu.append((i, 0))
 

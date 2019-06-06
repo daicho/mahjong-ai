@@ -22,6 +22,16 @@ for mjhai_file in mjhai_files:
     img_key, ext = os.path.splitext(os.path.basename(mjhai_file)) # ファイル名を抽出
     mjhai_img[img_key] = Image.open(mjhai_file)
 
+# 横向きの麻雀牌を生成
+def draw_side(img):
+    w, h = img.size
+    create_img = Image.new("RGBA", (h, h))
+
+    rotate_img = img.rotate(90, expand=True)
+    create_img.paste(rotate_img, (0, h - w))
+
+    return create_img
+
 # 手牌の画像を生成
 def draw_tehai(tehai, back=False):
     create_img = Image.new("RGBA", (15 * MJHAI_WIDTH + 4 * MJHAI_HEIGHT, 2 * MJHAI_HEIGHT))
@@ -44,30 +54,28 @@ def draw_tehai(tehai, back=False):
             )
 
         # 麻雀牌
-        draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
+        mjhai_draw = mjhai_img["back" if back else hai.name]
 
         # 他家からの牌は横にする
         if hai.furo:
-            rotate_img = draw_mjhai.rotate(90, expand=True)
-            create_img.paste(rotate_img, (x, 2 * MJHAI_HEIGHT - MJHAI_WIDTH))
+            create_img.paste(draw_side(mjhai_draw), (x, MJHAI_HEIGHT))
             x += MJHAI_HEIGHT
         else:
-            create_img.paste(draw_mjhai, (x, MJHAI_HEIGHT))
+            create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
             x += MJHAI_WIDTH
 
     x = create_img.size[0]
     for cur_furo in tehai.furo:
         for hai in cur_furo:
             # 麻雀牌
-            draw_mjhai = mjhai_img["back"] if back else mjhai_img[hai.name]
+            mjhai_draw = mjhai_img[hai.name]
 
             # 他家からの牌は横にする
             if hai.furo:
-                rotate_img = draw_mjhai.rotate(90, expand=True)
-                create_img.paste(rotate_img, (x - MJHAI_HEIGHT, 2 * MJHAI_HEIGHT - MJHAI_WIDTH))
+                create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
                 x -= MJHAI_HEIGHT
             else:
-                create_img.paste(draw_mjhai, (x - MJHAI_WIDTH, MJHAI_HEIGHT))
+                create_img.paste(mjhai_img[mjhai_draw], (x - MJHAI_WIDTH, MJHAI_HEIGHT))
                 x -= MJHAI_WIDTH
 
     return create_img
@@ -97,8 +105,7 @@ def draw_kawa(kawa):
         # リーチ宣言牌は横にする
         if not already_richi and hai.richi:
             already_richi = True
-            rotate_img = paste_img.rotate(90, expand=True)
-            create_img.paste(rotate_img, (x, y + MJHAI_HEIGHT - MJHAI_WIDTH))
+            create_img.paste(draw_side(paste_img), (x, y))
             x += MJHAI_HEIGHT
         else:
             create_img.paste(paste_img, (x, y))
