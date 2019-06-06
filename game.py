@@ -56,11 +56,6 @@ while len(game.yama) > 0:
     print("{} [残り{}]".format(game.cur_player.name, len(game.yama)))
     game.cur_player.tehai.show()
 
-    # 画面描画
-    screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
-    screen.configure(image=screen_img)
-    root.update()
-
     # ツモ判定
     if game.cur_player.check_self():
         print()
@@ -74,14 +69,14 @@ while len(game.yama) > 0:
 
         break
 
-    # 打牌
-    game.cur_player.dahai()
-    print()
-
     # 画面描画
     screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
     screen.configure(image=screen_img)
     root.update()
+
+    # 打牌
+    game.cur_player.dahai()
+    print()
 
     # ロン判定
     end_flag = False
@@ -98,6 +93,11 @@ while len(game.yama) > 0:
                         print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
                     print()
     
+    # 画面描画
+    screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
+    screen.configure(image=screen_img)
+    root.update()
+
     if end_flag:
         break
 

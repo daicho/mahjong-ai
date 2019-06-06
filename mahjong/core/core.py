@@ -117,6 +117,7 @@ class MjHai():
     def __init__(self, color, number=0, dora=False):
         self.color = color    # 種類
         self.number = number  # 数字
+        self.kind = (self.color, self.number)
         self.dora = dora      # ドラかどうか
 
         self.whose = None     # 誰のものか
@@ -284,6 +285,14 @@ class Tehai():
         self.table[(hai.color, hai.number)] -= 1
         return hai
 
+    # 種類で取り出し
+    def pop_kind(self, kind):
+        for hai in self.list:
+            if hai.kind == kind:
+                self.list.remove(hai)
+                self.table[(hai.color, hai.number)] -= 1
+                return hai
+
     # 並べ替え
     def sort(self):
         self.list.sort()
@@ -322,8 +331,8 @@ class Tehai():
             return tuple(combi_key)
 
         # 雀頭を考慮しないシャンテン数
-        def shanten_without_jantou(table):
-            shanten_min = 8
+        def shanten_without_jantou(table, furo_num):
+            shanten_min = 8 - len(self.furo) * 2
 
             # 孤立牌を除去
             opti_table = copy.deepcopy(table)
@@ -345,16 +354,15 @@ class Tehai():
             combi_all = itertools.product([tuple(jihai_combi)], *(combi_table[create_key(opti_table, i)] for i in range(3)))
 
             for cur_combi in combi_all:
-                cur_shanten = 8
+                cur_shanten = 8 - furo_num * 2
                 count = 0
 
                 # 面子から取り出し
                 for i in range(2):
                     for elememt in cur_combi:
-                        # 面子・面子候補は4つまで
-                        if count + elememt[i] >= 4:
-                            cur_shanten -= (2 if i == 0 else 1) * (4 - count)
-                            count = 4
+                        if count + elememt[i] >= 4 - furo_num:
+                            cur_shanten -= (2 if i == 0 else 1) * (4 - furo_num - count)
+                            count = 4 - furo_num
                             break
                         else:
                             cur_shanten -= (2 if i == 0 else 1) * elememt[i]
@@ -365,19 +373,22 @@ class Tehai():
             return shanten_min
 
         # 雀頭なしのシャンテン数
-        shanten_min = shanten_without_jantou(self.table)
+        shanten_min = shanten_without_jantou(self.table, len(self.furo))
 
         # 全ての雀頭候補を取り出してシャンテン数を計算
         for key in self.table:
             if self.table[key] >= 2:
                 self.table[key] -= 2
-                shanten_min = min(shanten_min, shanten_without_jantou(self.table) - 1)
+                shanten_min = min(shanten_min, shanten_without_jantou(self.table, len(self.furo)) - 1)
                 self.table[key] += 2
 
         return shanten_min
 
     # 七対子のシャンテン数
     def shanten_7toitu(self):
+        if not self.menzen:
+            return 13
+
         shanten_num = 6
 
         for key in self.table:
@@ -388,6 +399,9 @@ class Tehai():
 
     # 国士無双のシャンテン数
     def shanten_kokushi(self):
+        if not self.menzen:
+            return 13
+
         shanten_num = 13
         toitu = False
 
@@ -706,12 +720,27 @@ class Player(metaclass=ABCMeta):
         check_hai = player.kawa.list[-1]
         self.tehai.append(check_hai)
 
+        # ロン
         if self.tehai.shanten() == -1:
             check_hai.furo = True
-            return self.agari_ron
-        else:
-            self.tehai.pop()
-            return False
+            return self.agari_ron(player)
+
+        # 明槓
+        if self.tehai.table[check_hai.kind] >= 4:
+            check_hai.furo = True
+            if self.pon(player):
+                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
+                return False
+
+        # ポン
+        if self.tehai.table[check_hai.kind] >= 3:
+            check_hai.furo = True
+            if self.pon(player):
+                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
+                self.dahai()
+                return False
+
+        self.tehai.pop()
 
     # 選択
     @abstractmethod
@@ -728,7 +757,6 @@ class Player(metaclass=ABCMeta):
     def agari_ron(self, player):
         pass
 
-    """
     # 暗槓
     @abstractmethod
     def ankan(self):
@@ -753,7 +781,6 @@ class Player(metaclass=ABCMeta):
     @abstractmethod
     def chi(self, player):
         pass
-    """
 
 # ゲーム
 class Game():
