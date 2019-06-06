@@ -110,7 +110,7 @@ class Tenari(core.Player):
 
     # ポン
     def pon(self, player):
-        return False
+        return True
 
     # チー
     def chi(self, player):

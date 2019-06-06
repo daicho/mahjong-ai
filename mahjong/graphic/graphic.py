@@ -75,7 +75,7 @@ def draw_tehai(tehai, back=False):
                 create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
                 x -= MJHAI_HEIGHT
             else:
-                create_img.paste(mjhai_img[mjhai_draw], (x - MJHAI_WIDTH, MJHAI_HEIGHT))
+                create_img.paste(mjhai_draw, (x - MJHAI_WIDTH, MJHAI_HEIGHT))
                 x -= MJHAI_WIDTH
 
     return create_img

@@ -49,25 +49,14 @@ open_tehai = True
 while len(game.yama) > 0:
     #view = game.cur_player.chicha
 
-    # 自摸
-    game.cur_player.tumo()
+    # ツモ
+    if game.tumo():
+        print("{}：ツモ".format(game.cur_player.name))
+        break
 
     # コンソール表示
     print("{} [残り{}]".format(game.cur_player.name, len(game.yama)))
     game.cur_player.tehai.show()
-
-    # ツモ判定
-    if game.cur_player.check_self():
-        print()
-        print("{}：ツモ".format(game.cur_player.name))
-
-        yaku_agari = game.cur_player.tehai.yaku()
-        for yakus in yaku_agari:
-            for yaku in yakus:
-                print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
-            print()
-
-        break
 
     # 画面描画
     screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
@@ -75,31 +64,16 @@ while len(game.yama) > 0:
     root.update()
 
     # 打牌
-    game.cur_player.dahai()
+    if game.dahai():
+        print("{}：ロン".format(game.cur_player.name))
+        break
+
     print()
-
-    # ロン判定
-    end_flag = False
-    for check_player in game.players:
-        # 自身は判定しない
-        if check_player != game.cur_player:
-            if check_player.check_other(game.cur_player):
-                end_flag = True
-                print("{}→{}：ロン".format(game.cur_player.name, check_player.name))
-
-                yaku_agari = check_player.tehai.yaku()
-                for yakus in yaku_agari:
-                    for yaku in yakus:
-                        print(mj.yaku_list[yaku].fan[0], mj.yaku_list[yaku].name)
-                    print()
     
     # 画面描画
     screen_img = ImageTk.PhotoImage(gp.draw_screen(game, view, open_tehai))
     screen.configure(image=screen_img)
     root.update()
-
-    if end_flag:
-        break
 
     # 次のプレイヤーへ
     game.next_player()

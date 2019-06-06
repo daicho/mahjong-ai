@@ -323,18 +323,20 @@ class Tehai():
 
             # 前後の0は切り取り
             for i in range(9):
-                if combi_key[i] != 0:
-                    start = i
+                if combi_key[0] == 0:
+                    combi_key.pop(0)
+                else:
                     break
             else: # 全て0だったら
                 return (0,)
 
-            for i in range(8, -1, -1):
-                if combi_key[i] != 0:
-                    end = i
+            while True:
+                if combi_key[-1] == 0:
+                    combi_key.pop()
+                else:
                     break
 
-            return tuple(combi_key[start:end + 1])
+            return tuple(combi_key)
 
         # 雀頭を考慮しないシャンテン数
         def shanten_without_jantou(table, furo_num):
@@ -724,20 +726,24 @@ class Player(metaclass=ABCMeta):
             check_hai.furo = True
             return True
 
-        # 明槓
-        if self.tehai.table[check_hai.kind] >= 4 and self.pon(player):
-            check_hai.furo = True
-            self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
-            return False
+        if not self.richi:
+            # 明槓
+            if self.tehai.table[check_hai.kind] >= 4 and self.minkan(player):
+                check_hai.furo = True
+                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
+                return False
 
-        # ポン
-        if self.tehai.table[check_hai.kind] >= 3 and self.pon(player):
-            check_hai.furo = True
-            self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
-            self.dahai()
-            return False
+            # ポン
+            if self.tehai.table[check_hai.kind] >= 3 and self.pon(player):
+                check_hai.furo = True
+                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
+                self.game.change_player(self.chicha)
+                self.dahai()
+                self.game.next_player()
+                return False
 
         self.tehai.pop()
+        return False
 
     # 選択
     @abstractmethod
@@ -798,10 +804,34 @@ class Game():
         self.cur_player = self.players[self.cur]
 
         self.yama = Yama(mjhai_set)
-    
+
+    # 局を表す文字列
     def kyoku_name(self):
         return "{}{}局".format(Game.bakaze_name[self.bakaze], self.kyoku + 1)
 
-    def next_player(self):
-        self.cur = (self.cur + 1) % self.players_num
+    # ツモ
+    def tumo(self):
+        self.cur_player.tumo()
+        return self.cur_player.check_self()
+
+    # 打牌
+    def dahai(self):
+        self.cur_player.dahai()
+
+        for check_player in self.players:
+            # 自身は判定しない
+            if check_player != self.cur_player:
+                if check_player.check_other(self.cur_player):
+                    return True
+                    break
+        else:
+            return False
+
+    # プレイヤーのツモ順を変更
+    def change_player(self, chicha):
+        self.cur = chicha
         self.cur_player = self.players[self.cur]
+
+    # 次のプレイヤーへ
+    def next_player(self):
+        self.change_player((self.cur + 1) % self.players_num)
