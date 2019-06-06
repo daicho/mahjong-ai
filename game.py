@@ -33,7 +33,7 @@ for i in range(3, 10):
 
 # プレイヤー
 players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
-#players = [mp.Human("Tenari1"), mp.Human("Tenari2"), mp.Human("Tenari3")]
+#players = [mp.Human("Human1"), mp.Human("Human2"), mp.Human("Human3")]
 
 game = mj.Game(mjhai_set, players)
 print(game.kyoku_name())

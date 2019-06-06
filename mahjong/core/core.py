@@ -712,9 +712,23 @@ class Player(metaclass=ABCMeta):
     # ツモ・暗槓・加槓チェック
     def check_self(self):
         if self.tehai.shanten() == -1:
-            return self.agari_tumo
-        else:
-            return False
+            return self.agari_tumo()
+
+        # 暗槓
+        for key in self.tehai.table:
+            if self.tehai.table[key] >= 4 and self.ankan(key):
+                self.tehai.furo.append([self.tehai.pop_kind(key) for i in range(4)])
+                self.game.tumo()
+
+                return False
+
+        # 立直
+        if self.tehai.shanten() == 0:
+            if self.call_richi():
+                self.richi = True
+                return False
+
+        return False
 
     # ロン・明槓・ポン・チーチェック
     def check_other(self, player):
@@ -726,23 +740,44 @@ class Player(metaclass=ABCMeta):
             check_hai.furo = True
             return True
 
+        self.tehai.pop()
+
         if not self.richi:
             # 明槓
-            if self.tehai.table[check_hai.kind] >= 4 and self.minkan(player):
+            if self.tehai.table[check_hai.kind] >= 3 and self.minkan(player):
                 check_hai.furo = True
-                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
+
+                append_mentu = []
+                for i in range(4):
+                    if int(((player.chicha - self.chicha) % 4 - 1) * 1.5) == i:
+                        append_mentu.append(check_hai)
+                    else:
+                        append_mentu.append(self.tehai.pop_kind(check_hai.kind))
+
+                self.tehai.furo.append(append_mentu)
+                self.game.change_player(self.chicha)
+                self.game.tumo()
+                self.game.dahai()
+
                 return False
 
             # ポン
-            if self.tehai.table[check_hai.kind] >= 3 and self.pon(player):
+            if self.tehai.table[check_hai.kind] >= 2 and self.pon(player):
                 check_hai.furo = True
-                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
+
+                append_mentu = []
+                for i in range(3):
+                    if (player.chicha - self.chicha) % 4 - 1 == i:
+                        append_mentu.append(check_hai)
+                    else:
+                        append_mentu.append(self.tehai.pop_kind(check_hai.kind))
+
+                self.tehai.furo.append(append_mentu)
                 self.game.change_player(self.chicha)
-                self.dahai()
-                self.game.next_player()
+                self.game.dahai()
+
                 return False
 
-        self.tehai.pop()
         return False
 
     # 選択
@@ -762,7 +797,7 @@ class Player(metaclass=ABCMeta):
 
     # 暗槓
     @abstractmethod
-    def ankan(self):
+    def ankan(self, hai_kind):
         pass
 
     # 明槓

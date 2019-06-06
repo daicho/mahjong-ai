@@ -7,6 +7,10 @@ class Isokun(core.Player):
     def select(self):
         return 13
 
+    # 立直
+    def call_richi(self):
+        return True
+
     # ツモ和了
     def agari_tumo(self):
         return True
@@ -16,7 +20,7 @@ class Isokun(core.Player):
         return True
 
     # 暗槓
-    def ankan(self):
+    def ankan(self, hai_kind):
         return False
 
     # 明槓
@@ -81,12 +85,11 @@ class Tenari(core.Player):
 
             self.tehai.insert(i, pop_hai)
 
-        # 待ち牌が2枚以上残っていたらリーチ
-        if self.tehai.shanten() <= 0 and effect_max >= 2:
-            print("リーチ")
-            self.richi = True
-
         return select_index
+
+    # 立直
+    def call_richi(self):
+        return True
 
     # ツモ和了
     def agari_tumo(self):
@@ -97,12 +100,26 @@ class Tenari(core.Player):
         return True
 
     # 暗槓
-    def ankan(self):
-        return True
+    def ankan(self, hai_kind):
+        # シャンテン数が下がらないなら明槓
+        temp_tehai = copy.deepcopy(self.tehai)
+        temp_tehai.furo.append([temp_tehai.pop_kind(hai_kind) for i in range(4)])
+
+        return temp_tehai.shanten() <= self.tehai.shanten()
 
     # 明槓
     def minkan(self, player):
-        return True
+        check_hai = player.kawa.list[-1]
+        temp_tehai = copy.deepcopy(self.tehai)
+
+        # シャンテン数が下がらないなら明槓
+        append_mentu = []
+        append_mentu.append(check_hai)
+        for i in range(3):
+            append_mentu.append(temp_tehai.pop_kind(check_hai.kind))
+        temp_tehai.furo.append(append_mentu)
+
+        return temp_tehai.shanten() <= self.tehai.shanten()
 
     # 加槓
     def kakan(self):
@@ -110,7 +127,17 @@ class Tenari(core.Player):
 
     # ポン
     def pon(self, player):
-        return True
+        check_hai = player.kawa.list[-1]
+        temp_tehai = copy.deepcopy(self.tehai)
+
+        # シャンテン数が進むならポン
+        append_mentu = []
+        append_mentu.append(check_hai)
+        for i in range(2):
+            append_mentu.append(temp_tehai.pop_kind(check_hai.kind))
+        temp_tehai.furo.append(append_mentu)
+
+        return temp_tehai.shanten() < self.tehai.shanten()
 
     # チー
     def chi(self, player):

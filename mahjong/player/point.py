@@ -6,6 +6,10 @@ class TadaAi(core.Player):
     def select(self):
         return 13
 
+    # 立直
+    def call_richi(self):
+        return True
+
     # ツモ和了
     def agari_tumo(self):
         return True
@@ -15,7 +19,7 @@ class TadaAi(core.Player):
         return True
 
     # 暗槓
-    def ankan(self):
+    def ankan(self, hai_kind):
         return False
 
     # 明槓

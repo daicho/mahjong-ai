@@ -3,6 +3,18 @@ from .. import core
 
 # 人間
 class Human(core.Player):
+    # 確認メッセージを表示
+    def confirm(self, message, default_yes=True):
+        select_input = input("{} [{}]> ".format(message, "Y/n" if default_yes else "y/N"))
+
+        if select_input == "":
+            return default_yes
+
+        if select_input == "Y" or select_input == "y":
+            return True
+        elif select_input == "N" or select_input == "n":
+            return False
+
     # 選択
     def select(self):
         # 入力
@@ -26,30 +38,34 @@ class Human(core.Player):
 
         return int(select_input)
 
+    # 立直
+    def call_richi(self):
+        return True
+
     # ツモ和了
     def agari_tumo(self):
-        return True
+        return self.confirm("ツモる？", True)
 
     # ロン和了
     def agari_ron(self, player):
-        return True
+        return self.confirm("ロンする？", True)
 
     # 暗槓
-    def ankan(self):
-        return False
+    def ankan(self, hai_kind):
+        return self.confirm("暗槓する？", False)
 
     # 明槓
     def minkan(self, player):
-        return False
+        return self.confirm("明槓する？", False)
 
     # 加槓
     def kakan(self):
-        return False
+        return self.confirm("加槓する？", False)
 
     # ポン
     def pon(self, player):
-        return False
+        return self.confirm("ポンする？", False)
 
     # チー
     def chi(self, player):
-        return False
+        return self.confirm("チーする？", False)
