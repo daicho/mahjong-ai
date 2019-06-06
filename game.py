@@ -85,7 +85,7 @@ while len(game.yama) > 0:
         if check_player != game.cur_player:
             if check_player.check_other(game.cur_player):
                 end_flag = True
-                print("{}→{}：ロン".format(player.name, check_player.name))
+                print("{}→{}：ロン".format(game.cur_player.name, check_player.name))
 
                 yaku_agari = check_player.tehai.yaku()
                 for yakus in yaku_agari:

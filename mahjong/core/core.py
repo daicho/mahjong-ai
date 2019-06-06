@@ -721,24 +721,22 @@ class Player(metaclass=ABCMeta):
         self.tehai.append(check_hai)
 
         # ロン
-        if self.tehai.shanten() == -1:
+        if self.tehai.shanten() == -1 and self.agari_ron(player):
             check_hai.furo = True
-            return self.agari_ron(player)
+            return True
 
         # 明槓
-        if self.tehai.table[check_hai.kind] >= 4:
+        if self.tehai.table[check_hai.kind] >= 4 and self.pon(player):
             check_hai.furo = True
-            if self.pon(player):
-                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
-                return False
+            self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(4)])
+            return False
 
         # ポン
-        if self.tehai.table[check_hai.kind] >= 3:
+        if self.tehai.table[check_hai.kind] >= 3 and self.pon(player):
             check_hai.furo = True
-            if self.pon(player):
-                self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
-                self.dahai()
-                return False
+            self.tehai.furo.append([self.tehai.pop_kind(check_hai.kind) for i in range(3)])
+            self.dahai()
+            return False
 
         self.tehai.pop()
 
