@@ -116,7 +116,6 @@ class MjHai():
         self.kind = (self.color, self.number)
         self.dora = dora      # ドラかどうか
 
-        self.whose = None     # 誰のものか
         self.tumogiri = False # ツモ切り
         self.richi = False    # リーチ
         self.furo = False     # 副露
@@ -697,16 +696,21 @@ class Player(metaclass=ABCMeta):
     # 自摸
     def tumo(self):
         pop_hai = self.game.yama.pop()
-        pop_hai.whose = self
         self.tehai.append(pop_hai)
 
     # 打牌
     def dahai(self):
+        self.tehai.show()
         # リーチをしていたらツモ切り
         index = -1 if self.richi else self.select()
+        pop_hai = self.tehai.pop(index)
+
+        # 立直
+        if self.tehai.shanten() == 0 and self.tehai.menzen:
+            self.richi = self.call_richi()
 
         tumogiri = (index == 13 - len(self.tehai.furo) * 3 or index == -1)
-        self.kawa.append(self.tehai.pop(index), tumogiri, self.richi)
+        self.kawa.append(pop_hai, tumogiri, self.richi)
         self.tehai.sort()
 
     # ツモ・暗槓・加槓チェック
@@ -720,12 +724,6 @@ class Player(metaclass=ABCMeta):
                 self.tehai.furo.append([self.tehai.pop_kind(key) for i in range(4)])
                 self.game.tumo()
 
-                return False
-
-        # 立直
-        if self.tehai.shanten() == 0:
-            if self.call_richi():
-                self.richi = True
                 return False
 
         return False
@@ -745,6 +743,7 @@ class Player(metaclass=ABCMeta):
         if not self.richi:
             # 明槓
             if self.tehai.table[check_hai.kind] >= 3 and self.minkan(player):
+                self.tehai.menzen = False
                 check_hai.furo = True
 
                 append_mentu = []
@@ -763,6 +762,7 @@ class Player(metaclass=ABCMeta):
 
             # ポン
             if self.tehai.table[check_hai.kind] >= 2 and self.pon(player):
+                self.tehai.menzen = False
                 check_hai.furo = True
 
                 append_mentu = []
@@ -793,6 +793,11 @@ class Player(metaclass=ABCMeta):
     # ロン和了
     @abstractmethod
     def agari_ron(self, player):
+        pass
+
+    # 立直
+    @abstractmethod
+    def call_richi(self):
         pass
 
     # 暗槓
