@@ -275,6 +275,11 @@ class Tehai():
             self.list.append(hai)
             self.table[(hai.color, hai.number)] += 1
 
+    # 挿入
+    def insert(self, index, hai):
+        self.list.insert(index, hai)
+        self.table[(hai.color, hai.number)] += 1
+
     # 番号で取り出し
     def pop(self, index=-1):
         hai = self.list.pop(index)
@@ -307,47 +312,45 @@ class Tehai():
     def shanten_normal(self):
         # シャンテン数計算テーブル用のキーを作成
         def create_key(table, color):
-            # 前後の0は切り取り
+            combi_key = []
+
             for i in range(1, 10):
-                if table[(color, i)] != 0:
+                # 孤立牌は除去
+                if table[(color, i)] == 1 and sum(table[(color, i + j)] for j in [-2, -1, 1, 2]) == 0:
+                    combi_key.append(0)
+                else:
+                    combi_key.append(table[(color, i)])
+
+            # 前後の0は切り取り
+            for i in range(9):
+                if combi_key[i] != 0:
                     start = i
                     break
             else: # 全て0だったら
                 return (0,)
 
-            for i in range(9, 0, -1):
-                if table[(color, i)] != 0:
+            for i in range(8, -1, -1):
+                if combi_key[i] != 0:
                     end = i
                     break
 
-            combi_key = []
-            for i in range(start, end + 1):
-                combi_key.append(table[(color, i)])
-
-            return tuple(combi_key)
+            return tuple(combi_key[start:end + 1])
 
         # 雀頭を考慮しないシャンテン数
         def shanten_without_jantou(table, furo_num):
             shanten_min = 8 - len(self.furo) * 2
 
-            # 孤立牌を除去
-            opti_table = copy.deepcopy(table)
-            for i in range(3):
-                for j in range(1, 10):
-                    if opti_table[(i, j)] == 1 and sum(opti_table[(i, j + k)] for k in [-2, -1, 1, 2]) == 0:
-                        opti_table[(i, j)] = 0
-
             # 字牌の面子・面子候補
             jihai_combi = [0, 0]
             for i in range(3, 10):
-                if opti_table[(i, 0)] >= 3:
+                if table[(i, 0)] >= 3:
                     jihai_combi[0] += 1
 
-                if opti_table[(i, 0)] == 2:
+                if table[(i, 0)] == 2:
                     jihai_combi[1] += 1
 
             # 全ての面子・面子候補の組み合わせ
-            combi_all = itertools.product([tuple(jihai_combi)], *(combi_table[create_key(opti_table, i)] for i in range(3)))
+            combi_all = itertools.product([tuple(jihai_combi)], *(combi_table[create_key(self.table, i)] for i in range(3)))
 
             for cur_combi in combi_all:
                 cur_shanten = 8 - furo_num * 2
