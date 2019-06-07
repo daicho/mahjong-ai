@@ -25,6 +25,9 @@ number:
   1-9...数牌
 """
 
+# ソフト名
+APP_NAME = "Mahjong"
+
 # 全種の牌
 mjhai_all = []
 
@@ -844,7 +847,8 @@ class Game():
         self.cur_player = self.players[self.cur]
 
         self.yama = Yama(mjhai_set)
-        self.screen = gp.Screen(self, 1, True)
+
+        self.screen = gp.Screen(self, False, self.players[1])
 
     # 局を表す文字列
     def kyoku_name(self):

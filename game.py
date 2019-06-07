@@ -55,5 +55,4 @@ else:
     print("流局")
 
 # 手牌をオープンして描画
-game.screen.draw_open()
-game.screen.root.mainloop()
+game.screen.draw_ryukyoku()

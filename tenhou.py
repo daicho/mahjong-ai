@@ -19,7 +19,7 @@ for i in range(3, 10):
     mjhai_set.extend(mj.MjHai(i) for j in range(4))
 
 # 試行回数
-number = 10000
+number = 100000
 count = collections.Counter()
 
 start_time = time.time() # 開始時間

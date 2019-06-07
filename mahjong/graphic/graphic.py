@@ -1,9 +1,9 @@
 import os
 import time
-import copy
 import glob
-import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont, ImageTk
+import numpy as np
+import cv2
 from .. import core as mj
 
 # 麻雀牌のサイズ
@@ -22,6 +22,15 @@ mjhai_files = glob.glob(THIS_PATH + "/mjhai/*.png") # ファイル一覧を取�
 for mjhai_file in mjhai_files:
     img_key, ext = os.path.splitext(os.path.basename(mjhai_file)) # ファイル名を抽出
     mjhai_img[img_key] = Image.open(mjhai_file)
+
+# Pillow→OpenCV変換
+def pil2cv(image):
+    new_image = np.array(image)
+    if new_image.shape[2] == 3: # カラー
+        new_image = new_image[:, :, ::-1]
+    elif new_image.shape[2] == 4: # 透過
+        new_image = new_image[:, :, [2, 1, 0, 3]]
+    return new_image
 
 # 横向きの麻雀牌を生成
 def draw_side(img):
@@ -127,7 +136,7 @@ def draw_screen(game, view, open=False, uradora=False):
         paste_img = Image.new("RGBA", (SCREEN_SIZE, SCREEN_SIZE))
 
         # 手牌
-        tehai_img = draw_tehai(player.tehai, False if open else player.chicha != view)
+        tehai_img = draw_tehai(player.tehai, False if open else player != view)
         paste_img.paste(
             tehai_img,
             (SCREEN_SIZE - tehai_img.size[0], 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT)
@@ -162,7 +171,7 @@ def draw_screen(game, view, open=False, uradora=False):
             )
 
         # 回転&合成
-        rotate_img = paste_img.rotate((player.chicha - view) * 90)
+        rotate_img = paste_img.rotate((player.chicha - view.chicha) * 90)
         create_img.paste(rotate_img, (0, 0), rotate_img)
 
     # 局
@@ -191,29 +200,27 @@ def draw_screen(game, view, open=False, uradora=False):
     return create_img
 
 class Screen():
-    def __init__(self, game, view, open=False):
+    def __init__(self, game, open=False, view=None):
         self.game = game
         self.view = view
         self.open = open
 
-        # ウィンドウを作成
-        self.root = tk.Tk()
-        self.root.title("Mahjong")
-        self.root.geometry("{0}x{0}+0+0".format(SCREEN_SIZE + 4))
-        self.root.resizable(0, 0)
-
-        # 表示部
-        self.taku = tk.Label(self.root)
-        self.taku.grid()
+        # ウィンドウ名
+        if view is None:
+            self.win_name = mj.APP_NAME
+        else:
+            self.win_name = "{} [{}]".format(mj.APP_NAME, view.name)
 
     # 画面描画
     def draw(self):
-        screen_img = ImageTk.PhotoImage(draw_screen(self.game, self.view, self.open))
-        self.taku.configure(image=screen_img)
-        self.root.update()
+        cur_view = self.game.cur_player if self.view is None else self.view
+        img = pil2cv(draw_screen(self.game, cur_view, self.open))
+        cv2.imshow(self.win_name, img)
+        cv2.waitKey(1)
 
     # 流局後画面描画
-    def draw_open(self):
-        screen_img = ImageTk.PhotoImage(draw_screen(self.game, self.view, True, True))
-        self.taku.configure(image=screen_img)
-        self.root.update()
+    def draw_ryukyoku(self):
+        cur_view = self.game.cur_player if self.view is None else self.view
+        img = pil2cv(draw_screen(self.game, cur_view, True, True))
+        cv2.imshow(self.win_name, img)
+        cv2.waitKey(0)
