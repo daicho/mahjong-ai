@@ -668,14 +668,12 @@ class Yama():
     def __init__(self, mjhai_set):
         self.list = copy.deepcopy(mjhai_set)
         random.shuffle(self.list)
+        self.remain = len(self.list) - 14
     
     # 取り出し
     def pop(self):
+        self.remain -= 1
         return self.list.pop()
-
-    # 残り個数
-    def __len__(self):
-        return len(self.list) - 14
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
@@ -690,6 +688,10 @@ class Player(metaclass=ABCMeta):
     def setup(self, chicha, game):
         self.chicha = chicha
         self.game = game
+
+    # 自風
+    def jikaze(self):
+        return (self.chicha - self.game.kyoku) % self.game.players_num
 
     # 配牌
     def haipai(self):
@@ -842,12 +844,13 @@ class Game():
 
         self.bakaze = 0
         self.kyoku = 0
+        self.honba = 0
+        self.kyotaku = 0
 
         self.cur = self.kyoku
         self.cur_player = self.players[self.cur]
 
         self.yama = Yama(mjhai_set)
-
         self.screen = gp.Screen(self, False, self.players[1])
 
     # 局を表す文字列

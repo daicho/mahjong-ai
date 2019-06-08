@@ -2,7 +2,7 @@ import mahjong.core as mj
 import mahjong.player as mp
 import mahjong.graphic as gp
 
-# 全ての牌をセット
+# 牌をセット
 # 筒子・索子
 mjhai_set = []
 for i in range(2):
@@ -31,14 +31,14 @@ print()
 # 配牌
 game.haipai()
 
-while len(game.yama) > 0:
+while game.yama.remain > 0:
     # ツモ
     if game.tumo():
         print("{}：ツモ".format(game.cur_player.name))
         break
 
     # コンソール表示
-    print("{} [残り{}]".format(game.cur_player.name, len(game.yama)))
+    print("{} [残り{}]".format(game.cur_player.name, game.yama.remain))
     game.cur_player.tehai.show()
 
     # 打牌

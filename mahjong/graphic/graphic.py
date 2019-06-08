@@ -23,6 +23,10 @@ for mjhai_file in mjhai_files:
     img_key, ext = os.path.splitext(os.path.basename(mjhai_file)) # ファイル名を抽出
     mjhai_img[img_key] = Image.open(mjhai_file)
 
+t100_img = Image.open(THIS_PATH + "/image/100.png")
+t1000_img = Image.open(THIS_PATH + "/image/1000.png")
+remain_img = Image.open(THIS_PATH + "/image/remain.png")
+
 # Pillow→OpenCV変換
 def pil2cv(image):
     new_image = np.array(image)
@@ -54,11 +58,11 @@ def draw_tehai(tehai, back=False):
 
         # 番号
         if not back:
-            number_draw = ImageDraw.Draw(create_img)
-            number_draw.font = ImageFont.truetype(FONT_FILE, 12)
-            w, h = number_draw.textsize(str(i))
+            text_draw = ImageDraw.Draw(create_img)
+            text_draw.font = ImageFont.truetype(FONT_FILE, 12)
+            w, h = text_draw.textsize(str(i))
 
-            number_draw.text(
+            text_draw.text(
                 (x + (MJHAI_WIDTH - w) / 2, MJHAI_HEIGHT - h - 4),
                 str(i)
             )
@@ -128,6 +132,73 @@ def draw_kawa(kawa):
 
     return create_img
 
+# ゲーム情報
+def draw_info(game):
+    size = 5 * MJHAI_WIDTH
+    create_img = Image.new("RGBA", (size, size))
+
+    # 局
+    text_draw = ImageDraw.Draw(create_img)
+    text_draw.font = ImageFont.truetype(FONT_FILE, 20)
+    w, h = text_draw.textsize(game.kyoku_name())
+    text_draw.text(((size - w) / 2, 0), game.kyoku_name())
+
+    # 本場
+    text_draw = ImageDraw.Draw(create_img)
+    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
+    w, h = text_draw.textsize("×{}".format(game.honba))
+
+    text_draw.text(
+        (t100_img.size[0] + 2, MJHAI_WIDTH + (t100_img.size[1] - h) / 2),
+        "×{}".format(game.honba)
+    )
+
+    create_img.paste(t100_img, (2, MJHAI_WIDTH))
+
+    # 供託
+    text_draw = ImageDraw.Draw(create_img)
+    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
+    w, h = text_draw.textsize("×{}".format(game.kyotaku))
+
+    text_draw.text(
+        (size - w - 2, MJHAI_WIDTH + (t1000_img.size[1] - h) / 2),
+        "×{}".format(game.kyotaku)
+    )
+
+    create_img.paste(t1000_img, (size - t1000_img.size[0] - w - 2, MJHAI_WIDTH))
+
+    # 残り
+    text_draw = ImageDraw.Draw(create_img)
+    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
+    w, h = text_draw.textsize("×{:02}".format(game.yama.remain))
+
+    text_draw.text(
+        ((size + remain_img.size[0] - w) / 2, MJHAI_WIDTH + (remain_img.size[1] - h) / 2 + 20),
+        "×{:02}".format(game.yama.remain)
+    )
+
+    create_img.paste(
+        remain_img,
+        (int((size - remain_img.size[0] - w) / 2), MJHAI_WIDTH + 20)
+    )
+
+    return create_img
+
+# ドラ
+def draw_dora(yama, uradora):
+    create_img = Image.new("RGBA", (5 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
+
+    for i in range(2):
+        for j in range(5):
+            if (uradora or i == 0) and j == 0:
+                paste_img = mjhai_img[yama.list[i + j * 2].name]
+            else:
+                paste_img = mjhai_img["back"]
+
+            create_img.paste(paste_img, (j * MJHAI_WIDTH, i * MJHAI_HEIGHT))
+
+    return create_img
+
 # ゲーム画面の画像を生成
 def draw_screen(game, view, open=False, uradora=False):
     create_img = Image.new("RGB", (SCREEN_SIZE, SCREEN_SIZE), "green")
@@ -139,63 +210,62 @@ def draw_screen(game, view, open=False, uradora=False):
         tehai_img = draw_tehai(player.tehai, False if open else player != view)
         paste_img.paste(
             tehai_img,
-            (SCREEN_SIZE - tehai_img.size[0], 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT)
+            (SCREEN_SIZE - tehai_img.size[0], 7 * MJHAI_WIDTH + 10 * MJHAI_HEIGHT),
+            tehai_img
         )
 
         # 河
         kawa_img = draw_kawa(player.kawa)
         paste_img.paste(
             kawa_img,
-            (6 * MJHAI_HEIGHT + int(0.5 * MJHAI_WIDTH), 7 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT)
+            (6 * MJHAI_HEIGHT + int(0.5 * MJHAI_WIDTH), 7 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT),
+            kawa_img
         )
 
-        # プレイヤー名
-        name_draw = ImageDraw.Draw(paste_img)
-        name_draw.font = ImageFont.truetype(FONT_FILE, 16)
-        w, h = name_draw.textsize("{} [{}]".format(player.name, player.point))
+        # 自風&点数
+        text_draw = ImageDraw.Draw(paste_img)
+        text_draw.font = ImageFont.truetype(FONT_FILE, 16)
+        w, h = text_draw.textsize("[{}] {}".format(game.kaze_name[player.jikaze()], player.point))
 
-        name_draw.text(
+        text_draw.text(
             ((SCREEN_SIZE - w) / 2, 6.5 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - h / 2),
-            "{} [{}]".format(player.name, player.point)
+            "[{}] {}".format(game.kaze_name[player.jikaze()], player.point),
+            (255, 255, 0)
         )
 
-        # シャンテン数
-        if player.chicha == view or open:
-            shaten_draw = ImageDraw.Draw(paste_img)
-            shaten_draw.font = ImageFont.truetype(FONT_FILE, 16)
-            w, h = shaten_draw.textsize("{}ST".format(player.tehai.shanten()))
+        # プレイヤー名&シャンテン数
+        draw_str = player.name
+        if player == view or open:
+            draw_str += " [{}ST]".format(player.tehai.shanten())
 
-            shaten_draw.text(
-                (SCREEN_SIZE - tehai_img.size[0], SCREEN_SIZE - tehai_img.size[1]),
-                "{}ST".format(player.tehai.shanten())
-            )
+        text_draw = ImageDraw.Draw(paste_img)
+        text_draw.font = ImageFont.truetype(FONT_FILE, 16)
+        w, h = text_draw.textsize(draw_str)
+
+        text_draw.text(
+            (SCREEN_SIZE - tehai_img.size[0], SCREEN_SIZE - tehai_img.size[1]),
+            draw_str
+        )
 
         # 回転&合成
         rotate_img = paste_img.rotate((player.chicha - view.chicha) * 90)
         create_img.paste(rotate_img, (0, 0), rotate_img)
 
-    # 局
-    kyoku_draw = ImageDraw.Draw(create_img)
-    kyoku_draw.font = ImageFont.truetype(FONT_FILE, 24)
-    w, h = kyoku_draw.textsize(game.kyoku_name())
-
-    kyoku_draw.text(
-        ((SCREEN_SIZE - w) / 2, 6 * MJHAI_HEIGHT + MJHAI_WIDTH),
-        game.kyoku_name()
+    # ゲーム情報
+    info_img = draw_info(game)
+    create_img.paste(
+        info_img,
+        (6 * MJHAI_HEIGHT + MJHAI_WIDTH, 6 * MJHAI_HEIGHT + MJHAI_WIDTH),
+        info_img
     )
 
     # ドラ
-    for i in range(2):
-        for j in range(5):
-            if (uradora or i == 0) and j == 0:
-                paste_img = mjhai_img[game.yama.list[i + j * 2].name]
-            else:
-                paste_img = mjhai_img["back"]
-
-            create_img.paste(
-                paste_img,
-                (6 * MJHAI_HEIGHT + (j + 1) * MJHAI_WIDTH, 6 * MJHAI_WIDTH + (i + 4) * MJHAI_HEIGHT)
-            )
+    dora_img = draw_dora(game.yama, uradora)
+    create_img.paste(
+        dora_img,
+        (6 * MJHAI_HEIGHT + MJHAI_WIDTH, 4 * MJHAI_HEIGHT + 6 * MJHAI_WIDTH),
+        dora_img
+    )
 
     return create_img
 
@@ -206,10 +276,9 @@ class Screen():
         self.open = open
 
         # ウィンドウ名
-        if view is None:
-            self.win_name = mj.APP_NAME
-        else:
-            self.win_name = "{} [{}]".format(mj.APP_NAME, view.name)
+        self.win_name = mj.APP_NAME
+        if view is not None:
+            self.win_name += " [" + view.name + "]"
 
     # 画面描画
     def draw(self):
