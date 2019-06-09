@@ -43,7 +43,7 @@ class Human(core.Player):
         return self.confirm("立直する？", True)
 
     # ツモ和了
-    def agari_tumo(self):
+    def agari_tsumo(self):
         return self.confirm("ツモる？", True)
 
     # ロン和了

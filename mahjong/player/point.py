@@ -11,7 +11,7 @@ class TadaAi(core.Player):
         return True
 
     # ツモ和了
-    def agari_tumo(self):
+    def agari_tsumo(self):
         return True
 
     # ロン和了

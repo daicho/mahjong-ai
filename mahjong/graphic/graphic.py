@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import glob
 from PIL import Image, ImageDraw, ImageFont, ImageTk
@@ -49,20 +50,15 @@ def draw_side(img):
 # 手牌の画像を生成
 def draw_tehai(tehai, back=False):
     create_img = Image.new("RGBA", (14 * MJHAI_WIDTH + 4 * MJHAI_HEIGHT, 2 * MJHAI_HEIGHT))
+    img_draw = ImageDraw.Draw(create_img)
+    img_draw.font = ImageFont.truetype(FONT_FILE, 12)
 
     x = 0
-    for i, hai in enumerate(tehai.list):
-        # ツモった牌は離す
-        if i == 13 - len(tehai.furo) * 3:
-            x += int(MJHAI_WIDTH / 4)
-
+    for i, hai in enumerate(tehai.hais):
         # 番号
         if not back:
-            text_draw = ImageDraw.Draw(create_img)
-            text_draw.font = ImageFont.truetype(FONT_FILE, 12)
-            w, h = text_draw.textsize(str(i))
-
-            text_draw.text(
+            w, h = img_draw.textsize(str(i))
+            img_draw.text(
                 (x + (MJHAI_WIDTH - w) / 2, MJHAI_HEIGHT - h - 4),
                 str(i)
             )
@@ -71,21 +67,44 @@ def draw_tehai(tehai, back=False):
         mjhai_draw = mjhai_img["back" if back else hai.name]
 
         # 他家からの牌は横にする
-        if hai.furo:
+        if type(hai) is mj.KawaMjHai:
             create_img.paste(draw_side(mjhai_draw), (x, MJHAI_HEIGHT))
             x += MJHAI_HEIGHT
         else:
             create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
             x += MJHAI_WIDTH
 
+    if tehai.tsumo_hai is not None:
+        # ツモった牌は離す
+        x += int(MJHAI_WIDTH / 4)
+
+        # 番号
+        if not back:
+            w, h = img_draw.textsize(str(i + 1))
+            img_draw.text(
+                (x + (MJHAI_WIDTH - w) / 2, MJHAI_HEIGHT - h - 4),
+                str(i + 1)
+            )
+
+        # 麻雀牌
+        mjhai_draw = mjhai_img["back" if back else tehai.tsumo_hai.name]
+
+        # 他家からの牌は横にする
+        if type(tehai.tsumo_hai) is mj.KawaMjHai:
+            create_img.paste(draw_side(mjhai_draw), (x, MJHAI_HEIGHT))
+            x += MJHAI_HEIGHT
+        else:
+            create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
+            x += MJHAI_WIDTH
+    
     x = create_img.size[0]
-    for cur_furo in tehai.furo:
-        for hai in cur_furo:
+    for cur_furo in tehai.furos:
+        for hai in cur_furo.hais:
             # 麻雀牌
             mjhai_draw = mjhai_img[hai.name]
 
             # 他家からの牌は横にする
-            if hai.furo:
+            if type(hai) is mj.KawaMjHai:
                 create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
                 x -= MJHAI_HEIGHT
             else:
@@ -97,20 +116,20 @@ def draw_tehai(tehai, back=False):
 # 河の画像を生成
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
-    tumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
-    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 63, 47))
+    tsumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
+    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 0, 47))
 
     x = 0
     y = 0
     already_richi = False
 
-    for hai in kawa.list:
-        paste_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT))
+    for hai in kawa.hais:
+        paste_img = Image.new("RGB", (MJHAI_WIDTH, MJHAI_HEIGHT))
         paste_img.paste(mjhai_img[hai.name])
 
         # ツモ切りは暗くする
-        if hai.tumogiri:
-            paste_img.paste(tumogiri_img, (0, 0), tumogiri_img)
+        if hai.tsumogiri:
+            paste_img.paste(tsumogiri_img, (0, 0), tsumogiri_img)
 
         # 鳴かれた牌は赤くする
         if hai.furo:
@@ -138,17 +157,15 @@ def draw_info(game):
     create_img = Image.new("RGBA", (size, size))
 
     # 局
-    text_draw = ImageDraw.Draw(create_img)
-    text_draw.font = ImageFont.truetype(FONT_FILE, 20)
-    w, h = text_draw.textsize(game.kyoku_name())
-    text_draw.text(((size - w) / 2, 0), game.kyoku_name())
+    img_draw = ImageDraw.Draw(create_img)
+    img_draw.font = ImageFont.truetype(FONT_FILE, 20)
+    w, h = img_draw.textsize(game.kyoku_name())
+    img_draw.text(((size - w) / 2, 0), game.kyoku_name())
 
     # 本場
-    text_draw = ImageDraw.Draw(create_img)
-    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
-    w, h = text_draw.textsize("×{}".format(game.honba))
-
-    text_draw.text(
+    img_draw.font = ImageFont.truetype(FONT_FILE, 16)
+    w, h = img_draw.textsize("×{}".format(game.honba))
+    img_draw.text(
         (t100_img.size[0] + 2, MJHAI_WIDTH + (t100_img.size[1] - h) / 2),
         "×{}".format(game.honba)
     )
@@ -156,11 +173,8 @@ def draw_info(game):
     create_img.paste(t100_img, (2, MJHAI_WIDTH))
 
     # 供託
-    text_draw = ImageDraw.Draw(create_img)
-    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
-    w, h = text_draw.textsize("×{}".format(game.kyotaku))
-
-    text_draw.text(
+    w, h = img_draw.textsize("×{}".format(game.kyotaku))
+    img_draw.text(
         (size - w - 2, MJHAI_WIDTH + (t1000_img.size[1] - h) / 2),
         "×{}".format(game.kyotaku)
     )
@@ -168,11 +182,8 @@ def draw_info(game):
     create_img.paste(t1000_img, (size - t1000_img.size[0] - w - 2, MJHAI_WIDTH))
 
     # 残り
-    text_draw = ImageDraw.Draw(create_img)
-    text_draw.font = ImageFont.truetype(FONT_FILE, 16)
-    w, h = text_draw.textsize("×{:02}".format(game.yama.remain))
-
-    text_draw.text(
+    w, h = img_draw.textsize("×{:02}".format(game.yama.remain))
+    img_draw.text(
         ((size + remain_img.size[0] - w) / 2, MJHAI_WIDTH + (remain_img.size[1] - h) / 2 + 20),
         "×{:02}".format(game.yama.remain)
     )
@@ -188,14 +199,23 @@ def draw_info(game):
 def draw_dora(yama, uradora):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
-    for i in range(2):
-        for j in range(5):
-            if (uradora or i == 0) and j == 0:
-                paste_img = mjhai_img[yama.list[i + j * 2].name]
-            else:
-                paste_img = mjhai_img["back"]
+    # 表ドラ
+    for i in range(5):
+        if i < yama.dora_num:
+            paste_img = mjhai_img[yama.doras[i].name]
+        else:
+            paste_img = mjhai_img["back"]
 
-            create_img.paste(paste_img, (j * MJHAI_WIDTH, i * MJHAI_HEIGHT))
+        create_img.paste(paste_img, (i * MJHAI_WIDTH, 0))
+
+    # 裏ドラ
+    for i in range(5):
+        if uradora and i < yama.dora_num:
+            paste_img = mjhai_img[yama.uradoras[i].name]
+        else:
+            paste_img = mjhai_img["back"]
+
+        create_img.paste(paste_img, (i * MJHAI_WIDTH, MJHAI_HEIGHT))
 
     return create_img
 
@@ -223,28 +243,31 @@ def draw_screen(game, view, open=False, uradora=False):
         )
 
         # 自風&点数
-        text_draw = ImageDraw.Draw(paste_img)
-        text_draw.font = ImageFont.truetype(FONT_FILE, 16)
-        w, h = text_draw.textsize("[{}] {}".format(game.kaze_name[player.jikaze()], player.point))
+        img_draw = ImageDraw.Draw(paste_img)
+        img_draw.font = ImageFont.truetype(FONT_FILE, 16)
+        w, h = img_draw.textsize("[{}] {}".format(game.kaze_name[player.jikaze()], player.point))
 
-        text_draw.text(
+        img_draw.text(
             ((SCREEN_SIZE - w) / 2, 6.5 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - h / 2),
             "[{}] {}".format(game.kaze_name[player.jikaze()], player.point),
             (255, 255, 0)
         )
+
+        # 番
+        if player == game.cur_player:
+            x = (SCREEN_SIZE - w) / 2 - 16
+            y = 6.5 * MJHAI_WIDTH + 6 * MJHAI_HEIGHT - 5
+            img_draw.rectangle((x, y, x + 10, y + 10), (255, 255, 127), (0, 0, 0))
 
         # プレイヤー名&シャンテン数
         draw_str = player.name
         if player == view or open:
             draw_str += " [{}ST]".format(player.tehai.shanten())
 
-        text_draw = ImageDraw.Draw(paste_img)
-        text_draw.font = ImageFont.truetype(FONT_FILE, 16)
-        w, h = text_draw.textsize(draw_str)
-
-        text_draw.text(
+        w, h = img_draw.textsize(draw_str)
+        img_draw.text(
             (SCREEN_SIZE - tehai_img.size[0], SCREEN_SIZE - tehai_img.size[1]),
-            draw_str
+            draw_str,
         )
 
         # 回転&合成
@@ -285,11 +308,15 @@ class Screen():
         cur_view = self.game.cur_player if self.view is None else self.view
         img = pil2cv(draw_screen(self.game, cur_view, self.open))
         cv2.imshow(self.win_name, img)
-        cv2.waitKey(1)
+
+        if cv2.waitKey(1) & 0xff == ord("q"):
+            sys.exit()
 
     # 流局後画面描画
     def draw_ryukyoku(self):
         cur_view = self.game.cur_player if self.view is None else self.view
         img = pil2cv(draw_screen(self.game, cur_view, True, True))
         cv2.imshow(self.win_name, img)
-        cv2.waitKey(0)
+
+        if cv2.waitKey(0) & 0xff == ord("q"):
+            sys.exit()

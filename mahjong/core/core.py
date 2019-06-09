@@ -1,315 +1,398 @@
-import collections
-import copy
-import itertools
 import os
-import pickle
 import random
+import time
+import copy
+import enum
+from operator import add
+import collections
+import itertools
+import pickle
 from abc import ABCMeta, abstractmethod
 from .. import graphic as gp
 
-"""
-color:
-  0...筒子
-  1...索子
-  2...萬子
-  3...東
-  4...南
-  5...西
-  6...北
-  7...白
-  8...發
-  9...中
-
-number:
-  0  ...字牌
-  1-9...数牌
-"""
-
 # ソフト名
 APP_NAME = "Mahjong"
-
-# 全種の牌
-mjhai_all = []
-
-for i in range(3):
-    for j in range(1, 10):
-        mjhai_all.append((i, j))
-
-for i in range(3, 10):
-    mjhai_all.append((i, 0))
-
-# 幺九牌
-mjhai_yaochu = []
-
-for i in range(3):
-    for j in [1, 9]:
-        mjhai_yaochu.append((i, j))
-
-for i in range(3, 10):
-    mjhai_yaochu.append((i, 0))
-
-# 役
-class Yaku():
-    def __init__(self, name, fan):
-        self.name = name
-        self.fan = fan
-
-# 役一覧
-yaku_list = {
-     0: Yaku("ドラ", (1, 1)),
-     1: Yaku("裏ドラ", (1, 0)),
-     2: Yaku("赤ドラ", (1, 1)),
-     3: Yaku("ガリ", (1, 1)),
-     4: Yaku("立直", (1, 0)),
-     5: Yaku("門前清自摸和", (1, 0)),
-     6: Yaku("一発", (1, 0)),
-     7: Yaku("平和", (1, 0)),
-     8: Yaku("一盃口", (1, 0)),
-     9: Yaku("タンヤオ", (1, 1)),
-    10: Yaku("役牌", (1, 1)),
-    11: Yaku("海底摸月", (1, 1)),
-    12: Yaku("河底撈魚", (1, 1)),
-    13: Yaku("嶺上開花", (1, 1)),
-    14: Yaku("槍槓", (1, 1)),
-    15: Yaku("ダブル立直", (1, 0)),
-    16: Yaku("一気通貫", (2, 1)),
-    17: Yaku("チャンタ", (2, 1)),
-    18: Yaku("三色同順", (2, 1)),
-    19: Yaku("三色同刻", (2, 2)),
-    20: Yaku("三暗刻", (2, 2)),
-    21: Yaku("三槓子", (2, 2)),
-    22: Yaku("対々和", (2, 2)),
-    23: Yaku("小三元", (2, 2)),
-    24: Yaku("混老頭", (2, 2)),
-    25: Yaku("七対子", (2, 0)),
-    26: Yaku("二盃口", (3, 0)),
-    27: Yaku("純チャン", (3, 2)),
-    28: Yaku("混一色", (3, 2)),
-    29: Yaku("流し満貫", (5, 0)),
-    30: Yaku("清一色", (6, 5)),
-    31: Yaku("国士無双", (13, 0)),
-    32: Yaku("四暗刻", (13, 0)),
-    33: Yaku("字一色", (13, 13)),
-    34: Yaku("大三元", (13, 13)),
-    35: Yaku("大四喜", (26, 26)),
-    36: Yaku("小四喜", (13, 13)),
-    37: Yaku("緑一色", (13, 13)),
-    38: Yaku("清老頭", (13, 13)),
-    39: Yaku("四槓子", (13, 13)),
-    40: Yaku("九蓮宝燈", (13, 0)),
-    41: Yaku("天和", (13, 0)),
-    42: Yaku("地和", (13, 0)),
-    43: Yaku("人和", (13, 0)),
-    44: Yaku("国士無双十三面待ち", (26, 0)),
-    45: Yaku("四暗刻単騎待ち", (26, 0)),
-    46: Yaku("純正九蓮宝燈", (26, 0)),
-}
 
 # シャンテン数計算テーブルを読み込み
 THIS_PATH = os.path.dirname(os.path.abspath(__file__))
 with open(THIS_PATH + "/shanten_table.bin", "rb") as table_file:
     combi_table = pickle.load(table_file)
 
+# 役の種類
+class Yaku(enum.Enum):
+    DORA       = enum.auto()
+    URADORA    = enum.auto()
+    AKADORA    = enum.auto()
+    GARI       = enum.auto()
+    RICHI      = enum.auto()
+    TSUMO      = enum.auto()
+    IPPATSU    = enum.auto()
+    PINFU      = enum.auto()
+    IPEKO      = enum.auto()
+    TANYAO     = enum.auto()
+    YAKUHAI    = enum.auto()
+    HAITEI     = enum.auto()
+    HOUTEI     = enum.auto()
+    RINSYAN    = enum.auto()
+    CHANKAN    = enum.auto()
+    DABURI     = enum.auto()
+    ITTSU      = enum.auto()
+    CHANTA     = enum.auto()
+    DOUJUN     = enum.auto()
+    DOUKO      = enum.auto()
+    SANANKO    = enum.auto()
+    SANKANTSU  = enum.auto()
+    TOITOI     = enum.auto()
+    SHOUSANGEN = enum.auto()
+    HONRO      = enum.auto()
+    CHITOI     = enum.auto()
+    RYANPEKO   = enum.auto()
+    JUNCHAN    = enum.auto()
+    HONITSU    = enum.auto()
+    NAGASHI    = enum.auto()
+    CHINITSU   = enum.auto()
+    KOKUSHI    = enum.auto()
+    SUANKO     = enum.auto()
+    TSUISO     = enum.auto()
+    DAISANGEN  = enum.auto()
+    DAISUSHI   = enum.auto()
+    SHOUSUSHI  = enum.auto()
+    RYUISO     = enum.auto()
+    CHINRO     = enum.auto()
+    SUKANTSU   = enum.auto()
+    CHUREN     = enum.auto()
+    TENHO      = enum.auto()
+    CHIHO      = enum.auto()
+    RENHO      = enum.auto()
+    KOKUSHI13  = enum.auto()
+    SUTTAN     = enum.auto()
+    CHUREN9    = enum.auto()
+
+# 役名
+yaku_name = {
+    Yaku.DORA:       "ドラ",
+    Yaku.URADORA:    "裏ドラ",
+    Yaku.AKADORA:    "赤ドラ",
+    Yaku.GARI:       "ガリ",
+    Yaku.RICHI:      "立直",
+    Yaku.TSUMO:      "門前清自摸和",
+    Yaku.IPPATSU:    "一発",
+    Yaku.PINFU:      "平和",
+    Yaku.IPEKO:      "一盃口",
+    Yaku.TANYAO:     "タンヤオ",
+    Yaku.YAKUHAI:    "役牌",
+    Yaku.HAITEI:     "海底摸月",
+    Yaku.HOUTEI:     "河底撈魚",
+    Yaku.RINSYAN:    "嶺上開花",
+    Yaku.CHANKAN:    "槍槓",
+    Yaku.DABURI:     "ダブル立直",
+    Yaku.ITTSU:      "一気通貫",
+    Yaku.CHANTA:     "チャンタ",
+    Yaku.DOUJUN:     "三色同順",
+    Yaku.DOUKO:      "三色同刻",
+    Yaku.SANANKO:    "三暗刻",
+    Yaku.SANKANTSU:  "三槓子",
+    Yaku.TOITOI:     "対々和",
+    Yaku.SHOUSANGEN: "小三元",
+    Yaku.HONRO:      "混老頭",
+    Yaku.CHITOI:     "七対子",
+    Yaku.RYANPEKO:   "二盃口",
+    Yaku.JUNCHAN:    "純チャン",
+    Yaku.HONITSU:    "混一色",
+    Yaku.NAGASHI:    "流し満貫",
+    Yaku.CHINITSU:   "清一色",
+    Yaku.KOKUSHI:    "国士無双",
+    Yaku.SUANKO:     "四暗刻",
+    Yaku.TSUISO:     "字一色",
+    Yaku.DAISANGEN:  "大三元",
+    Yaku.DAISUSHI:   "大四喜",
+    Yaku.SHOUSUSHI:  "小四喜",
+    Yaku.RYUISO:     "緑一色",
+    Yaku.CHINRO:     "清老頭",
+    Yaku.SUKANTSU:   "四槓子",
+    Yaku.CHUREN:     "九蓮宝燈",
+    Yaku.TENHO:      "天和",
+    Yaku.CHIHO:      "地和",
+    Yaku.RENHO:      "人和",
+    Yaku.KOKUSHI13:  "国士無双十三面待ち",
+    Yaku.SUTTAN:     "四暗刻単騎待ち",
+    Yaku.CHUREN9:    "純正九蓮宝燈",
+}
+
+# 役の翻数
+yaku_fan = {
+    Yaku.DORA:       (1, 1),
+    Yaku.URADORA:    (1, 0),
+    Yaku.AKADORA:    (1, 1),
+    Yaku.GARI:       (1, 1),
+    Yaku.RICHI:      (1, 0),
+    Yaku.TSUMO:      (1, 0),
+    Yaku.IPPATSU:    (1, 0),
+    Yaku.PINFU:      (1, 0),
+    Yaku.IPEKO:      (1, 0),
+    Yaku.TANYAO:     (1, 1),
+    Yaku.YAKUHAI:    (1, 1),
+    Yaku.HAITEI:     (1, 1),
+    Yaku.HOUTEI:     (1, 1),
+    Yaku.RINSYAN:    (1, 1),
+    Yaku.CHANKAN:    (1, 1),
+    Yaku.DABURI:     (1, 0),
+    Yaku.ITTSU:      (2, 1),
+    Yaku.CHANTA:     (2, 1),
+    Yaku.DOUJUN:     (2, 1),
+    Yaku.DOUKO:      (2, 2),
+    Yaku.SANANKO:    (2, 2),
+    Yaku.SANKANTSU:  (2, 2),
+    Yaku.TOITOI:     (2, 2),
+    Yaku.SHOUSANGEN: (2, 2),
+    Yaku.HONRO:      (2, 2),
+    Yaku.CHITOI:     (2, 0),
+    Yaku.RYANPEKO:   (3, 0),
+    Yaku.JUNCHAN:    (3, 2),
+    Yaku.HONITSU:    (3, 2),
+    Yaku.NAGASHI:    (5, 0),
+    Yaku.CHINITSU:   (6, 5),
+    Yaku.KOKUSHI:    (13, 0),
+    Yaku.SUANKO:     (13, 0),
+    Yaku.TSUISO:     (13, 13),
+    Yaku.DAISANGEN:  (13, 13),
+    Yaku.DAISUSHI:   (26, 26),
+    Yaku.SHOUSUSHI:  (13, 13),
+    Yaku.RYUISO:     (13, 13),
+    Yaku.CHINRO:     (13, 13),
+    Yaku.SUKANTSU:   (13, 13),
+    Yaku.CHUREN:     (13, 0),
+    Yaku.TENHO:      (13, 0),
+    Yaku.CHIHO:      (13, 0),
+    Yaku.RENHO:      (13, 0),
+    Yaku.KOKUSHI13:  (26, 0),
+    Yaku.SUTTAN:     (26, 0),
+    Yaku.CHUREN9:    (26, 0),
+}
+
 # 麻雀牌
 class MjHai():
+    """
+    kind[0]:
+      0...筒子
+      1...索子
+      2...萬子
+      3...東
+      4...南
+      5...西
+      6...北
+      7...白
+      8...發
+      9...中
+
+    kind[1]:
+      0  ...字牌
+      1-9...数牌
+    """
+
     color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chn"]
 
-    def __init__(self, color, number=0, dora=False):
-        self.color = color    # 種類
-        self.number = number  # 数字
-        self.kind = (self.color, self.number)
-        self.dora = dora      # ドラかどうか
+    def __init__(self, kind, dora=False):
+        self.kind = kind # 種類
+        self.dora = dora # ドラかどうか
 
-        self.tumogiri = False # ツモ切り
-        self.richi = False    # リーチ
-        self.furo = False     # 副露
-
-        self.name = MjHai.color_name[self.color] + \
-                    (str(self.number) if self.number > 0 else "") + \
-                    ("@" if self.dora else "")
-
-    def put_kawa(self, tumogiri=False, richi=False, furo=False):
-        self.tumogiri = tumogiri
-        self.richi = richi
-        self.furo = furo
+        # 名称
+        self.name = "{}{}{}".format(
+            MjHai.color_name[self.kind[0]],
+            self.kind[1] if self.kind[1] else "",
+            "@" if self.dora else ""
+        )
 
     # 比較演算子
     def __eq__(self, other):
-        return (self.color, self.number, self.dora) == (other.color, other.number, other.dora)
+        return self.kind == other.kind
 
     def __lt__(self, other):
-        return (self.color, self.number, self.dora) < (other.color, other.number, other.dora)
+        return self.kind + (self.dora,) < other.kind + (other.dora,)
 
     def __gt__(self, other):
-        return (self.color, self.number, self.dora) > (other.color, other.number, other.dora)
+        return self.kind + (self.dora,) > other.kind + (other.dora,)
+
+# 面子の種類
+class EK(enum.Enum):
+    JANTOU  = enum.auto()
+    SHUNTSU = enum.auto()
+    MINSHUN = enum.auto()
+    ANKO    = enum.auto()
+    MINKO   = enum.auto()
+    ANKAN   = enum.auto()
+    MINKAN  = enum.auto()
+    KAKAN   = enum.auto()
+
+# 面子
+class Element():
+    def __init__(self, hais, kind):
+        self.kind = kind
+        self.hais = hais
+
+        self.table = collections.Counter()
+        for hai in self.hais:
+            self.table[hai.kind] += 1
+
+    # =演算子
+    def __eq__(self, other):
+        if self.kind != other.kind:
+            return False
+
+        for self_hai, other_hai in zip(self, other):
+            if self_hai.kind != other_hai.kind:
+                break
+        else:
+            return True
+
+        return False
+
+    # 順子かどうか
+    def is_shuntsu(self):
+        return self.kind in [EK.SHUNTSU, EK.MINSHUN]
+
+    # 刻子かどうか
+    def is_kotsu(self):
+        return self.kind in [EK.ANKO, EK.MINKO, EK.ANKAN, EK.MINKAN, EK.KAKAN]
+
+# 副露した面子
+def Furo(Elememt):
+    def __init__(self, hais, kind, whose):
+        self.whose = whose
+        super().__init__(hais, kind)
 
 # 手牌
 class Tehai():
-    # 面子探索用のノード
-    class Node():
-        def __init__(self, elememt, kind, shanten, count, parent, children):
-            self.element = elememt
-            self.kind = kind
-            self.shanten = shanten
-            self.count = count
-            self.parent = parent
-            self.children = children
-
-    # 面子・面子候補の組み合わせを探索
-    @staticmethod
-    def combi(table, shanten, count, jantou):
-        # テーブルを切り取り
-        def cut_table(table, until):
-            cut_table = copy.deepcopy(table)
-
-            for pop_kind in mjhai_all:
-                if pop_kind >= until:
-                    break
-                cut_table[pop_kind] = 0
-
-            return cut_table
-
-        tree = Tehai.Node((), -1, 8, 4, None, [])
-
-        if not jantou:
-            # 雀頭
-            for hai_kind in mjhai_all:
-                if table[hai_kind] >= 2:
-                    table_pop = cut_table(table, hai_kind)
-                    table_pop[hai_kind] -= 2
-
-                    tree.children.append(Tehai.Node(
-                        (hai_kind, hai_kind), 0, shanten - 1, count, tree,
-                        Tehai.combi(table_pop, shanten - 1, count, True).children
-                    ))
-
-        # 面子・面子候補は4つまで
-        if count < 4:
-            # 順子
-            for i in range(3):
-                for j in range(1, 8):
-                    if table[(i, j)] and table[(i, j + 1)] and table[(i, j + 2)]:
-                        table_pop = cut_table(table, (i, j))
-                        table_pop[(i, j)] -= 1
-                        table_pop[(i, j + 1)] -= 1
-                        table_pop[(i, j + 2)] -= 1
-
-                        tree.children.append(Tehai.Node(
-                            ((i, j), (i, j + 1), (i, j + 2)), 1, shanten - 2, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 2, count + 1, jantou).children
-                        ))
-
-            # 暗刻
-            for hai_kind in mjhai_all:
-                if table[hai_kind] >= 3:
-                    table_pop = cut_table(table, hai_kind)
-                    table_pop[hai_kind] -= 3
-
-                    tree.children.append(Tehai.Node(
-                        (hai_kind, hai_kind, hai_kind), 2, shanten - 2, count + 1, tree,
-                        Tehai.combi(table_pop, shanten - 2, count + 1, jantou).children
-                    ))
-
-            # 両面塔子
-            for i in range(3):
-                for j in range(2, 8):
-                    if table[(i, j)] and table[(i, j + 1)]:
-                        table_pop = cut_table(table, (i, j))
-                        table_pop[(i, j)] -= 1
-                        table_pop[(i, j + 1)] -= 1
-
-                        tree.children.append(Tehai.Node(
-                            ((i, j), (i, j + 1)), 3, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
-                        ))
-
-            # 辺張塔子
-            for i in range(3):
-                for j in [1, 8]:
-                    if table[(i, j)] and table[(i, j + 1)]:
-                        table_pop = cut_table(table, (i, j))
-                        table_pop[(i, j)] -= 1
-                        table_pop[(i, j + 1)] -= 1
-
-                        tree.children.append(Tehai.Node(
-                            ((i, j), (i, j + 1)), 4, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
-                        ))
-
-            # 嵌張塔子
-            for i in range(3):
-                for j in range(1, 8):
-                    if table[(i, j)] and table[(i, j + 2)]:
-                        table_pop = cut_table(table, (i, j))
-                        table_pop[(i, j)] -= 1
-                        table_pop[(i, j + 2)] -= 1
-
-                        tree.children.append(Tehai.Node(
-                            ((i, j), (i, j + 2)), 5, shanten - 1, count + 1, tree,
-                            Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
-                        ))
-
-            # 対子
-            for hai_kind in mjhai_all:
-                if table[hai_kind] >= 2:
-                    table_pop = cut_table(table, hai_kind)
-                    table_pop[hai_kind] -= 2
-
-                    tree.children.append(Tehai.Node(
-                        (hai_kind, hai_kind), 6, shanten - 1, count + 1, tree,
-                        Tehai.combi(table_pop, shanten - 1, count + 1, jantou).children
-                    ))
-
-        return tree
-
     def __init__(self):
-        self.list = []
-        self.furo = []
+        self.hais = []
+        self.furos = []
         self.table = collections.Counter()
+
+        self.tsumo_hai = None
         self.menzen = True
 
-    # 残り個数
     def __len__(self):
-        return len(self.list)
+        return len(self.hais) + (0 if self.tsumo is None else 1)
+
+    # ツモ牌を手牌に格納
+    def store(self):
+        if self.tsumo_hai is not None:
+            self.hais.append(self.tsumo_hai)
+            self.tsumo_hai = None
+
+    # ツモ
+    def tsumo(self, hai):
+        self.store()
+        self.tsumo_hai = hai
+        self.table[hai.kind] += 1
 
     # 追加
-    def append(self, *hais):
-        for hai in hais:
-            self.list.append(hai)
-            self.table[(hai.color, hai.number)] += 1
+    def append(self, hai):
+        self.hais.append(hai)
+        self.table[hai.kind] += 1
 
     # 挿入
     def insert(self, index, hai):
-        self.list.insert(index, hai)
-        self.table[(hai.color, hai.number)] += 1
+        self.hais.insert(index, hai)
+        self.table[hai.kind] += 1
 
     # 番号で取り出し
     def pop(self, index=-1):
-        hai = self.list.pop(index)
-        self.table[(hai.color, hai.number)] -= 1
-        return hai
+        self.store()
+        pop_hai = self.hais.pop(index)
+        self.table[pop_hai.kind] -= 1
+        return pop_hai
 
-    # 種類で取り出し
-    def pop_kind(self, kind):
-        for hai in self.list:
+    # 牌を指定して取り出し
+    def remove(self, hai):
+        self.store()
+        remove_hai = self.hais.remove(hai)
+        self.table[remove_hai.kind] -= 1
+        return remove_hai
+
+    # 牌の種類を指定して検索
+    def find(self, kind, dora=False):
+        for i, hai in enumerate(self.hais + [self.tsumo]):
             if hai.kind == kind:
-                self.list.remove(hai)
-                self.table[(hai.color, hai.number)] -= 1
                 return hai
+        return None
 
     # 並べ替え
     def sort(self):
-        self.list.sort()
+        self.hais.sort()
+
+    # 暗槓可能な牌
+    def ankan_able(self):
+        for kind, count in self.table.items():
+            if count >= 4:
+                yield [self.find(kind) for i in range(4)]
+
+    # 加槓可能な牌
+    def kakan_able(self):
+        for furo in self.furos:
+            # 明刻だったら
+            if furo.kind == EK.MINKO:
+                for kind, count in self.table.items():
+                    # 明刻と同じ牌だったら
+                    if furo[0].kind == kind:
+                        yield [self.find(kind)]
+
+    # ポン可能な牌
+    def pon_able(self, hai):
+        if self.table[hai.kind] >= 2:
+            yield [self.find(kind) for i in range(2)]
+
+    # チー可能な牌
+    def chi_able(self, hai):
+        for i in range(-2, 1):
+            for j in range(3):
+                if i + j and self.table[hai.kind[0], hai.kind[1] + i + j]:
+                    break
+            else:
+                yield [self.find(hai.kind[0], hai.kind[1] + i + j) for j in range(3) if i + j]
+
+    # 明槓可能な牌
+    def minkan_able(self, hai):
+        if self.table[hai.kind] >= 3:
+            yield [self.find(kind) for i in range(3)]
+
+    # 暗槓
+    def ankan(self, hais):
+        ankan_hais = [self.remove(hai) for hai in hais]
+        self.furos.append(Element(furo_hais, EK.ANKAN))
+
+    # 明槓
+    def minkan(self, hais, whose):
+        furo_hais = [self.remove(hai) for hai in hais]
+        self.furos.append(Furo(furo_hais, EK.MINKAN, whose))
+
+    # ポン
+    def pon(self, hais, whose):
+        furo_hais = [self.remove(hai) for hai in hais]
+        self.furos.append(Furo(furo_hais, EK.MINKO, whose))
+
+    # チー
+    def chi(self, hais, whose):
+        furo_hais = [self.remove(hai) for hai in hais]
+        self.furos.append(Furo(furo_hais, EK.MINSHUN, whose))
 
     # 表示
     def show(self):
-        for hai in self.list:
+        for hai in self.hais:
             print(format(hai.name, "<4s"), end="")
-        print()
 
-        for j in range(len(self.list)):
+        if self.tsumo_hai is not None:
+            print(" {}".format(self.tsumo_hai.name))
+        else:
+            print()
+
+        for j in range(len(self.hais)):
             print(format(j, "<4d"), end="")
-        print()
+
+        if self.tsumo is not None:
+            print(" {}".format(j + 1))
+        else:
+            print()
 
     # 通常手のシャンテン数
     def shanten_normal(self):
@@ -324,7 +407,7 @@ class Tehai():
                 else:
                     combi_key.append(table[(color, i)])
 
-            # 前後の0は切り取り
+            # 前後の0を切り取り
             for i in range(9):
                 if combi_key[0] == 0:
                     combi_key.pop(0)
@@ -342,8 +425,9 @@ class Tehai():
             return tuple(combi_key)
 
         # 雀頭を考慮しないシャンテン数
-        def shanten_without_jantou(table, furo_num):
-            shanten_min = 8 - len(self.furo) * 2
+        def shanten_without_jantou(table):
+            mentsu_max = 4 - len(self.furos)
+            shanten_min = 8 - len(self.furos) * 2
 
             # 字牌の面子・面子候補
             jihai_combi = [0, 0]
@@ -355,48 +439,52 @@ class Tehai():
                     jihai_combi[1] += 1
 
             # 全ての面子・面子候補の組み合わせ
-            combi_all = itertools.product([tuple(jihai_combi)], *(combi_table[create_key(self.table, i)] for i in range(3)))
+            combi_all = itertools.product(*(combi_table[create_key(self.table, i)] for i in range(3)), [tuple(jihai_combi)])
 
             for cur_combi in combi_all:
-                cur_shanten = 8 - furo_num * 2
-                count = 0
+                cur_shanten = 8 - len(self.furos) * 2
+                mentsu_num = 0
 
                 # 面子から取り出し
                 for i in range(2):
                     for elememt in cur_combi:
-                        if count + elememt[i] >= 4 - furo_num:
-                            cur_shanten -= (2 if i == 0 else 1) * (4 - furo_num - count)
-                            count = 4 - furo_num
+                        if mentsu_num + elememt[i] >= mentsu_max:
+                            cur_shanten -= (2 if i == 0 else 1) * (mentsu_max - mentsu_num)
+                            mentsu_num = mentsu_max
                             break
                         else:
                             cur_shanten -= (2 if i == 0 else 1) * elememt[i]
-                            count = count + elememt[i]
+                            mentsu_num = mentsu_num + elememt[i]
 
-                shanten_min = min(shanten_min, cur_shanten)
+                if cur_shanten < shanten_min:
+                    shanten_min = cur_shanten
 
             return shanten_min
 
         # 雀頭なしのシャンテン数
-        shanten_min = shanten_without_jantou(self.table, len(self.furo))
+        shanten_min = shanten_without_jantou(self.table)
 
         # 全ての雀頭候補を取り出してシャンテン数を計算
-        for key in self.table:
-            if self.table[key] >= 2:
-                self.table[key] -= 2
-                shanten_min = min(shanten_min, shanten_without_jantou(self.table, len(self.furo)) - 1)
-                self.table[key] += 2
+        for kind, count in self.table.items():
+            if count >= 2:
+                self.table[kind] -= 2
+
+                cur_shanten = shanten_without_jantou(self.table) - 1
+                if cur_shanten < shanten_min:
+                    shanten_min = cur_shanten
+
+                self.table[kind] += 2
 
         return shanten_min
 
     # 七対子のシャンテン数
-    def shanten_7toitu(self):
+    def shanten_chitoi(self):
         if not self.menzen:
             return 13
 
         shanten_num = 6
-
-        for key in self.table:
-            if self.table[key] >= 2:
+        for count in self.table.values():
+            if count >= 2:
                 shanten_num -= 1
 
         return shanten_num
@@ -407,95 +495,100 @@ class Tehai():
             return 13
 
         shanten_num = 13
-        toitu = False
+        jantou = False
 
-        for hai_kind in mjhai_yaochu:
-            if self.table[hai_kind]:
-                shanten_num -= 1
-
-            if self.table[hai_kind] >= 2 and not toitu:
-                shanten_num -= 1
-                toitu = True
+        for kind, count in self.table.items():
+            if count and kind[1] in [0, 1, 9]:
+                # 雀頭
+                if count >= 2 and not jantou:
+                    shanten_num -= 2
+                    jantou = True
+                else:
+                    shanten_num -= 1
 
         return shanten_num
 
     # シャンテン数
     def shanten(self):
-        return min(self.shanten_normal(), self.shanten_7toitu(), self.shanten_kokushi())
+        return min(self.shanten_normal(), self.shanten_chitoi(), self.shanten_kokushi())
 
     # 役
     def yaku(self):
+        # 和了時の面子の組み合わせを探索
+        def combi_agari():
+            # 全ての雀頭候補を取り出す
+            for kind, count in self.table.items():
+                if count >= 2:
+                    self.table[kind] -= 2
+
+                    # 0...順子 1...暗刻
+                    mentsu_combi = itertools.product([0, 1], 4 - len(self.furos))
+
+                    # 左から順番に面子を取り出し
+                    for cur_combi in mentsu_combi:
+                        return_combi = self.furos + [Element([self.find(kind), self.find(kind)], EK.JANTOU)]
+                        temp_table = copy.deepcopy(self.table)
+
+                        for mentsu_kind in cur_combi:
+                            # 開始点
+                            for i in range(10):
+                                for j in range(10):
+                                    if temp_table[(i, j)]:
+                                        break
+                                else:
+                                    continue
+                                break
+
+                            if mentsu_kind == 0:
+                                # 順子
+                                if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
+                                    return_combi.append(Element([self.find((i, j)), self.find((i, j + 1)), self.find((i, j + 2))], EK.SHUNTSU))
+                                    for k in range(3):
+                                        temp_table[(i, j + k)] -= 1
+                                else:
+                                    break
+                            else:
+                                # 暗刻
+                                if temp_table[(i, j)] >= 3:
+                                    return_combi.append(Element([self.find((i, j)), self.find((i, j)), self.find((i, j))], EK.ANKO))
+                                    temp_table[(i, j)] -= 3
+                                else:
+                                    break
+                        else:
+                            yield return_combi
+
+                    self.table[kind] += 2
+
         if self.shanten() > -1:
             return []
 
+        # 国士無双
         if self.shanten_kokushi() == -1:
-            return [[31]]
+            return [[Yaku.KOKUSHI]]
 
-        # 和了時の面子の組み合わせを探索
-        combi_agari = []
-
-        # 全ての雀頭候補を取り出す
-        for key in self.table:
-            if self.table[key] >= 2:
-                self.table[key] -= 2
-
-                # 0...順子 1...暗刻
-                mentu_combi = itertools.product([0, 1], repeat=4)
-
-                # 左から順番に面子を取り出し
-                for cur_combi in mentu_combi:
-                    append_combi = [[(key, key)], [], []]
-                    temp_table = copy.deepcopy(self.table)
-
-                    for mentu in cur_combi:
-                        # 開始点
-                        for i in range(10):
-                            for j in range(10):
-                                if temp_table[(i, j)]:
-                                    break
-                            else:
-                                continue
-                            break
-
-                        if mentu == 0:
-                            # 順子
-                            if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
-                                append_combi[1].append(((i, j), (i, j + 1), (i, j + 2)))
-                                for k in range(3):
-                                    temp_table[(i, j + k)] -= 1
-                            else:
-                                break
-                        else:
-                            # 暗刻
-                            if temp_table[(i, j)] >= 3:
-                                append_combi[2].append(((i, j), (i, j), (i, j)))
-                                temp_table[(i, j)] -= 3
-                            else:
-                                break
-                    else:
-                        combi_agari.append(append_combi)
-
-                self.table[key] += 2
-
-        # 全ての組み合わせでの役
-        yaku_agari = []
+        # 組み合わせに関係なく共通の役
+        yakuman_common = []
         yaku_common = []
-        yakuman = False
+
+        # 副露含め全てのテーブル
+        all_table = self.table
+        for furo in self.furos:
+            all_table += furo.table
 
         # 役満から先に調べる
         # 字一色
-        for key in self.table:
-            if self.table[key] > 0 and key[0] < 3:
+        for kind, count in all_table.items():
+            if count > 0 and kind[0] < 3:
                 break
         else:
-            yaku_common.append(33)
+            yakuman_common.append(Yaku.TSUISO)
 
         # 緑一色
-        for key in self.table:
-            if self.table[key] > 0 and not key in [(1, 2), (1, 3), (1, 4), (1, 6), (1, 8), (8, 0)]:
+        for kind, count in all_table.items():
+            if count > 0 and not kind in [(1, 2), (1, 3), (1, 4), (1, 6), (1, 8), (8, 0)]:
                 break
         else:
-            yaku_common.append(37)
+            yakuman_common.append(Yaku.RYUISO)
 
         # 九蓮宝燈
         for i in range(3):
@@ -503,177 +596,208 @@ class Tehai():
                 if self.table[(i, j)] < (3 if j == 1 or j == 9 else 1):
                     break
             else:
-                yaku_common.append(40)
+                yakuman_common.append(Yaku.CHUREN)
+                break
 
-        if len(yaku_common):
-            yakuman = True
-        else:
+        if len(yakuman_common) == 0:
             # タンヤオ
-            for key in self.table:
-                if self.table[key] > 0 and not 2 <= key[1] <= 8:
+            for kind, count in all_table.items():
+                if count > 0 and not 2 <= kind[1] <= 8:
                     break
             else:
-                yaku_common.append(9)
+                yaku_common.append(Yaku.TANYAO)
 
             # 混一色・清一色
-            append_id = 30
+            append_yaku = Yaku.CHINITSU
             for i in range(3):
-                for key in self.table:
-                    if self.table[key] > 0 and key[0] != i:
-                        if key[0] >= 3:
-                            append_id = 28
+                for kind, count in all_table.items():
+                    if count > 0 and kind[0] != i:
+                        if kind[0] >= 3:
+                            append_yaku = Yaku.HONITSU
                         else:
                             break
                 else:
-                    yaku_common.append(append_id)
+                    yaku_common.append(append_yaku)
+                    break
 
             # 混老頭・清老頭
             routou = False
-            append_id = 38
-            for key in self.table:
-                if self.table[key] > 0:
-                    if key[0] >= 3:
-                        append_id = 24
-                    if 2 <= key[1] <= 8:
+            append_yaku = Yaku.CHINRO
+            for kind, count in all_table.items():
+                if count > 0:
+                    if kind[0] >= 3:
+                        append_yaku = Yaku.HONRO
+                    if 2 <= kind[1] <= 8:
                         break
             else:
                 routou = True
-                yaku_common.append(append_id)
+                yaku_common.append(append_yaku)
 
             # 七対子
-            if self.shanten_7toitu() == -1:
-                yaku_agari.append(yaku_common + [25])
+            if self.shanten_chitoi() == -1:
+                return [yaku_common + [Yaku.CHITOI]]
 
-        for cur_combi in combi_agari:
-            yaku_append = yaku_common[:] if yakuman else []
+        # 全ての組み合わせでの役
+        for cur_combi in combi_agari():
+            yaku_list = yakuman_common[:]
 
             # 四暗刻
-            if len(cur_combi[2]) == 4:
-                yaku_append.append(32)
+            if sum(1 for elememt in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 4:
+                yaku_list.append(Yaku.SUANKO)
 
-            # 大四喜
+            # 大四喜・小四喜
+            append_yaku = Yaku.DAISUSHI
             for i in range(3, 7):
-                if not ((i, 0), (i, 0), (i, 0)) in cur_combi[2]:
+                for element in cur_combi:
+                    if element.kind == EK.JANTOU and element.hais[0].kind[0] == i:
+                        append_yaku = Yaku.SHOUSUSHI
+                        break
+
+                    elif element.is_kotsu() and element.hais[0].kind[0] == i:
+                        break
+                else:
                     break
             else:
-                yaku_append.append(35)
-            
-            # 小四喜
-            for i in range(3, 7):
-                if cur_combi[0][0] == ((i, 0), (i, 0)):
-                    for j in range(3, 7):
-                        if j != i and not ((j, 0), (j, 0), (j, 0)) in cur_combi[2]:
-                            break
-                    else:
-                        yaku_append.append(36)
-                    
+                yaku_list.append(append_yaku)
+
             # 大三元
             for i in range(7, 10):
-                if not ((i, 0), (i, 0), (i, 0)) in cur_combi[2]:
+                for element in cur_combi:
+                    if element.is_kotsu() and element.hais[0].kind[0] == i:
+                        break
+                else:
                     break
             else:
-                yaku_append.append(34)
+                yaku_list.append(Yaku.DAISANGEN)
 
-            if len(yaku_append) == 0:
-                yaku_append = yaku_common[:]
+            if len(yaku_list) == 0:
+                yaku_list = yaku_common[:]
 
-                # 平和
-                if len(cur_combi[1]) == 4:
-                    yaku_append.append(7)
+                if self.menzen:
+                    # 平和
+                    if sum(1 for elememt in cur_combi if element.kind == EK.SHUNTSU) == 4:
+                        yaku_list.append(Yaku.PINFU)
 
-                # 一盃口・二盃口
-                append_id = 0
-                for i in range(3):
-                    for j in range(1, 8):
-                        if cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 4:
-                            append_id = 26
+                    # 一盃口・二盃口
+                    peko_num = 0
 
-                        elif cur_combi[1].count(((i, j), (i, j + 1), (i, j + 2))) >= 2:
-                            if (append_id == 0):
-                                append_id = 8
-                            else:
-                                append_id = 26
-                
-                if append_id:
-                    yaku_append.append(append_id)
+                    for peko_combi in itertools.combinations(cur_combi, 2):
+                        if peko_combi[0] == peko_combi[1]:
+                            peko_num += 1
+                        
+                    if peko_num == 1:
+                        yaku_list.append(Yaku.IPEKO)
+                    elif peko_num == 2:
+                        yaku_list.append(Yaku.RYANPEKO)
 
                 # 一気通貫
                 for i in range(3):
                     for j in range(3):
-                        if not ((i, j * 3 + 1), (i, j * 3 + 2), (i, j * 3 + 3)) in cur_combi[1]:
+                        for element in cur_combi:
+                            if element.is_shuntsu() and sum(element.table[(i, j * 3 + k)] for k in range(1, 4)) == 3:
+                                break
+                        else:
                             break
                     else:
-                        yaku_append.append(16)
+                        yaku_list.append(Yaku.ITTSU)
+                        break
 
                 # 三色同順
                 for i in range(1, 8):
                     for j in range(3):
-                        if not ((j, i), (j, i + 1), (j, i + 2)) in cur_combi[1]:
+                        for element in cur_combi:
+                            if element.is_shuntsu() and sum(element.table[(j, i + k)] for k in range(3)) == 3:
+                                break
+                        else:
                             break
                     else:
-                        yaku_append.append(18)
+                        yaku_list.append(Yaku.DOUJUN)
+                        break
 
                 # 三色同刻
                 for i in range(1, 10):
                     for j in range(3):
-                        if not ((j, i), (j, i), (j, i)) in cur_combi[2]:
+                        for element in cur_combi:
+                            if element.is_kotsu() and element.table[(j, i)] >= 3:
+                                break
+                        else:
                             break
                     else:
-                        yaku_append.append(19)
+                        yaku_list.append(Yaku.DOUKO)
+                        break
 
                 # 役牌
-                for anko in cur_combi[2]:
-                    if anko[0][0] >= 3:
-                        yaku_append.append(10)
+                for element in cur_combi:
+                    if element.is_kotsu() and element.hais[0].kind[0] >= 3:
+                        yaku_list.append(Yaku.YAKUHAI)
 
                 # チャンタ・純チャン
                 if not routou:
-                    append_id = 27
-                    for elements in cur_combi:
-                        for element in elements:
-                            for hai_kind in element:
-                                if hai_kind[1] == 1 or hai_kind[1] == 9:
-                                    break
-                                elif hai_kind[0] >= 3:
-                                    append_id = 17
-                                    break
-                            else:
+                    append_yaku = Yaku.JUNCHAN
+                    for element in cur_combi:
+                        for hai in element.hais:
+                            if hai.kind[1] == 1 or hai.kind[1] == 9:
+                                break
+
+                            elif hai.kind[0] >= 3:
+                                append_yaku = Yaku.CHANTA
                                 break
                         else:
                             continue
                         break
                     else:
-                        yaku_append.append(append_id)
+                        yaku_list.append(append_yaku)
 
                 # 三暗刻
-                if len(cur_combi[2]) == 3:
-                    yaku_append.append(20)
+                if sum(1 for elememt in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
+                    yaku_list.append(Yaku.SANANKO)
 
-            yaku_agari.append(yaku_append)
+            yield yaku_list
 
-        return yaku_agari
+# 河の麻雀牌
+class KawaMjHai(MjHai):
+    def __init__(self, hai, tsumogiri, richi, furo):
+        self.kind = hai.kind
+        self.dora = hai.dora
+        self.name = hai.name
+        self.tsumogiri = tsumogiri
+        self.richi = richi
+        self.furo = furo
 
 # 河
 class Kawa():
     def __init__(self):
-        self.list = []
+        self.hais = []
 
     # 追加
-    def append(self, hai, tumogiri=False, richi=False, furo=False):
-        hai.put_kawa(tumogiri, richi, furo)
-        self.list.append(hai)
+    def append(self, hai, tsumogiri=False, richi=False, furo=False):
+        self.hais.append(KawaMjHai(hai, tsumogiri, richi, furo))
 
 # 山
 class Yama():
     def __init__(self, mjhai_set):
-        self.list = copy.deepcopy(mjhai_set)
-        random.shuffle(self.list)
-        self.remain = len(self.list) - 14
+        seed = time.time() #1559974153.2062666
+        print("seed = {}".format(seed))
+        random.seed(seed)
+
+        self.hais = copy.deepcopy(mjhai_set)
+        random.shuffle(self.hais)
+        self.remain = len(self.hais) - 14
+
+        self.doras = [self.hais[0]]
+        self.uradoras = [self.hais[1]]
+        self.dora_num = 1
     
     # 取り出し
     def pop(self):
         self.remain -= 1
-        return self.list.pop()
+        return self.hais.pop()
+
+    # ドラを増やす
+    def add_dora(self):
+        self.doras.append(self.hais[self.dora_num * 2])
+        self.uradoras.append(self.hais[self.dora_num * 2 + 1])
+        self.dora_num += 1
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
@@ -696,13 +820,14 @@ class Player(metaclass=ABCMeta):
     # 配牌
     def haipai(self):
         for i in range(13):
-            self.tumo()
+            pop_hai = self.game.yama.pop()
+            self.tehai.append(pop_hai)
         self.tehai.sort()
 
     # 自摸
-    def tumo(self):
+    def tsumo(self):
         pop_hai = self.game.yama.pop()
-        self.tehai.append(pop_hai)
+        self.tehai.tsumo(pop_hai)
 
     # 打牌
     def dahai(self):
@@ -714,29 +839,30 @@ class Player(metaclass=ABCMeta):
         if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
             self.richi = self.call_richi()
 
-        tumogiri = (index == 13 - len(self.tehai.furo) * 3 or index == -1)
-        self.kawa.append(pop_hai, tumogiri, self.richi)
+        tsumogiri = (index == len(self.tehai.hais) or index == -1)
+        self.kawa.append(pop_hai, tsumogiri, self.richi)
         self.tehai.sort()
 
     # ツモ・暗槓・加槓チェック
     def check_self(self):
         if self.tehai.shanten() == -1:
-            return self.agari_tumo()
+            return self.agari_tsumo()
 
+        """
         # 暗槓
-        for key in self.tehai.table:
-            if self.tehai.table[key] >= 4 and self.ankan(key):
-                self.tehai.furo.append([self.tehai.pop_kind(key) for i in range(4)])
-                self.game.tumo()
+        for cur_ankan in self.tehai.ankan_able():
+            if self.ankan(cur_ankan):
+                self.tehai.ankan(cur_ankan)
+                self.game.tsumo()
 
-                return False
-
+            return False
+        """
         return False
 
     # ロン・明槓・ポン・チーチェック
     def check_other(self, player):
-        check_hai = player.kawa.list[-1]
-        self.tehai.append(check_hai)
+        check_hai = player.kawa.hais[-1]
+        self.tehai.tsumo(check_hai)
 
         # ロン
         if self.tehai.shanten() == -1 and self.agari_ron(player):
@@ -745,22 +871,23 @@ class Player(metaclass=ABCMeta):
 
         self.tehai.pop()
 
+        """
         if not self.richi:
             # 明槓
             if self.tehai.table[check_hai.kind] >= 3 and self.minkan(player):
                 self.tehai.menzen = False
                 check_hai.furo = True
 
-                append_mentu = []
+                append_mentsu = []
                 for i in range(4):
                     if int(((player.chicha - self.chicha) % 4 - 1) * 1.5) == i:
-                        append_mentu.append(check_hai)
+                        append_mentsu.append(check_hai)
                     else:
-                        append_mentu.append(self.tehai.pop_kind(check_hai.kind))
+                        append_mentsu.append(self.tehai.pop_kind(check_hai.kind))
 
-                self.tehai.furo.append(append_mentu)
+                self.tehai.furo.append(append_mentsu)
                 self.game.change_player(self.chicha)
-                self.game.tumo()
+                self.game.tsumo()
                 self.game.dahai()
 
                 return False
@@ -770,18 +897,19 @@ class Player(metaclass=ABCMeta):
                 self.tehai.menzen = False
                 check_hai.furo = True
 
-                append_mentu = []
+                append_mentsu = []
                 for i in range(3):
                     if (player.chicha - self.chicha) % 4 - 1 == i:
-                        append_mentu.append(check_hai)
+                        append_mentsu.append(check_hai)
                     else:
-                        append_mentu.append(self.tehai.pop_kind(check_hai.kind))
+                        append_mentsu.append(self.tehai.pop_kind(check_hai.kind))
 
-                self.tehai.furo.append(append_mentu)
+                self.tehai.furo.append(append_mentsu)
                 self.game.change_player(self.chicha)
                 self.game.dahai()
 
                 return False
+        """
 
         return False
 
@@ -792,7 +920,7 @@ class Player(metaclass=ABCMeta):
 
     # ツモ和了
     @abstractmethod
-    def agari_tumo(self):
+    def agari_tsumo(self):
         pass
 
     # ロン和了
@@ -851,7 +979,7 @@ class Game():
         self.cur_player = self.players[self.cur]
 
         self.yama = Yama(mjhai_set)
-        self.screen = gp.Screen(self, False, self.players[1])
+        self.screen = gp.Screen(self, True, self.players[1])
 
     # 局を表す文字列
     def kyoku_name(self):
@@ -865,8 +993,8 @@ class Game():
         self.screen.draw()
 
     # ツモ
-    def tumo(self):
-        self.cur_player.tumo()
+    def tsumo(self):
+        self.cur_player.tsumo()
         self.screen.draw()
 
         return self.cur_player.check_self()

@@ -7,22 +7,19 @@ import mahjong.graphic as gp
 mjhai_set = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_set.extend(mj.MjHai(i, j) for k in range(4))
+        mjhai_set.extend(mj.MjHai((i, j), j == 5 and k == 3) for k in range(4))
 
 # 萬子
-mjhai_set.extend(mj.MjHai(2, 1) for i in range(4))
-mjhai_set.extend(mj.MjHai(2, 9) for i in range(4))
+mjhai_set.extend(mj.MjHai((2, 1)) for i in range(4))
+mjhai_set.extend(mj.MjHai((2, 9)) for i in range(4))
 
 # 字牌
 for i in range(3, 10):
-    mjhai_set.extend(mj.MjHai(i) for j in range(4))
+    mjhai_set.extend(mj.MjHai((i, 0)) for j in range(4))
 
 # プレイヤー
 players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
-#players = [mp.Human("Human1"), mp.Human("Human2"), mp.Human("Human3")]
-
-#human = mp.Human("Human")
-#players = [human, mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+#players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
 
 game = mj.Game(mjhai_set, players)
 print(game.kyoku_name())
@@ -33,7 +30,7 @@ game.haipai()
 
 while game.yama.remain > 0:
     # ツモ
-    if game.tumo():
+    if game.tsumo():
         print("{}：ツモ".format(game.cur_player.name))
         break
 

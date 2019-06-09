@@ -12,7 +12,7 @@ class Isokun(core.Player):
         return True
 
     # ツモ和了
-    def agari_tumo(self):
+    def agari_tsumo(self):
         return True
 
     # ロン和了
@@ -51,22 +51,23 @@ class Tenari(core.Player):
         remain_hai = self.game.mjhai_set[:]
 
         # 自身の手牌
-        for hai in self.tehai.list:
+        for hai in self.tehai.hais:
             remain_hai.remove(hai)
 
         for player in self.game.players:
             # 副露
-            for cur_furo in player.tehai.furo:
+            for cur_furo in player.tehai.furos:
                 for hai in cur_furo:
                     remain_hai.remove(hai)
 
             # 河
-            for hai in player.kawa.list:
+            for hai in player.kawa.hais:
                 if not hai.furo:
                     remain_hai.remove(hai)
 
         # ドラ
-        remain_hai.remove(self.game.yama.list[0])
+        for dora in self.game.yama.doras:
+            remain_hai.remove(dora)
 
         for i in range(len(self.tehai)):
             # 1枚ずつ切ってみる
@@ -98,7 +99,7 @@ class Tenari(core.Player):
         return True
 
     # ツモ和了
-    def agari_tumo(self):
+    def agari_tsumo(self):
         return True
 
     # ロン和了
@@ -119,15 +120,15 @@ class Tenari(core.Player):
         if self.tehai.menzen:
             return False
 
-        check_hai = player.kawa.list[-1]
+        check_hai = player.kawa.hais[-1]
         temp_tehai = copy.deepcopy(self.tehai)
 
         # シャンテン数が下がらないなら明槓
-        append_mentu = []
-        append_mentu.append(check_hai)
+        append_mentsu = []
+        append_mentsu.append(check_hai)
         for i in range(3):
-            append_mentu.append(temp_tehai.pop_kind(check_hai.kind))
-        temp_tehai.furo.append(append_mentu)
+            append_mentsu.append(temp_tehai.pop_kind(check_hai.kind))
+        temp_tehai.furo.append(append_mentsu)
 
         return temp_tehai.shanten() <= self.tehai.shanten()
 
@@ -137,15 +138,15 @@ class Tenari(core.Player):
 
     # ポン
     def pon(self, player):
-        check_hai = player.kawa.list[-1]
+        check_hai = player.kawa.hais[-1]
         temp_tehai = copy.deepcopy(self.tehai)
 
         # シャンテン数が進むならポン
-        append_mentu = []
-        append_mentu.append(check_hai)
+        append_mentsu = []
+        append_mentsu.append(check_hai)
         for i in range(2):
-            append_mentu.append(temp_tehai.pop_kind(check_hai.kind))
-        temp_tehai.furo.append(append_mentu)
+            append_mentsu.append(temp_tehai.pop_kind(check_hai.kind))
+        temp_tehai.furo.append(append_mentsu)
 
         return temp_tehai.shanten() < self.tehai.shanten()
 
