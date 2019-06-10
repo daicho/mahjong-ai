@@ -293,10 +293,10 @@ def draw_screen(game, view, open=False, uradora=False):
     return create_img
 
 class Screen():
-    def __init__(self, game, open=False, view=None):
+    def __init__(self, game, view=None, open=False):
         self.game = game
-        self.view = view
         self.open = open
+        self.view = view
 
         # ウィンドウ名
         self.win_name = mj.APP_NAME

@@ -24,16 +24,11 @@ class Human(core.Player):
             if select_input == "q":
                 sys.exit()
 
-            # リーチ
-            elif select_input == "r" and self.tehai.shanten() <= 0:
-                print("リーチ")
-                self.richi = True
-
             # ツモ切り
             elif select_input == "":
                 return -1
 
-            elif 0 <= int(select_input) < 14:
+            elif 0 <= int(select_input) < len(self.tehai):
                 break
 
         return int(select_input)

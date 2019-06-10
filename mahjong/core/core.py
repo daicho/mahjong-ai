@@ -19,7 +19,7 @@ with open(THIS_PATH + "/shanten_table.bin", "rb") as table_file:
     combi_table = pickle.load(table_file)
 
 # シード値を設定
-seed = time.time() #1559974153.2062666
+seed = time.time()
 random.seed(seed)
 print("seed = {}".format(seed))
 
@@ -973,12 +973,19 @@ class Game():
         self.change_player((self.turn + 1) % self.players_num)
 
     # 次の局へ
-    def next_kyoku(self):
-        self.kyoku += 1
-        if self.kyoku >= self.players_num:
-            self.kyoku = 0
-            self.bakaze += 1
+    def next_kyoku(self, renchan, ryukyoku):
+        if not renchan:
+            self.kyoku += 1
+            if self.kyoku >= self.players_num:
+                self.kyoku = 0
+                self.bakaze += 1
 
+        if renchan or ryukyoku:
+            self.honba += 1
+        else:
+            self.honba = 0
+
+        self.change_player(self.kyoku)
         self.yama = Yama(self.mjhai_set) # 牌山
 
     # 局開始
@@ -995,7 +1002,8 @@ class Game():
                 for cur_yaku_list in self.cur_player.tehai.yaku():
                     for cur_yaku in cur_yaku_list:
                         print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
-                break
+
+                return self.cur_player.jikaze() == 0, False
 
             # コンソール表示
             print("{} [残り{}]".format(self.cur_player.name, self.yama.remain))
@@ -1003,32 +1011,52 @@ class Game():
 
             # 打牌
             end = False
+            renchan = False
+
             for ron_player in self.dahai():
-                end = True
                 print("{}→{}：ロン".format(self.cur_player.name, ron_player.name))
                 for cur_yaku_list in ron_player.tehai.yaku():
                     for cur_yaku in cur_yaku_list:
                         print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+
+                end = True
+                if ron_player.jikaze() == 0:
+                    renchan = True
+
             if end:
-                break
+                return renchan, False
 
             print()
             self.next_player()
-        else:
-            print("流局")
+
+        print("流局")
+
+        for player in self.players:
+            print("{}：{}".format(player.name, "テンパイ" if player.tehai.shanten() <= 0 else "ノーテン"))
+
+        return self.players[self.kyoku].tehai.shanten() <= 0, True
 
     # ゲーム開始
     def start(self):
         while self.bakaze <= 1:
-            self.start_kyoku()
-            self.next_kyoku()
+            renchan, ryukyoku = self.start_kyoku()
+            print(renchan)
+
+            if ryukyoku:
+                for player in self.players:
+                    if player.richi:
+                        self.kyotaku += 1
+            else:
+                self.kyotaku = 0
+
+            self.next_kyoku(renchan, ryukyoku)
 
 # グラフィカルなゲーム
 class GraphicalGame(Game):
     kaze_name = ["東", "南", "西", "北"]
 
-    def __init__(self, mjhai_set, yaku, players, point, view):
-        self.screen = gp.Screen(self, True, view)
+    def __init__(self, mjhai_set, yaku, players, point, view=None, open=False):
+        self.screen = gp.Screen(self, view, open)
         super().__init__(mjhai_set, yaku, players, point)
 
     # 配牌
@@ -1038,15 +1066,17 @@ class GraphicalGame(Game):
 
     # ツモ
     def tsumo(self):
+        agari = super().tsumo()
         self.screen.draw()
-        return super().tsumo()
+        return agari
 
     # 打牌
     def dahai(self):
-        self.screen.draw()
         yield from super().dahai()
+        self.screen.draw()
 
     # 局開始
     def start_kyoku(self):
-        super().start_kyoku()
+        renchan, ryukyoku = super().start_kyoku()
         self.screen.draw_result()
+        return renchan, ryukyoku
