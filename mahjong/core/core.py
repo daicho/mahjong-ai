@@ -205,7 +205,7 @@ class MjHai():
 
     # 比較演算子
     def __eq__(self, other):
-        return self.kind == other.kind
+        return self.kind + (self.dora,) == other.kind + (other.dora,)
 
     def __lt__(self, other):
         return self.kind + (self.dora,) < other.kind + (other.dora,)
@@ -239,7 +239,7 @@ class Element():
         if self.kind != other.kind:
             return False
 
-        for self_hai, other_hai in zip(self, other):
+        for self_hai, other_hai in zip(self.hais, other.hais):
             if self_hai.kind != other_hai.kind:
                 break
         else:
@@ -256,7 +256,7 @@ class Element():
         return self.kind in [EK.ANKO, EK.MINKO, EK.ANKAN, EK.MINKAN, EK.KAKAN]
 
 # 副露した面子
-def Furo(Elememt):
+class Furo(Element):
     def __init__(self, hais, kind, whose):
         self.whose = whose
         super().__init__(hais, kind)
@@ -287,9 +287,10 @@ class Tehai():
         self.table[hai.kind] += 1
 
     # 追加
-    def append(self, hai):
-        self.hais.append(hai)
-        self.table[hai.kind] += 1
+    def append(self, *hais):
+        for hai in hais:
+            self.hais.append(hai)
+            self.table[hai.kind] += 1
 
     # 挿入
     def insert(self, index, hai):
@@ -312,7 +313,7 @@ class Tehai():
 
     # 牌の種類を指定して検索
     def find(self, kind, dora=False):
-        for i, hai in enumerate(self.hais + [self.tsumo]):
+        for i, hai in enumerate(self.hais + [self.tsumo_hai]):
             if hai.kind == kind:
                 return hai
         return None
@@ -389,7 +390,7 @@ class Tehai():
         for j in range(len(self.hais)):
             print(format(j, "<4d"), end="")
 
-        if self.tsumo is not None:
+        if self.tsumo_hai is not None:
             print(" {}".format(j + 1))
         else:
             print()
@@ -439,7 +440,7 @@ class Tehai():
                     jihai_combi[1] += 1
 
             # 全ての面子・面子候補の組み合わせ
-            combi_all = itertools.product(*(combi_table[create_key(self.table, i)] for i in range(3)), [tuple(jihai_combi)])
+            combi_all = itertools.product(*(combi_table.get(create_key(self.table, i), ((0, 0),)) for i in range(3)), [tuple(jihai_combi)])
 
             for cur_combi in combi_all:
                 cur_shanten = 8 - len(self.furos) * 2
@@ -447,14 +448,14 @@ class Tehai():
 
                 # 面子から取り出し
                 for i in range(2):
-                    for elememt in cur_combi:
-                        if mentsu_num + elememt[i] >= mentsu_max:
+                    for element in cur_combi:
+                        if mentsu_num + element[i] >= mentsu_max:
                             cur_shanten -= (2 if i == 0 else 1) * (mentsu_max - mentsu_num)
                             mentsu_num = mentsu_max
                             break
                         else:
-                            cur_shanten -= (2 if i == 0 else 1) * elememt[i]
-                            mentsu_num = mentsu_num + elememt[i]
+                            cur_shanten -= (2 if i == 0 else 1) * element[i]
+                            mentsu_num = mentsu_num + element[i]
 
                 if cur_shanten < shanten_min:
                     shanten_min = cur_shanten
@@ -522,7 +523,7 @@ class Tehai():
                     self.table[kind] -= 2
 
                     # 0...順子 1...暗刻
-                    mentsu_combi = itertools.product([0, 1], 4 - len(self.furos))
+                    mentsu_combi = itertools.product([0, 1], repeat=4 - len(self.furos))
 
                     # 左から順番に面子を取り出し
                     for cur_combi in mentsu_combi:
@@ -560,11 +561,12 @@ class Tehai():
                     self.table[kind] += 2
 
         if self.shanten() > -1:
-            return []
+            return
 
         # 国士無双
         if self.shanten_kokushi() == -1:
-            return [[Yaku.KOKUSHI]]
+            yield [Yaku.KOKUSHI]
+            return
 
         # 組み合わせに関係なく共通の役
         yakuman_common = []
@@ -578,7 +580,7 @@ class Tehai():
         # 役満から先に調べる
         # 字一色
         for kind, count in all_table.items():
-            if count > 0 and kind[0] < 3:
+            if count > 0 and kind[1]:
                 break
         else:
             yakuman_common.append(Yaku.TSUISO)
@@ -599,6 +601,13 @@ class Tehai():
                 yakuman_common.append(Yaku.CHUREN)
                 break
 
+        # 清老頭
+        for kind, count in all_table.items():
+            if count > 0 and kind[1] != 1 and kind[1] != 9:
+                break
+        else:
+            yakuman_common.append(Yaku.CHINRO)
+
         if len(yakuman_common) == 0:
             # タンヤオ
             for kind, count in all_table.items():
@@ -612,7 +621,7 @@ class Tehai():
             for i in range(3):
                 for kind, count in all_table.items():
                     if count > 0 and kind[0] != i:
-                        if kind[0] >= 3:
+                        if kind[1] == 0:
                             append_yaku = Yaku.HONITSU
                         else:
                             break
@@ -620,29 +629,25 @@ class Tehai():
                     yaku_common.append(append_yaku)
                     break
 
-            # 混老頭・清老頭
-            routou = False
-            append_yaku = Yaku.CHINRO
+            # 混老頭
             for kind, count in all_table.items():
-                if count > 0:
-                    if kind[0] >= 3:
-                        append_yaku = Yaku.HONRO
-                    if 2 <= kind[1] <= 8:
+                if count > 0 and 2 <= kind[1] <= 8:
+                        honro = False
                         break
             else:
-                routou = True
-                yaku_common.append(append_yaku)
+                honro = True
+                yaku_common.append(Yaku.HONRO)
 
             # 七対子
             if self.shanten_chitoi() == -1:
-                return [yaku_common + [Yaku.CHITOI]]
+                yield yaku_common + [Yaku.CHITOI]
 
         # 全ての組み合わせでの役
         for cur_combi in combi_agari():
             yaku_list = yakuman_common[:]
 
             # 四暗刻
-            if sum(1 for elememt in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 4:
+            if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 4:
                 yaku_list.append(Yaku.SUANKO)
 
             # 大四喜・小四喜
@@ -675,7 +680,7 @@ class Tehai():
 
                 if self.menzen:
                     # 平和
-                    if sum(1 for elememt in cur_combi if element.kind == EK.SHUNTSU) == 4:
+                    if sum(1 for element in cur_combi if element.kind == EK.SHUNTSU) == 4:
                         yaku_list.append(Yaku.PINFU)
 
                     # 一盃口・二盃口
@@ -728,28 +733,27 @@ class Tehai():
 
                 # 役牌
                 for element in cur_combi:
-                    if element.is_kotsu() and element.hais[0].kind[0] >= 3:
+                    if element.is_kotsu() and element.hais[0].kind[1] == 0:
                         yaku_list.append(Yaku.YAKUHAI)
 
                 # チャンタ・純チャン
-                if not routou:
+                if not honro:
                     append_yaku = Yaku.JUNCHAN
                     for element in cur_combi:
                         for hai in element.hais:
                             if hai.kind[1] == 1 or hai.kind[1] == 9:
                                 break
 
-                            elif hai.kind[0] >= 3:
+                            elif hai.kind[1] == 0:
                                 append_yaku = Yaku.CHANTA
                                 break
                         else:
-                            continue
-                        break
+                            break
                     else:
                         yaku_list.append(append_yaku)
 
                 # 三暗刻
-                if sum(1 for elememt in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
+                if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
                     yaku_list.append(Yaku.SANANKO)
 
             yield yaku_list
@@ -819,9 +823,7 @@ class Player(metaclass=ABCMeta):
 
     # 配牌
     def haipai(self):
-        for i in range(13):
-            pop_hai = self.game.yama.pop()
-            self.tehai.append(pop_hai)
+        self.tehai.append(*(self.game.yama.pop() for i in range(13)))
         self.tehai.sort()
 
     # 自摸
@@ -989,14 +991,12 @@ class Game():
     def haipai(self):
         for player in self.players:
             player.haipai()
-
         self.screen.draw()
 
     # ツモ
     def tsumo(self):
         self.cur_player.tsumo()
         self.screen.draw()
-
         return self.cur_player.check_self()
 
     # 打牌

@@ -32,6 +32,9 @@ while game.yama.remain > 0:
     # ツモ
     if game.tsumo():
         print("{}：ツモ".format(game.cur_player.name))
+        for cur_yaku_list in game.cur_player.tehai.yaku():
+            for cur_yaku in cur_yaku_list:
+                print(mj.yaku_name[cur_yaku])
         break
 
     # コンソール表示
@@ -42,6 +45,9 @@ while game.yama.remain > 0:
     ron_player = game.dahai()
     if ron_player is not None:
         print("{}→{}：ロン".format(game.cur_player.name, ron_player.name))
+        for cur_yaku_list in ron_player.tehai.yaku():
+            for cur_yaku in cur_yaku_list:
+                print(mj.yaku_name[cur_yaku])
         break
 
     print()
