@@ -43,9 +43,12 @@ class Isokun(core.Player):
 class Tenari(core.Player):
     # 選択
     def select(self):
+        def shanten_ex():
+            return min(self.tehai.shanten_normal(), self.tehai.shanten_chitoi() * 1.5, self.tehai.shanten_kokushi())
+
         select_index = -1
         effect_max = 0
-        cur_shanten = self.tehai.shanten()
+        cur_shanten = shanten_ex()
 
         # 残っている牌
         remain_hai = self.game.mjhai_set[:]
@@ -74,19 +77,19 @@ class Tenari(core.Player):
             pop_hai = self.tehai.pop(i)
 
             # シャンテン数が進むなら
-            if self.tehai.shanten() <= cur_shanten:
+            if shanten_ex() <= cur_shanten:
                 effect_count = 0
 
                 # 残り全ての牌をツモってみる
                 for hai in remain_hai:
                     # 有効牌の数をカウント
                     self.tehai.append(hai)
-                    if self.tehai.shanten() < cur_shanten:
+                    if shanten_ex() < cur_shanten:
                         effect_count += 1
                     self.tehai.pop()
 
                 # 有効牌が一番多い牌を選択
-                if effect_count > effect_max:
+                if effect_count >= effect_max:
                     effect_max = effect_count
                     select_index = i
 

@@ -312,8 +312,8 @@ class Screen():
         if cv2.waitKey(1) & 0xff == ord("q"):
             sys.exit()
 
-    # 流局後画面描画
-    def draw_ryukyoku(self):
+    # 局終了後画面描画
+    def draw_result(self):
         cur_view = self.game.cur_player if self.view is None else self.view
         img = pil2cv(draw_screen(self.game, cur_view, True, True))
         cv2.imshow(self.win_name, img)

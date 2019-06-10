@@ -18,6 +18,11 @@ THIS_PATH = os.path.dirname(os.path.abspath(__file__))
 with open(THIS_PATH + "/shanten_table.bin", "rb") as table_file:
     combi_table = pickle.load(table_file)
 
+# シード値を設定
+seed = time.time() #1559974153.2062666
+random.seed(seed)
+print("seed = {}".format(seed))
+
 # 役の種類
 class Yaku(enum.Enum):
     DORA       = enum.auto()
@@ -117,57 +122,6 @@ yaku_name = {
     Yaku.KOKUSHI13:  "国士無双十三面待ち",
     Yaku.SUTTAN:     "四暗刻単騎待ち",
     Yaku.CHUREN9:    "純正九蓮宝燈",
-}
-
-# 役の翻数
-yaku_fan = {
-    Yaku.DORA:       (1, 1),
-    Yaku.URADORA:    (1, 0),
-    Yaku.AKADORA:    (1, 1),
-    Yaku.GARI:       (1, 1),
-    Yaku.RICHI:      (1, 0),
-    Yaku.TSUMO:      (1, 0),
-    Yaku.IPPATSU:    (1, 0),
-    Yaku.PINFU:      (1, 0),
-    Yaku.IPEKO:      (1, 0),
-    Yaku.TANYAO:     (1, 1),
-    Yaku.YAKUHAI:    (1, 1),
-    Yaku.HAITEI:     (1, 1),
-    Yaku.HOUTEI:     (1, 1),
-    Yaku.RINSYAN:    (1, 1),
-    Yaku.CHANKAN:    (1, 1),
-    Yaku.DABURI:     (1, 0),
-    Yaku.ITTSU:      (2, 1),
-    Yaku.CHANTA:     (2, 1),
-    Yaku.DOUJUN:     (2, 1),
-    Yaku.DOUKO:      (2, 2),
-    Yaku.SANANKO:    (2, 2),
-    Yaku.SANKANTSU:  (2, 2),
-    Yaku.TOITOI:     (2, 2),
-    Yaku.SHOUSANGEN: (2, 2),
-    Yaku.HONRO:      (2, 2),
-    Yaku.CHITOI:     (2, 0),
-    Yaku.RYANPEKO:   (3, 0),
-    Yaku.JUNCHAN:    (3, 2),
-    Yaku.HONITSU:    (3, 2),
-    Yaku.NAGASHI:    (5, 0),
-    Yaku.CHINITSU:   (6, 5),
-    Yaku.KOKUSHI:    (13, 0),
-    Yaku.SUANKO:     (13, 0),
-    Yaku.TSUISO:     (13, 13),
-    Yaku.DAISANGEN:  (13, 13),
-    Yaku.DAISUSHI:   (26, 26),
-    Yaku.SHOUSUSHI:  (13, 13),
-    Yaku.RYUISO:     (13, 13),
-    Yaku.CHINRO:     (13, 13),
-    Yaku.SUKANTSU:   (13, 13),
-    Yaku.CHUREN:     (13, 0),
-    Yaku.TENHO:      (13, 0),
-    Yaku.CHIHO:      (13, 0),
-    Yaku.RENHO:      (13, 0),
-    Yaku.KOKUSHI13:  (26, 0),
-    Yaku.SUTTAN:     (26, 0),
-    Yaku.CHUREN9:    (26, 0),
 }
 
 # 麻雀牌
@@ -780,10 +734,6 @@ class Kawa():
 # 山
 class Yama():
     def __init__(self, mjhai_set):
-        seed = time.time() #1559974153.2062666
-        print("seed = {}".format(seed))
-        random.seed(seed)
-
         self.hais = copy.deepcopy(mjhai_set)
         random.shuffle(self.hais)
         self.remain = len(self.hais) - 14
@@ -813,9 +763,10 @@ class Player(metaclass=ABCMeta):
         self.point = 35000
         self.richi = False
 
-    def setup(self, chicha, game):
-        self.chicha = chicha
+    def setup(self, game, chicha, point):
         self.game = game
+        self.chicha = chicha
+        self.point = point
 
     # 自風
     def jikaze(self):
@@ -823,6 +774,11 @@ class Player(metaclass=ABCMeta):
 
     # 配牌
     def haipai(self):
+        # リセット
+        self.tehai = Tehai()
+        self.kawa = Kawa()
+        self.richi = False
+
         self.tehai.append(*(self.game.yama.pop() for i in range(13)))
         self.tehai.sort()
 
@@ -964,24 +920,24 @@ class Player(metaclass=ABCMeta):
 class Game():
     kaze_name = ["東", "南", "西", "北"]
 
-    def __init__(self, mjhai_set, players):
+    def __init__(self, mjhai_set, yaku, players, point):
         self.mjhai_set = mjhai_set
+        self.yaku = yaku
+
         self.players_num = len(players)
         self.players = random.sample(players, self.players_num)
 
         for i, player in enumerate(self.players):
-            player.setup(i, self)
+            player.setup(self, i, point)
 
-        self.bakaze = 0
-        self.kyoku = 0
-        self.honba = 0
-        self.kyotaku = 0
+        self.bakaze = 0  # 場風
+        self.kyoku = 0   # 局
+        self.honba = 0   # 本場
+        self.kyotaku = 0 # 供託
 
-        self.cur = self.kyoku
-        self.cur_player = self.players[self.cur]
-
-        self.yama = Yama(mjhai_set)
-        self.screen = gp.Screen(self, True, self.players[1])
+        self.turn = self.kyoku
+        self.cur_player = self.players[self.turn]
+        self.yama = Yama(self.mjhai_set) # 牌山
 
     # 局を表す文字列
     def kyoku_name(self):
@@ -991,32 +947,106 @@ class Game():
     def haipai(self):
         for player in self.players:
             player.haipai()
-        self.screen.draw()
 
     # ツモ
     def tsumo(self):
         self.cur_player.tsumo()
-        self.screen.draw()
         return self.cur_player.check_self()
 
     # 打牌
     def dahai(self):
         self.cur_player.dahai()
-        self.screen.draw()
 
         for check_player in self.players:
             # 自身は判定しない
             if check_player != self.cur_player:
                 if check_player.check_other(self.cur_player):
-                    return check_player
-        else:
-            return None
+                    yield check_player
 
     # プレイヤーのツモ順を変更
     def change_player(self, chicha):
-        self.cur = chicha
-        self.cur_player = self.players[self.cur]
+        self.turn = chicha
+        self.cur_player = self.players[self.turn]
 
     # 次のプレイヤーへ
     def next_player(self):
-        self.change_player((self.cur + 1) % self.players_num)
+        self.change_player((self.turn + 1) % self.players_num)
+
+    # 次の局へ
+    def next_kyoku(self):
+        self.kyoku += 1
+        if self.kyoku >= self.players_num:
+            self.kyoku = 0
+            self.bakaze += 1
+
+        self.yama = Yama(self.mjhai_set) # 牌山
+
+    # 局開始
+    def start_kyoku(self):
+        print(self.kyoku_name())
+        print()
+
+        self.haipai() # 配牌
+
+        while self.yama.remain > 0:
+            # ツモ
+            if self.tsumo():
+                print("{}：ツモ".format(self.cur_player.name))
+                for cur_yaku_list in self.cur_player.tehai.yaku():
+                    for cur_yaku in cur_yaku_list:
+                        print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+                break
+
+            # コンソール表示
+            print("{} [残り{}]".format(self.cur_player.name, self.yama.remain))
+            self.cur_player.tehai.show()
+
+            # 打牌
+            end = False
+            for ron_player in self.dahai():
+                end = True
+                print("{}→{}：ロン".format(self.cur_player.name, ron_player.name))
+                for cur_yaku_list in ron_player.tehai.yaku():
+                    for cur_yaku in cur_yaku_list:
+                        print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+            if end:
+                break
+
+            print()
+            self.next_player()
+        else:
+            print("流局")
+
+    # ゲーム開始
+    def start(self):
+        while self.bakaze <= 1:
+            self.start_kyoku()
+            self.next_kyoku()
+
+# グラフィカルなゲーム
+class GraphicalGame(Game):
+    kaze_name = ["東", "南", "西", "北"]
+
+    def __init__(self, mjhai_set, yaku, players, point, view):
+        self.screen = gp.Screen(self, True, view)
+        super().__init__(mjhai_set, yaku, players, point)
+
+    # 配牌
+    def haipai(self):
+        self.screen.draw()
+        super().haipai()
+
+    # ツモ
+    def tsumo(self):
+        self.screen.draw()
+        return super().tsumo()
+
+    # 打牌
+    def dahai(self):
+        self.screen.draw()
+        yield from super().dahai()
+
+    # 局開始
+    def start_kyoku(self):
+        super().start_kyoku()
+        self.screen.draw_result()
