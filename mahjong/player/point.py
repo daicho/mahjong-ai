@@ -6,34 +6,34 @@ class TadaAi(core.Player):
     def select(self):
         return 13
 
-    # 立直
-    def call_richi(self):
-        return True
-
     # ツモ和了
-    def agari_tsumo(self):
+    def do_tsumo(self):
         return True
 
     # ロン和了
-    def agari_ron(self, player):
+    def do_ron(self, target, whose):
+        return True
+
+    # 立直
+    def do_richi(self):
         return True
 
     # 暗槓
-    def ankan(self, hai_kind):
+    def do_ankan(self, target):
         return False
 
     # 明槓
-    def minkan(self, player):
+    def do_minkan(self, hais, target, whose):
         return False
 
     # 加槓
-    def kakan(self):
+    def do_kakan(self, target):
         return False
 
     # ポン
-    def pon(self, player):
+    def do_pon(self, hais, target, whose):
         return False
 
     # チー
-    def chi(self, player):
+    def do_chi(self, hais, target, whose):
         return False

@@ -7,42 +7,43 @@ class Isokun(core.Player):
     def select(self):
         return 13
 
-    # 立直
-    def call_richi(self):
+    # ツモ和了するか
+    def do_tsumo(self):
         return True
 
-    # ツモ和了
-    def agari_tsumo(self):
+    # ロン和了するか
+    def do_ron(self, target, whose):
         return True
 
-    # ロン和了
-    def agari_ron(self, player):
+    # 立直するか
+    def do_richi(self):
         return True
 
-    # 暗槓
-    def ankan(self, hai_kind):
+    # 暗槓するか
+    def do_ankan(self, target):
         return False
 
-    # 明槓
-    def minkan(self, player):
+    # 明槓するか
+    def do_minkan(self, hais, target, whose):
         return False
 
-    # 加槓
-    def kakan(self):
+    # 加槓するか
+    def do_kakan(self, target):
         return False
 
-    # ポン
-    def pon(self, player):
+    # ポンするか
+    def do_pon(self, hais, target, whose):
         return False
 
-    # チー
-    def chi(self, player):
+    # チーするか
+    def do_chi(self, hais, target, whose):
         return False
 
 # 手なりAI
 class Tenari(core.Player):
     # 選択
     def select(self):
+        # チートイの重みを軽くしたシャンテン数
         def shanten_ex():
             return min(self.tehai.shanten_normal(), self.tehai.shanten_chitoi() * 1.5, self.tehai.shanten_kokushi())
 
@@ -60,7 +61,7 @@ class Tenari(core.Player):
         for player in self.game.players:
             # 副露
             for cur_furo in player.tehai.furos:
-                for hai in cur_furo:
+                for hai in cur_furo.hais:
                     remain_hai.remove(hai)
 
             # 河
@@ -97,62 +98,50 @@ class Tenari(core.Player):
 
         return select_index
 
-    # 立直
-    def call_richi(self):
+    # ツモ和了するか
+    def do_tsumo(self):
         return True
 
-    # ツモ和了
-    def agari_tsumo(self):
+    # ロン和了するか
+    def do_ron(self, target, whose):
         return True
 
-    # ロン和了
-    def agari_ron(self, player):
+    # 立直するか
+    def do_richi(self):
         return True
 
-    # 暗槓
-    def ankan(self, hai_kind):
-        # シャンテン数が下がらないなら明槓
+    # 暗槓するか
+    def do_ankan(self, target):
+        # シャンテン数が下がらないなら暗槓
         temp_tehai = copy.deepcopy(self.tehai)
-        temp_tehai.furo.append([temp_tehai.pop_kind(hai_kind) for i in range(4)])
+        temp_tehai.ankan(target)
 
         return temp_tehai.shanten() <= self.tehai.shanten()
 
-    # 明槓
-    def minkan(self, player):
+    # 明槓するか
+    def do_minkan(self, hais, target, whose):
         # 門前だったら明槓しない
         if self.tehai.menzen:
             return False
 
-        check_hai = player.kawa.hais[-1]
-        temp_tehai = copy.deepcopy(self.tehai)
-
         # シャンテン数が下がらないなら明槓
-        append_mentsu = []
-        append_mentsu.append(check_hai)
-        for i in range(3):
-            append_mentsu.append(temp_tehai.pop_kind(check_hai.kind))
-        temp_tehai.furo.append(append_mentsu)
+        temp_tehai = copy.deepcopy(self.tehai)
+        temp_tehai.minkan(hais, target, whose)
 
         return temp_tehai.shanten() <= self.tehai.shanten()
 
-    # 加槓
-    def kakan(self):
+    # 加槓するか
+    def do_kakan(self, target):
         return True
 
-    # ポン
-    def pon(self, player):
-        check_hai = player.kawa.hais[-1]
-        temp_tehai = copy.deepcopy(self.tehai)
-
+    # ポンするか
+    def do_pon(self, hais, target, whose):
         # シャンテン数が進むならポン
-        append_mentsu = []
-        append_mentsu.append(check_hai)
-        for i in range(2):
-            append_mentsu.append(temp_tehai.pop_kind(check_hai.kind))
-        temp_tehai.furo.append(append_mentsu)
+        temp_tehai = copy.deepcopy(self.tehai)
+        temp_tehai.pon(hais, target, whose)
 
         return temp_tehai.shanten() < self.tehai.shanten()
 
-    # チー
-    def chi(self, player):
+    # チーするか
+    def do_chi(self, hais, target, whose):
         return True

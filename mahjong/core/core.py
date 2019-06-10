@@ -261,14 +261,14 @@ class Tehai():
     # 牌を指定して取り出し
     def remove(self, hai):
         self.store()
-        remove_hai = self.hais.remove(hai)
-        self.table[remove_hai.kind] -= 1
-        return remove_hai
+        self.hais.remove(hai)
+        self.table[hai.kind] -= 1
+        return hai
 
     # 牌の種類を指定して検索
     def find(self, kind, dora=False):
         for i, hai in enumerate(self.hais + [self.tsumo_hai]):
-            if hai.kind == kind:
+            if hai is not None and hai.kind == kind:
                 return hai
         return None
 
@@ -293,43 +293,43 @@ class Tehai():
                         yield [self.find(kind)]
 
     # ポン可能な牌
-    def pon_able(self, hai):
-        if self.table[hai.kind] >= 2:
-            yield [self.find(kind) for i in range(2)]
+    def pon_able(self, target):
+        if self.table[target.kind] >= 2:
+            yield [self.find(target.kind) for i in range(2)]
 
     # チー可能な牌
-    def chi_able(self, hai):
+    def chi_able(self, target):
         for i in range(-2, 1):
             for j in range(3):
-                if i + j and self.table[hai.kind[0], hai.kind[1] + i + j]:
+                if i + j and self.table[target.kind[0], target.kind[1] + i + j] == 0:
                     break
             else:
-                yield [self.find(hai.kind[0], hai.kind[1] + i + j) for j in range(3) if i + j]
+                yield [self.find(target.kind[0], target.kind[1] + i + j) for j in range(3) if i + j]
 
     # 明槓可能な牌
-    def minkan_able(self, hai):
-        if self.table[hai.kind] >= 3:
-            yield [self.find(kind) for i in range(3)]
+    def minkan_able(self, target):
+        if self.table[target.kind] >= 3:
+            yield [self.find(target.kind) for i in range(3)]
 
     # 暗槓
     def ankan(self, hais):
         ankan_hais = [self.remove(hai) for hai in hais]
-        self.furos.append(Element(furo_hais, EK.ANKAN))
+        self.furos.append(Element(ankan_hais, EK.ANKAN))
 
     # 明槓
-    def minkan(self, hais, whose):
-        furo_hais = [self.remove(hai) for hai in hais]
-        self.furos.append(Furo(furo_hais, EK.MINKAN, whose))
+    def minkan(self, hais, target, whose):
+        minkan_hais = [self.remove(hai) for hai in hais] + [target]
+        self.furos.append(Furo(minkan_hais, EK.MINKAN, whose))
 
     # ポン
-    def pon(self, hais, whose):
-        furo_hais = [self.remove(hai) for hai in hais]
-        self.furos.append(Furo(furo_hais, EK.MINKO, whose))
+    def pon(self, hais, target, whose):
+        pon_hais = [self.remove(hai) for hai in hais] + [target]
+        self.furos.append(Furo(pon_hais, EK.MINKO, whose))
 
     # チー
-    def chi(self, hais, whose):
-        furo_hais = [self.remove(hai) for hai in hais]
-        self.furos.append(Furo(furo_hais, EK.MINSHUN, whose))
+    def chi(self, hais, target, whose):
+        pon_hais = [self.remove(hai) for hai in hais] + [target]
+        self.furos.append(Furo(pon_hais, EK.MINSHUN, whose))
 
     # 表示
     def show(self):
@@ -795,7 +795,7 @@ class Player(metaclass=ABCMeta):
 
         # 立直
         if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
-            self.richi = self.call_richi()
+            self.richi = self.do_richi()
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
         self.kawa.append(pop_hai, tsumogiri, self.richi)
@@ -803,71 +803,59 @@ class Player(metaclass=ABCMeta):
 
     # ツモ・暗槓・加槓チェック
     def check_self(self):
-        if self.tehai.shanten() == -1:
-            return self.agari_tsumo()
+        # ツモ
+        if self.tehai.shanten() == -1 and self.do_tsumo():
+            return True
 
-        """
         # 暗槓
         for cur_ankan in self.tehai.ankan_able():
-            if self.ankan(cur_ankan):
+            if self.do_ankan(cur_ankan):
                 self.tehai.ankan(cur_ankan)
                 self.game.tsumo()
 
-            return False
-        """
         return False
 
     # ロン・明槓・ポン・チーチェック
-    def check_other(self, player):
-        check_hai = player.kawa.hais[-1]
-        self.tehai.tsumo(check_hai)
+    def check_other(self, whose):
+        check_hai = whose.kawa.hais[-1]
+        temp_tehai = copy.deepcopy(self.tehai)
+        temp_tehai.tsumo(check_hai)
 
         # ロン
-        if self.tehai.shanten() == -1 and self.agari_ron(player):
+        if temp_tehai.shanten() == -1 and self.do_ron(check_hai, whose):
             check_hai.furo = True
             return True
 
-        self.tehai.pop()
-
-        """
         if not self.richi:
             # 明槓
-            if self.tehai.table[check_hai.kind] >= 3 and self.minkan(player):
-                self.tehai.menzen = False
-                check_hai.furo = True
+            for cur_minkan in self.tehai.minkan_able(check_hai):
+                if self.do_minkan(cur_minkan, check_hai, whose):
+                    check_hai.furo = True
+                    self.tehai.minkan(cur_minkan, check_hai, whose)
 
-                append_mentsu = []
-                for i in range(4):
-                    if int(((player.chicha - self.chicha) % 4 - 1) * 1.5) == i:
-                        append_mentsu.append(check_hai)
-                    else:
-                        append_mentsu.append(self.tehai.pop_kind(check_hai.kind))
-
-                self.tehai.furo.append(append_mentsu)
-                self.game.change_player(self.chicha)
-                self.game.tsumo()
-                self.game.dahai()
-
-                return False
+                    self.game.change_player(self.chicha)
+                    self.game.tsumo()
+                    self.game.dahai()
 
             # ポン
-            if self.tehai.table[check_hai.kind] >= 2 and self.pon(player):
-                self.tehai.menzen = False
-                check_hai.furo = True
+            for cur_pon in self.tehai.pon_able(check_hai):
+                if self.do_pon(cur_pon, check_hai, whose):
+                    check_hai.furo = True
+                    self.tehai.pon(cur_pon, check_hai, whose)
 
-                append_mentsu = []
-                for i in range(3):
-                    if (player.chicha - self.chicha) % 4 - 1 == i:
-                        append_mentsu.append(check_hai)
-                    else:
-                        append_mentsu.append(self.tehai.pop_kind(check_hai.kind))
+                    self.game.change_player(self.chicha)
+                    self.game.dahai()
 
-                self.tehai.furo.append(append_mentsu)
-                self.game.change_player(self.chicha)
-                self.game.dahai()
+            """
+            # チー
+            for cur_chi in self.tehai.chi_able(check_hai):
+                if self.do_chi(cur_chi, check_hai, whose):
+                    check_hai.furo = True
+                    self.tehai.chi(cur_chi, check_hai, whose)
 
-                return False
-        """
+                    self.game.change_player(self.chicha)
+                    self.game.dahai()
+            """
 
         return False
 
@@ -876,44 +864,44 @@ class Player(metaclass=ABCMeta):
     def select(self):
         pass
 
-    # ツモ和了
+    # ツモ和了するか
     @abstractmethod
-    def agari_tsumo(self):
+    def do_tsumo(self):
         pass
 
-    # ロン和了
+    # ロン和了するか
     @abstractmethod
-    def agari_ron(self, player):
+    def do_ron(self, target, whose):
         pass
 
-    # 立直
+    # 立直するか
     @abstractmethod
-    def call_richi(self):
+    def do_richi(self):
         pass
 
-    # 暗槓
+    # 暗槓するか
     @abstractmethod
-    def ankan(self, hai_kind):
+    def do_ankan(self, target):
         pass
 
-    # 明槓
+    # 明槓するか
     @abstractmethod
-    def minkan(self, player):
+    def do_minkan(self, hais, target, whose):
         pass
 
-    # 加槓
+    # 加槓するか
     @abstractmethod
-    def kakan(self):
+    def do_kakan(self, target):
         pass
 
-    # ポン
+    # ポンするか
     @abstractmethod
-    def pon(self, player):
+    def do_pon(self, hais, target, whose):
         pass
 
-    # チー
+    # チーするか
     @abstractmethod
-    def chi(self, player):
+    def do_chi(self, hais, target, whose):
         pass
 
 # ゲーム

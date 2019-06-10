@@ -4,11 +4,11 @@ from .. import core
 # 人間
 class Human(core.Player):
     # 確認メッセージを表示
-    def confirm(self, message, default_yes=True):
-        select_input = input("{}：{} [{}]> ".format(self.name, message, "Y/n" if default_yes else "y/N"))
+    def confirm(self, message, default=True):
+        select_input = input("{}：{} [{}]> ".format(self.name, message, "Y/n" if default else "y/N"))
 
         if select_input == "":
-            return default_yes
+            return default
 
         if select_input == "Y" or select_input == "y":
             return True
@@ -33,34 +33,34 @@ class Human(core.Player):
 
         return int(select_input)
 
-    # 立直
-    def call_richi(self):
-        return self.confirm("立直する？", True)
-
     # ツモ和了
-    def agari_tsumo(self):
+    def do_tsumo(self):
         return self.confirm("ツモる？", True)
 
     # ロン和了
-    def agari_ron(self, player):
+    def do_ron(self, target, whose):
         return self.confirm("ロンする？", True)
 
+    # 立直
+    def do_richi(self):
+        return self.confirm("立直する？", True)
+
     # 暗槓
-    def ankan(self, hai_kind):
+    def do_ankan(self, target):
         return self.confirm("暗槓する？", False)
 
     # 明槓
-    def minkan(self, player):
+    def do_minkan(self, hais, target, whose):
         return self.confirm("明槓する？", False)
 
     # 加槓
-    def kakan(self):
+    def do_kakan(self, target):
         return self.confirm("加槓する？", False)
 
     # ポン
-    def pon(self, player):
+    def do_pon(self, hais, target, whose):
         return self.confirm("ポンする？", False)
 
     # チー
-    def chi(self, player):
+    def do_chi(self, hais, target, whose):
         return self.confirm("チーする？", False)
