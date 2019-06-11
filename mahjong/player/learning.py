@@ -100,18 +100,19 @@ class Tenari(core.Player):
 
     # ツモ和了するか
     def do_tsumo(self):
-        return True
+        return False #True
 
     # ロン和了するか
     def do_ron(self, target, whose):
-        return True
+        return False #True
 
     # 立直するか
     def do_richi(self):
-        return True
+        return False #True
 
     # 暗槓するか
     def do_ankan(self, target):
+        return True
         # シャンテン数が下がらないなら暗槓
         temp_tehai = copy.deepcopy(self.tehai)
         temp_tehai.ankan(target)

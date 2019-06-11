@@ -226,7 +226,7 @@ class Tehai():
         self.menzen = True
 
     def __len__(self):
-        return len(self.hais) + (0 if self.tsumo is None else 1)
+        return len(self.hais) + (0 if self.tsumo_hai is None else 1)
 
     # ツモ牌を手牌に格納
     def store(self):
@@ -266,11 +266,20 @@ class Tehai():
         return hai
 
     # 牌の種類を指定して検索
-    def find(self, kind, dora=False):
-        for i, hai in enumerate(self.hais + [self.tsumo_hai]):
+    def find(self, kind):
+        for hai in self.hais + [self.tsumo_hai]:
             if hai is not None and hai.kind == kind:
                 return hai
+
         return None
+
+    def find_multi(self, kinds):
+        temp_tehai = copy.deepcopy(self)
+        hais = []
+
+        for kind in kinds:
+            hais.append(temp_tehai.remove(temp_tehai.find(kind)))
+        return hais
 
     # 並べ替え
     def sort(self):
@@ -280,7 +289,7 @@ class Tehai():
     def ankan_able(self):
         for kind, count in self.table.items():
             if count >= 4:
-                yield [self.find(kind) for i in range(4)]
+                yield self.find_multi([kind for i in range(4)])
 
     # 加槓可能な牌
     def kakan_able(self):
@@ -292,24 +301,24 @@ class Tehai():
                     if furo[0].kind == kind:
                         yield [self.find(kind)]
 
+    # 明槓可能な牌
+    def minkan_able(self, target):
+        if self.table[target.kind] >= 3:
+            yield self.find_multi([target.kind for i in range(3)])
+
     # ポン可能な牌
     def pon_able(self, target):
         if self.table[target.kind] >= 2:
-            yield [self.find(target.kind) for i in range(2)]
+            yield self.find_multi([target.kind for i in range(2)])
 
     # チー可能な牌
     def chi_able(self, target):
         for i in range(-2, 1):
             for j in range(3):
-                if i + j and self.table[target.kind[0], target.kind[1] + i + j] == 0:
+                if i + j and self.table[(target.kind[0], target.kind[1] + i + j)] == 0:
                     break
             else:
-                yield [self.find(target.kind[0], target.kind[1] + i + j) for j in range(3) if i + j]
-
-    # 明槓可能な牌
-    def minkan_able(self, target):
-        if self.table[target.kind] >= 3:
-            yield [self.find(target.kind) for i in range(3)]
+                yield self.find_multi([(target.kind[0], target.kind[1] + i + j) for j in range(3) if i + j])
 
     # 暗槓
     def ankan(self, hais):
@@ -318,16 +327,19 @@ class Tehai():
 
     # 明槓
     def minkan(self, hais, target, whose):
+        self.menzen = False
         minkan_hais = [self.remove(hai) for hai in hais] + [target]
         self.furos.append(Furo(minkan_hais, EK.MINKAN, whose))
 
     # ポン
     def pon(self, hais, target, whose):
+        self.menzen = False
         pon_hais = [self.remove(hai) for hai in hais] + [target]
         self.furos.append(Furo(pon_hais, EK.MINKO, whose))
 
     # チー
     def chi(self, hais, target, whose):
+        self.menzen = False
         pon_hais = [self.remove(hai) for hai in hais] + [target]
         self.furos.append(Furo(pon_hais, EK.MINSHUN, whose))
 
@@ -527,7 +539,7 @@ class Tehai():
         yaku_common = []
 
         # 副露含め全てのテーブル
-        all_table = self.table
+        all_table = copy.deepcopy(self.table)
         for furo in self.furos:
             all_table += furo.table
 
@@ -690,6 +702,14 @@ class Tehai():
                     if element.is_kotsu() and element.hais[0].kind[1] == 0:
                         yaku_list.append(Yaku.YAKUHAI)
 
+                # 三暗刻
+                if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
+                    yaku_list.append(Yaku.SANANKO)
+
+                # 対々和
+                if sum(1 for element in cur_combi if element.is_kotsu()) == 4:
+                    yaku_list.append(Yaku.TOITOI)
+
                 # チャンタ・純チャン
                 if not honro:
                     append_yaku = Yaku.JUNCHAN
@@ -706,10 +726,6 @@ class Tehai():
                     else:
                         yaku_list.append(append_yaku)
 
-                # 三暗刻
-                if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
-                    yaku_list.append(Yaku.SANANKO)
-
             yield yaku_list
 
 # 河の麻雀牌
@@ -721,6 +737,7 @@ class KawaMjHai(MjHai):
         self.tsumogiri = tsumogiri
         self.richi = richi
         self.furo = furo
+        self.houju = False
 
 # 河
 class Kawa():
@@ -801,50 +818,58 @@ class Player(metaclass=ABCMeta):
         self.kawa.append(pop_hai, tsumogiri, self.richi)
         self.tehai.sort()
 
-    # ツモ・暗槓・加槓チェック
-    def check_self(self):
-        # ツモ
+    # ツモチェック
+    def check_tsumo(self):
         if self.tehai.shanten() == -1 and self.do_tsumo():
             return True
+        else:
+            return False
 
-        # 暗槓
-        for cur_ankan in self.tehai.ankan_able():
-            if self.do_ankan(cur_ankan):
-                self.tehai.ankan(cur_ankan)
-                self.game.tsumo()
-
-        return False
-
-    # ロン・明槓・ポン・チーチェック
-    def check_other(self, whose):
+    # ロンチェック
+    def check_ron(self, whose):
         check_hai = whose.kawa.hais[-1]
         temp_tehai = copy.deepcopy(self.tehai)
         temp_tehai.tsumo(check_hai)
 
         # ロン
         if temp_tehai.shanten() == -1 and self.do_ron(check_hai, whose):
-            check_hai.furo = True
+            check_hai.houju = True
             return True
+        else:
+            False
 
+    # 暗槓チェック
+    def check_ankan(self):
+        # 暗槓
+        for cur_ankan in self.tehai.ankan_able():
+            if self.do_ankan(cur_ankan):
+                self.tehai.ankan(cur_ankan)
+                return True
+
+        return False
+
+    # 加槓チェック
+    def check_kakan(self):
+        pass
+
+    # 副露チェック
+    def check_furo(self, whose):
         if not self.richi:
+            check_hai = whose.kawa.hais[-1]
+
             # 明槓
             for cur_minkan in self.tehai.minkan_able(check_hai):
                 if self.do_minkan(cur_minkan, check_hai, whose):
                     check_hai.furo = True
                     self.tehai.minkan(cur_minkan, check_hai, whose)
-
-                    self.game.change_player(self.chicha)
-                    self.game.tsumo()
-                    self.game.dahai()
+                    return True
 
             # ポン
             for cur_pon in self.tehai.pon_able(check_hai):
                 if self.do_pon(cur_pon, check_hai, whose):
                     check_hai.furo = True
                     self.tehai.pon(cur_pon, check_hai, whose)
-
-                    self.game.change_player(self.chicha)
-                    self.game.dahai()
+                    return True
 
             """
             # チー
@@ -854,7 +879,7 @@ class Player(metaclass=ABCMeta):
                     self.tehai.chi(cur_chi, check_hai, whose)
 
                     self.game.change_player(self.chicha)
-                    self.game.dahai()
+                    return True
             """
 
         return False
@@ -939,17 +964,10 @@ class Game():
     # ツモ
     def tsumo(self):
         self.cur_player.tsumo()
-        return self.cur_player.check_self()
 
     # 打牌
     def dahai(self):
         self.cur_player.dahai()
-
-        for check_player in self.players:
-            # 自身は判定しない
-            if check_player != self.cur_player:
-                if check_player.check_other(self.cur_player):
-                    yield check_player
 
     # プレイヤーのツモ順を変更
     def change_player(self, chicha):
@@ -985,7 +1003,10 @@ class Game():
 
         while self.yama.remain > 0:
             # ツモ
-            if self.tsumo():
+            if len(self.cur_player.tehai) % 3 <= 1:
+                self.tsumo()
+
+            if self.cur_player.check_tsumo():
                 print("{}：ツモ".format(self.cur_player.name))
                 for cur_yaku_list in self.cur_player.tehai.yaku():
                     for cur_yaku in cur_yaku_list:
@@ -993,26 +1014,46 @@ class Game():
 
                 return self.cur_player.jikaze() == 0, False
 
+            if self.cur_player.check_ankan():
+                continue
+
             # コンソール表示
             print("{} [残り{}]".format(self.cur_player.name, self.yama.remain))
             self.cur_player.tehai.show()
 
             # 打牌
+            self.dahai()
+
             end = False
             renchan = False
+            furo = False
 
-            for ron_player in self.dahai():
-                print("{}→{}：ロン".format(self.cur_player.name, ron_player.name))
-                for cur_yaku_list in ron_player.tehai.yaku():
-                    for cur_yaku in cur_yaku_list:
-                        print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+            for check_player in self.players:
+                # 自身は判定しない
+                if check_player != self.cur_player:
+                    if check_player.check_ron(self.cur_player):
+                        print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
+                        for cur_yaku_list in check_player.tehai.yaku():
+                            for cur_yaku in cur_yaku_list:
+                                print(self.yaku[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
 
-                end = True
-                if ron_player.jikaze() == 0:
-                    renchan = True
+                        end = True
+                        if check_player.jikaze() == 0:
+                            renchan = True
 
             if end:
                 return renchan, False
+
+            for check_player in self.players:
+                # 自身は判定しない
+                if check_player != self.cur_player:
+                    if check_player.check_furo(self.cur_player):
+                        furo = True
+                        self.change_player(check_player.chicha)
+                        break
+
+            if furo:
+                continue
 
             print()
             self.next_player()
@@ -1028,7 +1069,6 @@ class Game():
     def start(self):
         while self.bakaze <= 1:
             renchan, ryukyoku = self.start_kyoku()
-            print(renchan)
 
             if ryukyoku:
                 for player in self.players:
@@ -1049,18 +1089,17 @@ class GraphicalGame(Game):
 
     # 配牌
     def haipai(self):
-        self.screen.draw()
         super().haipai()
+        self.screen.draw()
 
     # ツモ
     def tsumo(self):
-        agari = super().tsumo()
+        super().tsumo()
         self.screen.draw()
-        return agari
 
     # 打牌
     def dahai(self):
-        yield from super().dahai()
+        super().dahai()
         self.screen.draw()
 
     # 局開始

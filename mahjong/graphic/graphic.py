@@ -117,7 +117,8 @@ def draw_tehai(tehai, back=False):
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
     tsumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
-    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 0, 47))
+    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 63, 255, 47))
+    houju_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 0, 47))
 
     x = 0
     y = 0
@@ -131,9 +132,13 @@ def draw_kawa(kawa):
         if hai.tsumogiri:
             paste_img.paste(tsumogiri_img, (0, 0), tsumogiri_img)
 
-        # 鳴かれた牌は赤くする
+        # 鳴かれた牌は青くする
         if hai.furo:
             paste_img.paste(furo_img, (0, 0), furo_img)
+
+        # 放銃した牌は赤くする
+        if hai.houju:
+            paste_img.paste(houju_img, (0, 0), houju_img)
 
         # リーチ宣言牌は横にする
         if not already_richi and hai.richi:
