@@ -104,10 +104,10 @@ def draw_tehai(tehai, back=False):
 
         create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
         x += MJHAI_HEIGHT
-    
+
     x = create_img.size[0]
     for cur_furo in tehai.furos:
-        for hai in cur_furo.hais:
+        for i, hai in enumerate(cur_furo.hais):
             # 麻雀牌
             mjhai_draw = mjhai_img[hai.name]
 

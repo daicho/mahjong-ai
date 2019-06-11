@@ -1,3 +1,4 @@
 from .human import *
-from .learning import *
+from .isokun import *
 from .point import *
+from .tenari import *

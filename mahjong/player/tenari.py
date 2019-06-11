@@ -1,44 +1,6 @@
 import copy
 from .. import core
 
-# イーソー君
-class Isokun(core.Player):
-    # 選択
-    def select(self):
-        return 13
-
-    # ツモ和了するか
-    def do_tsumo(self):
-        return True
-
-    # ロン和了するか
-    def do_ron(self, target, whose):
-        return True
-
-    # 立直するか
-    def do_richi(self):
-        return True
-
-    # 暗槓するか
-    def do_ankan(self, target):
-        return False
-
-    # 明槓するか
-    def do_minkan(self, hais, target, whose):
-        return False
-
-    # 加槓するか
-    def do_kakan(self, target):
-        return False
-
-    # ポンするか
-    def do_pon(self, hais, target, whose):
-        return False
-
-    # チーするか
-    def do_chi(self, hais, target, whose):
-        return False
-
 # 手なりAI
 class Tenari(core.Player):
     # 選択
@@ -68,6 +30,8 @@ class Tenari(core.Player):
             for hai in player.kawa.hais:
                 if not hai.furo:
                     remain_hai.remove(hai)
+                else:
+                    a = 0
 
         # ドラ
         for dora in self.game.yama.doras:
@@ -112,6 +76,8 @@ class Tenari(core.Player):
 
     # 暗槓するか
     def do_ankan(self, target):
+        return True
+
         # シャンテン数が下がらないなら暗槓
         temp_tehai = copy.deepcopy(self.tehai)
         temp_tehai.ankan(target)
@@ -120,6 +86,8 @@ class Tenari(core.Player):
 
     # 明槓するか
     def do_minkan(self, hais, target, whose):
+        return True
+
         # 門前だったら明槓しない
         if self.tehai.menzen:
             return False
@@ -136,7 +104,7 @@ class Tenari(core.Player):
 
     # ポンするか
     def do_pon(self, hais, target, whose):
-        return False
+        return True
 
         # シャンテン数が進むならポン
         temp_tehai = copy.deepcopy(self.tehai)

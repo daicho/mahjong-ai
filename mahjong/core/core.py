@@ -3,7 +3,6 @@ import random
 import time
 import copy
 import enum
-from operator import add
 import collections
 import itertools
 import pickle
@@ -194,12 +193,19 @@ class Element():
             return False
 
         for self_hai, other_hai in zip(self.hais, other.hais):
-            if self_hai.kind != other_hai.kind:
-                break
-        else:
-            return True
+            if self_hai != other_hai:
+                return False
+        return True
 
-        return False
+    # 牌の種類が一致しているかどうか
+    def eq_kind(self, other):
+        if self.kind != other.kind:
+            return False
+
+        for self_hai, other_hai in zip(self.hais, other.hais):
+            if self_hai.kind != other_hai.kind:
+                return False
+        return True
 
     # 順子かどうか
     def is_shuntsu(self):
@@ -211,8 +217,8 @@ class Element():
 
 # 副露した面子
 class Furo(Element):
-    def __init__(self, hais, kind, whose):
-        self.whose = whose
+    def __init__(self, hais, kind, direct):
+        self.direct = direct
         super().__init__(hais, kind)
 
 # 手牌
@@ -273,6 +279,7 @@ class Tehai():
 
         return None
 
+    # 複数の牌を検索
     def find_multi(self, kinds):
         temp_tehai = copy.deepcopy(self)
         hais = []
@@ -326,22 +333,28 @@ class Tehai():
         self.furos.append(Element(ankan_hais, EK.ANKAN))
 
     # 明槓
-    def minkan(self, hais, target, whose):
+    def minkan(self, hais, target, direct):
         self.menzen = False
-        minkan_hais = [self.remove(hai) for hai in hais] + [target]
-        self.furos.append(Furo(minkan_hais, EK.MINKAN, whose))
+
+        minkan_hais = [self.remove(hai) for hai in hais]
+        minkan_hais.insert(int((direct - 1) * 1.5), target)
+        self.furos.append(Furo(minkan_hais, EK.MINKAN, direct))
 
     # ポン
-    def pon(self, hais, target, whose):
+    def pon(self, hais, target, direct):
         self.menzen = False
-        pon_hais = [self.remove(hai) for hai in hais] + [target]
-        self.furos.append(Furo(pon_hais, EK.MINKO, whose))
+
+        pon_hais = [self.remove(hai) for hai in hais]
+        pon_hais.insert(direct - 1, target)
+        self.furos.append(Furo(pon_hais, EK.MINKO, direct))
 
     # チー
-    def chi(self, hais, target, whose):
+    def chi(self, hais, target, direct):
         self.menzen = False
-        pon_hais = [self.remove(hai) for hai in hais] + [target]
-        self.furos.append(Furo(pon_hais, EK.MINSHUN, whose))
+
+        chi_hais = [self.remove(hai) for hai in hais]
+        chi_hais.insert(direct - 1, target)
+        self.furos.append(Furo(chi_hais, EK.MINSHUN, direct))
 
     # 表示
     def show(self):
@@ -653,9 +666,9 @@ class Tehai():
                     peko_num = 0
 
                     for peko_combi in itertools.combinations(cur_combi, 2):
-                        if peko_combi[0] == peko_combi[1]:
+                        if peko_combi[0].eq_kind(peko_combi[1]):
                             peko_num += 1
-                        
+
                     if peko_num == 1:
                         yaku_list.append(Yaku.IPEKO)
                     elif peko_num == 2:
@@ -758,7 +771,7 @@ class Yama():
         self.doras = [self.hais[0]]
         self.uradoras = [self.hais[1]]
         self.dora_num = 1
-    
+
     # 取り出し
     def pop(self):
         self.remain -= 1
@@ -864,7 +877,7 @@ class Player(metaclass=ABCMeta):
             for cur_minkan in self.tehai.minkan_able(check_hai):
                 if self.do_minkan(cur_minkan, check_hai, whose):
                     check_hai.furo = True
-                    self.tehai.minkan(cur_minkan, check_hai, whose)
+                    self.tehai.minkan(cur_minkan, check_hai, (whose.chicha - self.chicha) % 4)
                     self.game.yama.add_dora()
                     return True
 
@@ -872,7 +885,7 @@ class Player(metaclass=ABCMeta):
             for cur_pon in self.tehai.pon_able(check_hai):
                 if self.do_pon(cur_pon, check_hai, whose):
                     check_hai.furo = True
-                    self.tehai.pon(cur_pon, check_hai, whose)
+                    self.tehai.pon(cur_pon, check_hai, (whose.chicha - self.chicha) % 4)
                     return True
 
             """
@@ -880,7 +893,7 @@ class Player(metaclass=ABCMeta):
             for cur_chi in self.tehai.chi_able(check_hai):
                 if self.do_chi(cur_chi, check_hai, whose):
                     check_hai.furo = True
-                    self.tehai.chi(cur_chi, check_hai, whose)
+                    self.tehai.chi(cur_chi, check_hai, (whose.chicha - self.chicha) % self.game.players_num)
 
                     self.game.change_player(self.chicha)
                     return True
