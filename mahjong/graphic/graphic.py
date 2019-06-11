@@ -37,7 +37,7 @@ def pil2cv(image):
         new_image = new_image[:, :, [2, 1, 0, 3]]
     return new_image
 
-# 横向きの麻雀牌を生成
+# 横向きの画像を生成
 def draw_side(img):
     w, h = img.size
     create_img = Image.new("RGBA", (h, h))
@@ -45,6 +45,15 @@ def draw_side(img):
     rotate_img = img.rotate(90, expand=True)
     create_img.paste(rotate_img, (0, h - w))
 
+    return create_img
+
+# 単色を合成した画像を生成
+def draw_mix(img, color):
+    create_img = Image.new("RGB", img.size)
+    mix_img = Image.new("RGBA", img.size, color)
+
+    create_img.paste(img)
+    create_img.paste(mix_img, (0, 0), mix_img)
     return create_img
 
 # 手牌の画像を生成
@@ -89,13 +98,12 @@ def draw_tehai(tehai, back=False):
         # 麻雀牌
         mjhai_draw = mjhai_img["back" if back else tehai.tsumo_hai.name]
 
-        # 他家からの牌は横にする
+        # 他家からの牌は赤く
         if type(tehai.tsumo_hai) is mj.KawaMjHai:
-            create_img.paste(draw_side(mjhai_draw), (x, MJHAI_HEIGHT))
-            x += MJHAI_HEIGHT
-        else:
-            create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
-            x += MJHAI_WIDTH
+            mjhai_draw = draw_mix(mjhai_draw, (255, 63, 0, 47))
+
+        create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
+        x += MJHAI_HEIGHT
     
     x = create_img.size[0]
     for cur_furo in tehai.furos:
@@ -116,9 +124,6 @@ def draw_tehai(tehai, back=False):
 # 河の画像を生成
 def draw_kawa(kawa):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH + MJHAI_HEIGHT, 4 * MJHAI_HEIGHT))
-    tsumogiri_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 0, 0, 47))
-    furo_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (0, 63, 255, 47))
-    houju_img = Image.new("RGBA", (MJHAI_WIDTH, MJHAI_HEIGHT), (255, 63, 0, 47))
 
     x = 0
     y = 0
@@ -130,15 +135,15 @@ def draw_kawa(kawa):
 
         # ツモ切りは暗くする
         if hai.tsumogiri:
-            paste_img.paste(tsumogiri_img, (0, 0), tsumogiri_img)
+            paste_img = draw_mix(paste_img, (0, 0, 0, 47))
 
         # 鳴かれた牌は青くする
         if hai.furo:
-            paste_img.paste(furo_img, (0, 0), furo_img)
+            paste_img = draw_mix(paste_img, (0, 63, 255, 47))
 
         # 放銃した牌は赤くする
         if hai.houju:
-            paste_img.paste(houju_img, (0, 0), houju_img)
+            paste_img = draw_mix(paste_img, (255, 63, 0, 47))
 
         # リーチ宣言牌は横にする
         if not already_richi and hai.richi:
