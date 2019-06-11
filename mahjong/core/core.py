@@ -834,6 +834,7 @@ class Player(metaclass=ABCMeta):
         # ロン
         if temp_tehai.shanten() == -1 and self.do_ron(check_hai, whose):
             check_hai.houju = True
+            self.tehai.tsumo(check_hai)
             return True
         else:
             False
@@ -844,12 +845,14 @@ class Player(metaclass=ABCMeta):
         for cur_ankan in self.tehai.ankan_able():
             if self.do_ankan(cur_ankan):
                 self.tehai.ankan(cur_ankan)
+                self.game.yama.add_dora()
                 return True
 
         return False
 
     # 加槓チェック
     def check_kakan(self):
+        self.game.yama.add_dora()
         pass
 
     # 副露チェック
@@ -862,6 +865,7 @@ class Player(metaclass=ABCMeta):
                 if self.do_minkan(cur_minkan, check_hai, whose):
                     check_hai.furo = True
                     self.tehai.minkan(cur_minkan, check_hai, whose)
+                    self.game.yama.add_dora()
                     return True
 
             # ポン
