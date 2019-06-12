@@ -68,8 +68,9 @@ yaku = {
 }
 
 # プレイヤー
-players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
-#players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+#players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
+players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+#players = [mp.Tsuchida("Tsuchida"), mp.Rentaro("Rentaro"), mp.Yagasaki("Yagasaki")]
 
-game = mj.GraphicalGame(mjhai_set, yaku, players, 35000, players[0], True)
+game = mj.GraphicalGame(mjhai_set, yaku, players, 35000, players[0], False)
 game.start()

@@ -74,14 +74,8 @@ def draw_tehai(tehai, back=False):
 
         # 麻雀牌
         mjhai_draw = mjhai_img["back" if back else hai.name]
-
-        # 他家からの牌は横にする
-        if type(hai) is mj.KawaMjHai:
-            create_img.paste(draw_side(mjhai_draw), (x, MJHAI_HEIGHT))
-            x += MJHAI_HEIGHT
-        else:
-            create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
-            x += MJHAI_WIDTH
+        create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
+        x += MJHAI_WIDTH
 
     if tehai.tsumo_hai is not None:
         # ツモった牌は離す
@@ -105,19 +99,30 @@ def draw_tehai(tehai, back=False):
         create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
         x += MJHAI_HEIGHT
 
+    # 副露
     x = create_img.size[0]
-    for cur_furo in tehai.furos:
-        for i, hai in enumerate(cur_furo.hais):
+    for furo in tehai.furos:
+        for i, hai in enumerate(furo.hais):
             # 麻雀牌
-            mjhai_draw = mjhai_img[hai.name]
-
-            # 他家からの牌は横にする
-            if type(hai) is mj.KawaMjHai:
-                create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
-                x -= MJHAI_HEIGHT
+            if furo.kind == mj.EK.ANKAN and (i == 0 or i == 3):
+                mjhai_draw = mjhai_img["back"]
             else:
-                create_img.paste(mjhai_draw, (x - MJHAI_WIDTH, MJHAI_HEIGHT))
-                x -= MJHAI_WIDTH
+                mjhai_draw = mjhai_img[hai.name]
+
+            if furo.kind == mj.EK.KAKAN and i == 3:
+                # 加槓
+                create_img.paste(
+                    draw_side(mjhai_draw),
+                    (x + (3 - furo.direct) * MJHAI_WIDTH, MJHAI_HEIGHT - MJHAI_WIDTH)
+                )
+            else:
+                # 他家からの牌は横にする
+                if type(hai) is mj.KawaMjHai:
+                    create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
+                    x -= MJHAI_HEIGHT
+                else:
+                    create_img.paste(mjhai_draw, (x - MJHAI_WIDTH, MJHAI_HEIGHT))
+                    x -= MJHAI_WIDTH
 
     return create_img
 
