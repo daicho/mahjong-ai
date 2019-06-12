@@ -1,8 +1,8 @@
 import sys
-from .. import core
+from .. import core as mj
 
 # 人間
-class Human(core.Player):
+class Human(mj.Player):
     # 確認メッセージを表示
     def confirm(self, message, default=True):
         select_input = input("{}：{} [{}]> ".format(self.name, message, "Y/n" if default else "y/N"))

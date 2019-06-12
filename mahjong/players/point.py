@@ -1,7 +1,7 @@
-from .. import core
+from .. import core as mj
 
 # 多田AI
-class TadaAi(core.Player):
+class TadaAi(mj.Player):
     # 選択
     def select(self):
         return 13

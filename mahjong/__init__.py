@@ -1,3 +1,3 @@
 from .core import *
-from .player import *
+from .players import *
 from .graphic import *
