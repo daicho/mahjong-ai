@@ -1,7 +1,9 @@
-from .. import core
+print(__package__)
+
+from .. import player
 
 # イーソー君
-class Isokun(core.Player):
+class Isokun(player.Player):
     # 選択
     def select(self):
         return 13

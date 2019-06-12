@@ -1,8 +1,10 @@
+print(__package__)
+
 import copy
-from .. import core
+from .. import player
 
 # 手なりAI
-class Tenari(core.Player):
+class Tenari(player.Player):
     # チートイの重みを軽くしたシャンテン数
     def shanten_ex(self):
         return min(self.tehai.shanten_normal(), self.tehai.shanten_chitoi() * 1.5, self.tehai.shanten_kokushi())
