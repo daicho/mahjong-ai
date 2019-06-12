@@ -1,8 +1,6 @@
-#from .core import *
-#from .tehai import *
-#from .player import *
-
-print(__package__)
+import random
+from .elements import Yama, yaku_name
+from .. import graphic as gp
 
 # ゲーム
 class Game():
@@ -43,6 +41,33 @@ class Game():
     # 打牌
     def dahai(self):
         return self.cur_player.dahai()
+
+    # ロン
+    def ron(self, target, player):
+        player.ron(target, self.cur_player)
+        
+    # 暗槓
+    def ankan(self, hais):
+        self.cur_player.ankan(hais)
+
+    # 加槓
+    def kakan(self, hai):
+        self.cur_player.kakan(hai)
+
+    # 明槓
+    def minkan(self, hais, target, player):
+        player.minkan(hais, target, self.cur_player)
+        self.change_player(player.chicha)
+
+    # ポン
+    def pon(self, hais, target, player):
+        player.pon(hais, target, self.cur_player)
+        self.change_player(player.chicha)
+
+    # チー
+    def chi(self, hais, target, player):
+        player.chi(hais, target, self.cur_player)
+        self.change_player(player.chicha)
 
     # プレイヤーのツモ順を変更
     def change_player(self, chicha):
@@ -97,11 +122,15 @@ class Game():
                 return self.cur_player.jikaze() == 0, False
 
             # 暗槓
-            if self.cur_player.check_ankan():
+            cur_hais = self.cur_player.check_ankan()
+            if cur_hais is not None:
+                self.ankan(cur_hais)
                 continue
 
             # 加槓
-            if self.cur_player.check_kakan():
+            cur_hai = self.cur_player.check_kakan()
+            if cur_hai is not None:
+                self.kakan(cur_hai)
                 continue
 
             # コンソール表示
@@ -120,6 +149,8 @@ class Game():
                 # 自身は判定しない
                 if check_player != self.cur_player:
                     if check_player.check_ron(check_hai, self.cur_player):
+                        self.ron(check_hai, check_player)
+
                         print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
                         for cur_yaku_list in check_player.tehai.yaku():
                             for cur_yaku in cur_yaku_list:
@@ -137,24 +168,25 @@ class Game():
                 # 自身は判定しない
                 if check_player != self.cur_player:
                     # 明槓
-                    if check_player.check_minkan(check_hai, self.cur_player):
+                    cur_hais = check_player.check_minkan(check_hai, self.cur_player)
+                    if cur_hais is not None:
                         furo = True
-                        self.change_player(check_player.chicha)
+                        self.minkan(cur_hais, check_hai, check_player)
                         break
 
                     # ポン
-                    if check_player.check_pon(check_hai, self.cur_player):
+                    cur_hais = check_player.check_pon(check_hai, self.cur_player)
+                    if cur_hais is not None:
                         furo = True
-                        self.change_player(check_player.chicha)
+                        self.pon(cur_hais, check_hai, check_player)
                         break
 
-                    """
                     # チー
-                    if check_player.check_chi(check_hai, self.cur_player):
+                    cur_hais = check_player.check_chi(check_hai, self.cur_player)
+                    if cur_hais is not None:
                         furo = True
-                        self.change_player(check_player.chicha)
+                        self.chi(cur_hais, check_hai, check_player)
                         break
-                    """
 
             if furo:
                 continue
@@ -206,6 +238,31 @@ class GraphicalGame(Game):
         hai = super().dahai()
         self.screen.draw()
         return hai
+
+    # 暗槓
+    def ankan(self, hais):
+        super().ankan(hais)
+        self.screen.draw()
+
+    # 加槓
+    def kakan(self, hai):
+        super().kakan(hai)
+        self.screen.draw()
+
+    # 明槓
+    def minkan(self, hais, target, player):
+        super().minkan(hais, target, player)
+        self.screen.draw()
+
+    # ポン
+    def pon(self, hais, target, player):
+        super().pon(hais, target, player)
+        self.screen.draw()
+
+    # チー
+    def chi(self, hais, target, player):
+        super().chi(hais, target, player)
+        self.screen.draw()
 
     # 局開始
     def start_kyoku(self):

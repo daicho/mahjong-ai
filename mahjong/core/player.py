@@ -1,9 +1,7 @@
+import copy
 from abc import ABCMeta, abstractmethod
-#from .core import *
-#from .tehai import *
-#from .game import *
-
-print(__package__)
+from .elements import Kawa
+from .tehai import Tehai
 
 # プレイヤー
 class Player(metaclass=ABCMeta):
@@ -24,7 +22,7 @@ class Player(metaclass=ABCMeta):
     def jikaze(self):
         return (self.chicha - self.game.kyoku) % self.game.players_num
 
-    # 他家との位置関係
+    # 下家・対面・上家
     def relative(self, other):
         return (other.chicha - self.chicha) % 4
 
@@ -60,77 +58,79 @@ class Player(metaclass=ABCMeta):
 
         return pop_hai
 
+    # ロン
+    def ron(self, target, whose):
+        target.set_houju()
+        self.tehai.tsumo(target)
+
+    # 暗槓
+    def ankan(self, hais):
+        self.tehai.ankan(hais)
+        self.game.yama.add_dora()
+
+    # 加槓
+    def kakan(self, hai):
+        self.tehai.kakan(hai)
+        self.game.yama.add_dora()
+
+    # 明槓
+    def minkan(self, hais, target, whose):
+        target.furo = True
+        self.tehai.minkan(hais, target, self.relative(whose))
+        self.game.yama.add_dora()
+
+    # ポン
+    def pon(self, hais, target, whose):
+        target.furo = True
+        self.tehai.pon(hais, target, self.relative(whose))
+
+    # チー
+    def chi(self, hais, target, whose):
+        target.furo = True
+        self.tehai.chi(hais, target, self.relative(whose))
+
     # ツモチェック
     def check_tsumo(self):
-        if self.tehai.shanten() == -1 and self.do_tsumo():
-            return True
-        else:
-            return False
+        return self.tehai.shanten() == -1 and self.do_tsumo()
 
     # ロンチェック
     def check_ron(self, target, whose):
-        self.tehai.tsumo(target)
-
-        if self.tehai.shanten() == -1 and self.do_ron(target, whose):
-            target.set_houju()
-            return True
-        else:
-            self.tehai.pop()
-            return False
+        temp_tehai = copy.deepcopy(self.tehai)
+        temp_tehai.tsumo(target)
+        return temp_tehai.shanten() == -1 and self.do_ron(target, whose)
 
     # 暗槓チェック
     def check_ankan(self):
         for cur_hais in self.tehai.ankan_able():
             if self.do_ankan(cur_hais):
-                self.tehai.ankan(cur_hais)
-                self.game.yama.add_dora()
-                return True
-
-        return False
+                return cur_hais
 
     # 加槓チェック
     def check_kakan(self):
         for cur_hai in self.tehai.kakan_able():
             if self.do_kakan(cur_hai):
-                self.tehai.kakan(cur_hai)
-                self.game.yama.add_dora()
-                return True
-
-        return False
+                return cur_hai
 
     # 明槓チェック
     def check_minkan(self, target, whose):
         if not self.richi:
             for cur_hais in self.tehai.minkan_able(target):
                 if self.do_minkan(cur_hais, target, whose):
-                    target.furo = True
-                    self.tehai.minkan(cur_hais, target, self.relative(whose))
-                    self.game.yama.add_dora()
-                    return True
-
-        return False
+                    return cur_hais
 
     # ポンチェック
     def check_pon(self, target, whose):
         if not self.richi:
             for cur_hais in self.tehai.pon_able(target):
                 if self.do_pon(cur_hais, target, whose):
-                    target.furo = True
-                    self.tehai.pon(cur_hais, target, self.relative(whose))
-                    return True
-
-        return False
+                    return cur_hais
 
     # チーチェック
     def check_chi(self, target, whose):
         if not self.richi and self.relative(whose) == 3:
             for cur_hais in self.tehai.chi_able(target):
                 if self.do_chi(cur_hais, target, whose):
-                    target.furo = True
-                    self.tehai.chi(cur_hais, target, self.relative(whose))
-                    return True
-
-        return False
+                    return cur_hais
 
     # 選択
     @abstractmethod

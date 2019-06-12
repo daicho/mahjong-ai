@@ -1,10 +1,9 @@
+import os
 import random
 import time
 import copy
 import enum
 import collections
-
-print(__package__)
 
 # ソフト名
 APP_NAME = "Mahjong"
@@ -57,9 +56,9 @@ class Yaku(enum.Enum):
     CHINRO     = enum.auto()
     SUKANTSU   = enum.auto()
     CHUREN     = enum.auto()
-    TENHO      = enum.auto()
-    CHIHO      = enum.auto()
-    RENHO      = enum.auto()
+    TENHOU     = enum.auto()
+    CHIHOU     = enum.auto()
+    RENHOU     = enum.auto()
     KOKUSHI13  = enum.auto()
     SUTTAN     = enum.auto()
     CHUREN9    = enum.auto()
@@ -107,9 +106,9 @@ yaku_name = {
     Yaku.CHINRO:     "清老頭",
     Yaku.SUKANTSU:   "四槓子",
     Yaku.CHUREN:     "九蓮宝燈",
-    Yaku.TENHO:      "天和",
-    Yaku.CHIHO:      "地和",
-    Yaku.RENHO:      "人和",
+    Yaku.TENHOU:      "天和",
+    Yaku.CHIHOU:      "地和",
+    Yaku.RENHOU:      "人和",
     Yaku.KOKUSHI13:  "国士無双十三面待ち",
     Yaku.SUTTAN:     "四暗刻単騎待ち",
     Yaku.CHUREN9:    "純正九蓮宝燈",

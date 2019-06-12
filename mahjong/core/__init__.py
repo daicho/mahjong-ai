@@ -1,4 +1,3 @@
-from .core import *
-from .tehai import *
+from .elements import *
 from .player import *
 from .game import *

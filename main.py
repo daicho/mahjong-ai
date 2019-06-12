@@ -1,5 +1,5 @@
 import mahjong.core as mj
-import mahjong.player as mp
+import mahjong.players as mp
 import mahjong.graphic as gp
 
 # 牌をセット
@@ -59,18 +59,17 @@ yaku = {
     mj.Yaku.CHINRO:     (13, 13), # 清老頭
     mj.Yaku.SUKANTSU:   (13, 13), # 四槓子
     mj.Yaku.CHUREN:     (13, 0),  # 九蓮宝燈
-    mj.Yaku.TENHO:      (13, 0),  # 天和
-    mj.Yaku.CHIHO:      (13, 0),  # 地和
-    mj.Yaku.RENHO:      (13, 0),  # 人和
+    mj.Yaku.TENHOU:      (13, 0),  # 天和
+    mj.Yaku.CHIHOU:      (13, 0),  # 地和
+    mj.Yaku.RENHOU:      (13, 0),  # 人和
     mj.Yaku.KOKUSHI13:  (26, 0),  # 国士無双十三面待ち
     mj.Yaku.SUTTAN:     (26, 0),  # 四暗刻単騎待ち
     mj.Yaku.CHUREN9:    (26, 0),  # 純正九蓮宝燈
 }
 
 # プレイヤー
-players = [mj.Player("Tenari1"), mj.Player("Tenari2"), mj.Player("Tenari3")]
-#players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
-#players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
+players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
 #players = [mp.Tsuchida("Tsuchida"), mp.Rentaro("Rentaro"), mp.Yagasaki("Yagasaki")]
 
 game = mj.GraphicalGame(mjhai_set, yaku, players, 35000, players[0], True)
