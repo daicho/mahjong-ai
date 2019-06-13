@@ -9,9 +9,11 @@ class Player(metaclass=ABCMeta):
         self.name = name
         self.tehai = Tehai()
         self.kawa = Kawa()
-
-        self.point = 35000
         self.richi = False
+
+        self.game = None
+        self.chicha = None
+        self.point = None
 
     def setup(self, game, chicha, point):
         self.game = game
