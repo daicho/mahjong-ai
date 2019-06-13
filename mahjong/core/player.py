@@ -68,18 +68,15 @@ class Player(metaclass=ABCMeta):
     # 暗槓
     def ankan(self, hais):
         self.tehai.ankan(hais)
-        self.game.yama.add_dora()
 
     # 加槓
     def kakan(self, hai):
         self.tehai.kakan(hai)
-        self.game.yama.add_dora()
 
     # 明槓
     def minkan(self, hais, target, whose):
         target.furo = True
         self.tehai.minkan(hais, target, self.relative(whose))
-        self.game.yama.add_dora()
 
     # ポン
     def pon(self, hais, target, whose):

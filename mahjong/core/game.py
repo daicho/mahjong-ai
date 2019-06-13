@@ -24,10 +24,22 @@ class Game():
         self.turn = self.kyoku
         self.cur_player = self.players[self.turn]
         self.yama = Yama(self.mjhai_set) # 牌山
+        self.doras = []
+        self.uradoras = []
 
     # 局を表す文字列
     def kyoku_name(self):
         return "{}{}局".format(Game.kaze_name[self.bakaze], self.kyoku + 1)
+
+    # ドラ表示牌に対応するドラ
+    def dora_kind(self, kind):
+        return (kind[0], kind[1] + 1)
+
+    # ドラ追加
+    def add_dora(self):
+        new_dora, new_uradora = self.yama.add_dora()
+        self.doras.append(self.dora_kind(new_dora.kind))
+        self.uradoras.append(self.dora_kind(new_uradora.kind))
 
     # 配牌
     def haipai(self):
@@ -49,15 +61,18 @@ class Game():
     # 暗槓
     def ankan(self, hais):
         self.cur_player.ankan(hais)
+        self.add_dora()
 
     # 加槓
     def kakan(self, hai):
         self.cur_player.kakan(hai)
+        self.add_dora()
 
     # 明槓
     def minkan(self, hais, target, player):
         player.minkan(hais, target, self.cur_player)
         self.change_player(player.chicha)
+        self.add_dora()
 
     # ポン
     def pon(self, hais, target, player):
@@ -106,6 +121,7 @@ class Game():
         print()
 
         self.haipai() # 配牌
+        self.add_dora()
 
         while self.yama.remain > 0:
             # ツモ
