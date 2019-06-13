@@ -197,12 +197,14 @@ class Game():
                         self.pon(cur_hais, check_hai, check_player)
                         break
 
+                    """
                     # チー
                     cur_hais = check_player.check_chi(check_hai, self.cur_player)
                     if cur_hais is not None:
                         furo = True
                         self.chi(cur_hais, check_hai, check_player)
                         break
+                    """
 
             if furo:
                 continue

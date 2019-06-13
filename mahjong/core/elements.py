@@ -213,11 +213,7 @@ class FuroElement(Element):
         super().__init__(hais, kind)
 
 # ポンした面子
-class PonElement(Element):
-    def __init__(self, hais, kind, direct):
-        self.direct = direct
-        super().__init__(hais, kind)
-
+class PonElement(FuroElement):
     # 加槓
     def kakan(self, hai):
         self.kind = EK.KAKAN
