@@ -150,7 +150,7 @@ def draw_kawa(kawa):
         if hai.houju:
             paste_img = draw_mix(paste_img, (255, 63, 0, 47))
 
-        # リーチ宣言牌は横にする
+        # 立直宣言牌は横にする
         if not already_richi and hai.richi:
             already_richi = True
             create_img.paste(draw_side(paste_img), (x, y))
@@ -214,23 +214,14 @@ def draw_info(game):
 def draw_dora(yama, uradora):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
-    # 表ドラ
     for i in range(5):
-        if i < yama.dora_num:
-            paste_img = mjhai_img[yama.doras[i].name]
-        else:
-            paste_img = mjhai_img["back"]
+        for j in range(2):
+            if i < len(yama.doras) and (j == 0 or uradora):
+                paste_img = mjhai_img[yama.doras[i][j].name]
+            else:
+                paste_img = mjhai_img["back"]
 
-        create_img.paste(paste_img, (i * MJHAI_WIDTH, 0))
-
-    # 裏ドラ
-    for i in range(5):
-        if uradora and i < yama.dora_num:
-            paste_img = mjhai_img[yama.uradoras[i].name]
-        else:
-            paste_img = mjhai_img["back"]
-
-        create_img.paste(paste_img, (i * MJHAI_WIDTH, MJHAI_HEIGHT))
+            create_img.paste(paste_img, (i * MJHAI_WIDTH, j * MJHAI_HEIGHT))
 
     return create_img
 

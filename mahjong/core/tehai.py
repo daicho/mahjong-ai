@@ -294,7 +294,7 @@ class Tehai():
         return min(self.shanten_normal(), self.shanten_chitoi(), self.shanten_kokushi())
 
     # 役
-    def yaku(self):
+    def yaku(self, richi, doras):
         # 和了時の面子の組み合わせを探索
         def combi_agari():
             # 全ての雀頭候補を取り出す
@@ -389,6 +389,23 @@ class Tehai():
             yakuman_common.append(Yaku.CHINRO)
 
         if len(yakuman_common) == 0:
+            # 立直
+            if richi:
+                yaku_common.append(Yaku.RICHI)
+
+            # ドラ・裏ドラ・赤ドラ
+            for hai in self.hais + [self.tsumo_hai] + [hai for furo in self.furos for hai in furo.hais]:
+                for dora in doras:
+                    if hai is not None:
+                        if hai.kind == dora[0]:
+                            yaku_common.append(Yaku.DORA)
+
+                        if richi and hai.kind == dora[1]:
+                                yaku_common.append(Yaku.URADORA)
+
+                if hai.dora:
+                    yaku_common.append(Yaku.AKADORA)
+
             # タンヤオ
             for kind, count in all_table.items():
                 if count > 0 and not 2 <= kind[1] <= 8:

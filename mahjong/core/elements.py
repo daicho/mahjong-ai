@@ -256,10 +256,7 @@ class Yama():
         self.hais = copy.deepcopy(mjhai_set)
         random.shuffle(self.hais)
         self.remain = len(self.hais) - 14
-
         self.doras = []
-        self.uradoras = []
-        self.dora_num = 0
 
     # 取り出し
     def pop(self):
@@ -268,10 +265,6 @@ class Yama():
 
     # ドラを増やす
     def add_dora(self):
-        new_dora = self.hais[self.dora_num * 2]
-        new_uradora = self.hais[self.dora_num * 2 + 1]
+        new_dora = (self.hais[len(self.doras) * 2], self.hais[len(self.doras) * 2 + 1])
         self.doras.append(new_dora)
-        self.uradoras.append(new_uradora)
-
-        self.dora_num += 1
-        return new_dora, new_uradora
+        return new_dora

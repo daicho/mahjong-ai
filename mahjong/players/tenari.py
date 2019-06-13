@@ -35,7 +35,7 @@ class Tenari(player.Player):
 
         # ドラ
         for dora in self.game.yama.doras:
-            remain_hai.remove(dora)
+            remain_hai.remove(dora[0])
 
         for i in range(len(self.tehai)):
             # 1枚ずつ切ってみる
@@ -175,7 +175,7 @@ class Yagasaki(Tenari):
     def shanten_ex(self):
         return self.tehai.shanten_normal()
 
-    # リーチするか
+    # 立直するか
     def do_richi(self):
         return False
 

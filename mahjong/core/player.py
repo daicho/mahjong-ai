@@ -46,7 +46,7 @@ class Player(metaclass=ABCMeta):
 
     # 打牌
     def dahai(self):
-        # リーチをしていたらツモ切り
+        # 立直をしていたらツモ切り
         index = -1 if self.richi else self.select()
         pop_hai = self.tehai.pop(index)
 

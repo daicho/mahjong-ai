@@ -1,5 +1,5 @@
 import random
-from .elements import Yama, yaku_name
+from .elements import MjHai, Yama, yaku_name
 from .. import graphic as gp
 
 # ゲーム
@@ -25,7 +25,6 @@ class Game():
         self.cur_player = self.players[self.turn]
         self.yama = Yama(self.mjhai_set) # 牌山
         self.doras = []
-        self.uradoras = []
 
     # 局を表す文字列
     def kyoku_name(self):
@@ -33,13 +32,26 @@ class Game():
 
     # ドラ表示牌に対応するドラ
     def dora_kind(self, kind):
-        return (kind[0], kind[1] + 1)
+        # 数牌
+        if kind[1]:
+            next_num = kind[1]
+            while True:
+                next_num = next_num % 9 + 1
+                if MjHai((kind[0], next_num)) in self.mjhai_set or MjHai((kind[0], next_num), True) in self.mjhai_set:
+                    return (kind[0], next_num)
+
+        # 東南西北
+        elif 3 <= kind[0] <= 6:
+            return ((kind[0] - 3 + 1) % 4 + 3, 0)
+
+        # 白發中
+        elif 7 <= kind[0] <= 9:
+            return ((kind[0] - 7 + 1) % 3 + 7, 0)
 
     # ドラ追加
     def add_dora(self):
-        new_dora, new_uradora = self.yama.add_dora()
-        self.doras.append(self.dora_kind(new_dora.kind))
-        self.uradoras.append(self.dora_kind(new_uradora.kind))
+        new_dora = self.yama.add_dora()
+        self.doras.append((self.dora_kind(new_dora[0].kind), self.dora_kind(new_dora[1].kind)))
 
     # 配牌
     def haipai(self):
@@ -111,6 +123,8 @@ class Game():
         # リセット
         self.change_player(self.kyoku)
         self.yama = Yama(self.mjhai_set)
+        self.doras = []
+        self.uradoras = []
 
         for player in self.players:
             player.reset()
@@ -131,7 +145,7 @@ class Game():
             # ツモ判定
             if self.cur_player.check_tsumo():
                 print("{}：ツモ".format(self.cur_player.name))
-                for cur_yaku_list in self.cur_player.tehai.yaku():
+                for cur_yaku_list in self.cur_player.tehai.yaku(self.cur_player.richi, self.doras):
                     for cur_yaku in cur_yaku_list:
                         print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
 
@@ -168,7 +182,7 @@ class Game():
                         self.ron(check_hai, check_player)
 
                         print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
-                        for cur_yaku_list in check_player.tehai.yaku():
+                        for cur_yaku_list in check_player.tehai.yaku(check_player.richi, self.doras):
                             for cur_yaku in cur_yaku_list:
                                 print(self.yaku[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
 
