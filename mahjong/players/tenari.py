@@ -76,8 +76,6 @@ class Tenari(player.Player):
 
     # 暗槓するか
     def do_ankan(self, target):
-        return True
-
         # シャンテン数が下がらないなら暗槓
         temp_tehai = copy.deepcopy(self.tehai)
         temp_tehai.ankan(target)
@@ -85,8 +83,6 @@ class Tenari(player.Player):
 
     # 明槓するか
     def do_minkan(self, hais, target, whose):
-        return True
-
         # 門前だったら明槓しない
         if self.tehai.menzen:
             return False

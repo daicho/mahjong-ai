@@ -69,7 +69,7 @@ class Game():
     # ロン
     def ron(self, target, player):
         player.ron(target, self.cur_player)
-        
+
     # 暗槓
     def ankan(self, hais):
         self.cur_player.ankan(hais)

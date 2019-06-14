@@ -90,13 +90,16 @@ class Player(metaclass=ABCMeta):
 
     # ツモチェック
     def check_tsumo(self):
-        return self.tehai.shanten() == -1 and self.do_tsumo()
+        for cur_yaku in self.tehai.yaku(True, self.richi, self.game.bakaze, self.jikaze(), self.game.doras):
+            return self.do_tsumo()
 
     # ロンチェック
     def check_ron(self, target, whose):
         temp_tehai = copy.deepcopy(self.tehai)
         temp_tehai.tsumo(target)
-        return temp_tehai.shanten() == -1 and self.do_ron(target, whose)
+
+        for cur_yaku in temp_tehai.yaku(False, self.richi, self.game.bakaze, self.jikaze(), self.game.doras):
+            return self.do_ron(target, whose)
 
     # 暗槓チェック
     def check_ankan(self):
