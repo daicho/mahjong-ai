@@ -145,7 +145,7 @@ class Game():
             # ツモ判定
             if self.cur_player.check_tsumo():
                 print("{}：ツモ".format(self.cur_player.name))
-                for cur_yaku_list in self.cur_player.tehai.yaku(self.cur_player.richi, self.doras):
+                for cur_yaku_list in self.cur_player.tehai.yaku(True, self.cur_player.richi, self.bakaze, self.cur_player.jikaze() ,self.doras):
                     for cur_yaku in cur_yaku_list:
                         print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
 
@@ -182,7 +182,7 @@ class Game():
                         self.ron(check_hai, check_player)
 
                         print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
-                        for cur_yaku_list in check_player.tehai.yaku(check_player.richi, self.doras):
+                        for cur_yaku_list in check_player.tehai.yaku(False, check_player.richi, self.bakaze, check_player.jikaze(), self.doras):
                             for cur_yaku in cur_yaku_list:
                                 print(self.yaku[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
 

@@ -294,7 +294,7 @@ class Tehai():
         return min(self.shanten_normal(), self.shanten_chitoi(), self.shanten_kokushi())
 
     # 役
-    def yaku(self, richi, doras):
+    def yaku(self, tsumo, richi, bakaze, jikaze, doras):
         # 和了時の面子の組み合わせを探索
         def combi_agari():
             # 全ての雀頭候補を取り出す
@@ -389,22 +389,26 @@ class Tehai():
             yakuman_common.append(Yaku.CHINRO)
 
         if len(yakuman_common) == 0:
+            # ツモ
+            if tsumo and self.menzen:
+                yaku_common.append(Yaku.TSUMO)
+
             # 立直
             if richi:
                 yaku_common.append(Yaku.RICHI)
 
             # ドラ・裏ドラ・赤ドラ
             for hai in self.hais + [self.tsumo_hai] + [hai for furo in self.furos for hai in furo.hais]:
-                for dora in doras:
-                    if hai is not None:
+                if hai is not None:
+                    for dora in doras:
                         if hai.kind == dora[0]:
                             yaku_common.append(Yaku.DORA)
 
                         if richi and hai.kind == dora[1]:
                                 yaku_common.append(Yaku.URADORA)
 
-                if hai.dora:
-                    yaku_common.append(Yaku.AKADORA)
+                    if hai.dora:
+                        yaku_common.append(Yaku.AKADORA)
 
             # タンヤオ
             for kind, count in all_table.items():
@@ -528,9 +532,19 @@ class Tehai():
                         yaku_list.append(Yaku.DOUKO)
                         break
 
-                # 役牌
+                # 場風の役牌
                 for element in cur_combi:
-                    if element.is_kotsu() and element.hais[0].kind[1] == 0:
+                    if element.is_kotsu() and element.hais[0].kind[0] == bakaze + 3:
+                        yaku_list.append(Yaku.YAKUHAI)
+
+                # 自風の役牌
+                for element in cur_combi:
+                    if element.is_kotsu() and element.hais[0].kind[0] == jikaze + 3:
+                        yaku_list.append(Yaku.YAKUHAI)
+
+                # 三元牌
+                for element in cur_combi:
+                    if element.is_kotsu() and 7 <= element.hais[0].kind[0] <= 9:
                         yaku_list.append(Yaku.YAKUHAI)
 
                 # 三暗刻

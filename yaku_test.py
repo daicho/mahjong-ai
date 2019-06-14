@@ -1,21 +1,4 @@
 import mahjong.core as mj
-import mahjong.players as mp
-import mahjong.graphic as gp
-
-# 牌をセット
-# 筒子・索子
-mjhai_set = []
-for i in range(2):
-    for j in range(1, 10):
-        mjhai_set.extend(mj.MjHai((i, j), j == 5 and k == 3) for k in range(4))
-
-# 萬子
-mjhai_set.extend(mj.MjHai((2, 1)) for i in range(4))
-mjhai_set.extend(mj.MjHai((2, 9)) for i in range(4))
-
-# 字牌
-for i in range(3, 10):
-    mjhai_set.extend(mj.MjHai((i, 0)) for j in range(4))
 
 # 役
 yaku = {
@@ -67,9 +50,25 @@ yaku = {
     mj.Yaku.CHUREN9:    (26, 0),  # 純正九蓮宝燈
 }
 
-# プレイヤー
-players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
-#players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+tehai = mj.Tehai(
+    [
+        mj.MjHai((0, 1)),
+        mj.MjHai((0, 2)),
+        mj.MjHai((0, 3)),
+        mj.MjHai((1, 1)),
+        mj.MjHai((1, 2)),
+        mj.MjHai((1, 3)),
+        mj.MjHai((3, 0)),
+        mj.MjHai((3, 0)),
+        mj.MjHai((3, 0)),
+        mj.MjHai((4, 0)),
+        mj.MjHai((4, 0)),
+        mj.MjHai((4, 0)),
+        mj.MjHai((5, 0)),
+        mj.MjHai((5, 0)),
+    ]
+)
 
-game = mj.GraphicalGame(mjhai_set, yaku, players, 35000, players[0], True)
-game.start()
+for cur_yaku_list in tehai.yaku(True, True, 0, 0, [((0, 2), (0, 2))]):
+    for cur_yaku in cur_yaku_list:
+        print(yaku[cur_yaku][not tehai.menzen], mj.yaku_name[cur_yaku])

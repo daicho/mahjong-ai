@@ -117,7 +117,7 @@ class Tenari(player.Player):
         temp_tehai.chi(hais, target, self.relative(whose))
         return temp_tehai.shanten() < self.tehai.shanten()
 
-# 土田
+# 土田 (チートイだけ)
 class Tsuchida(Tenari):
     # シャンテン数
     def shanten_ex(self):
@@ -143,7 +143,7 @@ class Tsuchida(Tenari):
     def do_chi(self, hais, target, whose):
         return False
 
-# れんたろう
+# れんたろう (国士だけ)
 class Rentaro(Tenari):
     # シャンテン数
     def shanten_ex(self):
@@ -169,7 +169,7 @@ class Rentaro(Tenari):
     def do_chi(self, hais, target, whose):
         return False
 
-# やがさき
+# やがさき (鳴きまくる)
 class Yagasaki(Tenari):
     # シャンテン数
     def shanten_ex(self):
