@@ -83,6 +83,8 @@ class Player(metaclass=ABCMeta):
     def yaku(self, tsumo):
         # 和了時の面子の組み合わせを探索
         def combi_agari():
+            return_combi = []
+
             # 全ての雀頭候補を取り出す
             for kind, count in self.tehai.table.items():
                 if count >= 2:
@@ -93,7 +95,7 @@ class Player(metaclass=ABCMeta):
 
                     # 左から順番に面子を取り出し
                     for cur_combi in mentsu_combi:
-                        return_combi = self.tehai.furos + [Element([self.tehai.find(kind), self.tehai.find(kind)], EK.JANTOU)]
+                        temp_combi = self.tehai.furos + [Element([self.tehai.find(kind), self.tehai.find(kind)], EK.JANTOU)]
                         temp_table = copy.deepcopy(self.tehai.table)
 
                         for mentsu_kind in cur_combi:
@@ -109,7 +111,7 @@ class Player(metaclass=ABCMeta):
                             if mentsu_kind == 0:
                                 # 順子
                                 if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
-                                    return_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j + 1)), self.tehai.find((i, j + 2))], EK.SHUNTSU))
+                                    temp_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j + 1)), self.tehai.find((i, j + 2))], EK.SHUNTSU))
                                     for k in range(3):
                                         temp_table[(i, j + k)] -= 1
                                 else:
@@ -117,14 +119,16 @@ class Player(metaclass=ABCMeta):
                             else:
                                 # 暗刻
                                 if temp_table[(i, j)] >= 3:
-                                    return_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j)), self.tehai.find((i, j))], EK.ANKO))
+                                    temp_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j)), self.tehai.find((i, j))], EK.ANKO))
                                     temp_table[(i, j)] -= 3
                                 else:
                                     break
                         else:
-                            yield return_combi
+                            return_combi.append(temp_combi)
 
                     self.tehai.table[kind] += 2
+
+            return return_combi
 
         if self.tehai.shanten() > -1:
             return
