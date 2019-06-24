@@ -114,6 +114,14 @@ yaku_name = {
     Yaku.CHUREN9:    "純正九蓮宝燈",
 }
 
+# 待ちの種類
+class Waiting(enum.Enum):
+    RYANMEN = enum.auto()
+    KANTYAN = enum.auto()
+    PENTYAN = enum.auto()
+    SHABO   = enum.auto()
+    TANKI   = enum.auto()
+
 # 麻雀牌
 class MjHai():
     """
