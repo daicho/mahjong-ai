@@ -11,6 +11,7 @@ class Player(metaclass=ABCMeta):
         self.tehai = Tehai()
         self.kawa = Kawa()
         self.richi = False
+        self.ippatsu = False
 
         self.game = None
         self.chicha = None
@@ -51,9 +52,13 @@ class Player(metaclass=ABCMeta):
         index = -1 if self.richi else self.select()
         pop_hai = self.tehai.pop(index)
 
-        # 立直
-        if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
-            self.richi = self.do_richi()
+        if self.richi:
+            self.ippatsu = False
+        else:
+            # 立直
+            if self.tehai.shanten() == 0 and self.tehai.menzen:
+                self.richi = self.do_richi()
+                self.ippatsu = True
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
         self.kawa.append(pop_hai, tsumogiri, self.richi)
@@ -79,8 +84,8 @@ class Player(metaclass=ABCMeta):
         target.furo = True
         self.tehai.minkan(hais, target, self.relative(whose))
 
-    # 役
-    def yaku(self, tsumo):
+    # ドラを除いた役
+    def teyaku(self, tsumo):
         # 和了時の面子の組み合わせを探索
         def combi_agari():
             return_combi = []
@@ -187,25 +192,17 @@ class Player(metaclass=ABCMeta):
             if self.richi:
                 yaku_common.append(Yaku.RICHI)
 
-            # ドラ・裏ドラ・赤ドラ
-            for hai in self.tehai.hais + [self.tehai.tsumo_hai] + [hai for furo in self.tehai.furos for hai in furo.hais]:
-                if hai is not None:
-                    for dora in self.game.doras:
-                        if hai.kind == dora[0]:
-                            yaku_common.append(Yaku.DORA)
-
-                        if self.richi and hai.kind == dora[1]:
-                                yaku_common.append(Yaku.URADORA)
-
-                    if hai.dora:
-                        yaku_common.append(Yaku.AKADORA)
+            # 一発
+            if self.ippatsu:
+                yaku_common.append(Yaku.IPPATSU)
 
             # タンヤオ
-            for kind, count in all_table.items():
-                if count > 0 and not 2 <= kind[1] <= 8:
-                    break
-            else:
-                yaku_common.append(Yaku.TANYAO)
+            if self.tehai.menzen or self.game.yaku[Yaku.TANYAO][1]:
+                for kind, count in all_table.items():
+                    if count > 0 and not 2 <= kind[1] <= 8:
+                        break
+                else:
+                    yaku_common.append(Yaku.TANYAO)
 
             # 混一色・清一色
             append_yaku = Yaku.CHINITSU
@@ -322,20 +319,24 @@ class Player(metaclass=ABCMeta):
                         yaku_list.append(Yaku.DOUKO)
                         break
 
-                # 場風の役牌
+                # 役牌
                 for element in cur_combi:
-                    if element.is_kotsu() and element.hais[0].kind[0] == self.game.bakaze + 3:
-                        yaku_list.append(Yaku.YAKUHAI)
+                    if element.is_kotsu():
+                        # 場風
+                        if element.hais[0].kind[0] == self.game.bakaze + 3:
+                            yaku_list.append(Yaku.YAKUHAI)
 
-                # 自風の役牌
-                for element in cur_combi:
-                    if element.is_kotsu() and element.hais[0].kind[0] == self.jikaze() + 3:
-                        yaku_list.append(Yaku.YAKUHAI)
+                        # 自風
+                        if element.hais[0].kind[0] == self.jikaze() + 3:
+                            yaku_list.append(Yaku.YAKUHAI)
 
-                # 三元牌
-                for element in cur_combi:
-                    if element.is_kotsu() and 7 <= element.hais[0].kind[0] <= 9:
-                        yaku_list.append(Yaku.YAKUHAI)
+                        # 共通
+                        if self.game.players_num + 3 <= element.hais[0].kind[0] <= 6:
+                            yaku_list.append(Yaku.YAKUHAI)
+
+                        # 三元牌
+                        if 7 <= element.hais[0].kind[0] <= 9:
+                            yaku_list.append(Yaku.YAKUHAI)
 
                 # 三暗刻
                 if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
@@ -361,7 +362,31 @@ class Player(metaclass=ABCMeta):
                     else:
                         yaku_list.append(append_yaku)
 
-            yield yaku_list
+            if len(yaku_list):
+                yield yaku_list
+
+    # ドラ含めた役
+    def yaku(self, tsumo):
+        if self.tehai.shanten() > -1:
+            return
+
+        yaku_dora = []
+
+        # ドラ・裏ドラ・赤ドラ
+        for hai in self.tehai.hais + [self.tehai.tsumo_hai] + [hai for furo in self.tehai.furos for hai in furo.hais]:
+            if hai is not None:
+                for dora in self.game.doras:
+                    if hai.kind == dora[0]:
+                        yaku_dora.append(Yaku.DORA)
+
+                    if self.richi and hai.kind == dora[1]:
+                            yaku_dora.append(Yaku.URADORA)
+
+                if hai.dora:
+                    yaku_dora.append(Yaku.AKADORA)
+
+        for cur_yaku in self.teyaku(tsumo):
+            yield yaku_dora + cur_yaku
 
     # ポン
     def pon(self, hais, target, whose):
@@ -375,13 +400,13 @@ class Player(metaclass=ABCMeta):
 
     # ツモチェック
     def check_tsumo(self):
-        for cur_yaku in self.yaku(True):
+        for cur_yaku in self.teyaku(True):
             return self.do_tsumo()
 
     # ロンチェック
     def check_ron(self, target, whose):
         self.tehai.tsumo(target)
-        for cur_yaku in self.yaku(False):
+        for cur_yaku in self.teyaku(False):
             self.tehai.pop()
             return self.do_ron(target, whose)
 
