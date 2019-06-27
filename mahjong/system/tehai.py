@@ -2,7 +2,7 @@ import copy
 import itertools
 import pickle
 import collections
-from .elements import *
+from .core import *
 
 # シャンテン数計算テーブルを読み込み
 THIS_PATH = os.path.dirname(os.path.abspath(__file__))

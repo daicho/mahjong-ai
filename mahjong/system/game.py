@@ -1,5 +1,5 @@
 import random
-from .elements import *
+from .core import *
 from .. import graphic as gp
 
 # ゲーム

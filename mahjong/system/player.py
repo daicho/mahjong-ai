@@ -1,7 +1,7 @@
 import copy
 import itertools
 from abc import ABCMeta, abstractmethod
-from .elements import *
+from .core import *
 from .tehai import Tehai
 
 # プレイヤー
@@ -157,6 +157,13 @@ class Player(metaclass=ABCMeta):
             # 嶺上開花
             if self.rinshan:
                 yaku_common.append(Yaku.RINSYAN)
+
+            # 海底摸月・河底撈魚
+            if self.game.yama.remain == 0:
+                if tsumo:
+                    yaku_common.append(Yaku.HAITEI)
+                else:
+                    yaku_common.append(Yaku.HOUTEI)
 
             # タンヤオ
             if self.tehai.menzen or self.game.yakus[Yaku.TANYAO][1]:

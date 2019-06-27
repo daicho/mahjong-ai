@@ -1,5 +1,3 @@
-print(__package__)
-
 import copy
 from .. import player
 

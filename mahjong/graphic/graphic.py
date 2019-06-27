@@ -5,7 +5,7 @@ import glob
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import numpy as np
 import cv2
-from .. import core as mj
+from .. import system as mj
 
 # 麻雀牌のサイズ
 MJHAI_WIDTH = 30

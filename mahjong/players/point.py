@@ -1,4 +1,4 @@
-from .. import core as mj
+from .. import system as mj
 
 # 多田AI
 class TadaAi(mj.Player):

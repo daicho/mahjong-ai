@@ -1,5 +1,5 @@
 import sys
-from .. import core as mj
+from .. import system as mj
 
 # 人間
 class Human(mj.Player):

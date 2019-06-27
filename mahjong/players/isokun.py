@@ -1,4 +1,4 @@
-from .. import core as mj
+from .. import system as mj
 
 # イーソー君
 class Isokun(mj.Player):

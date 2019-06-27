@@ -1,4 +1,4 @@
-import mahjong.core as mj
+import mahjong.system as mj
 import mahjong.players as mp
 import mahjong.graphic as gp
 
@@ -7,15 +7,15 @@ import mahjong.graphic as gp
 mjhai_set = []
 for i in range(2):
     for j in range(1, 10):
-        mjhai_set.extend(mj.MjHai((i, j), j == 5 and k == 3) for k in range(4))
+        mjhai_set.extend(mj.MjHai((i, j), j == 5 and k == 3) for k in range(3))
 
 # 萬子
 mjhai_set.extend(mj.MjHai((2, 1)) for i in range(4))
-mjhai_set.extend(mj.MjHai((2, 9)) for i in range(4))
+#mjhai_set.extend(mj.MjHai((2, 9)) for i in range(4))
 
 # 字牌
-for i in range(3, 10):
-    mjhai_set.extend(mj.MjHai((i, 0)) for j in range(4))
+#for i in range(3, 10):
+#    mjhai_set.extend(mj.MjHai((i, 0)) for j in range(4))
 
 # 役
 yakus = {
@@ -70,6 +70,7 @@ yakus = {
 # プレイヤー
 players = [mp.Tenari("Tenari1"), mp.Tenari("Tenari2"), mp.Tenari("Tenari3")]
 #players = [mp.Human("Human"), mp.Tenari("Tenari1"), mp.Tenari("Tenari2")]
+players = [mp.Human("Human1"), mp.Human("Human2"), mp.Human("Human3")]
 
 game = mj.GraphicalGame(mjhai_set, yakus, players, 35000, players[0], True)
 game.start()

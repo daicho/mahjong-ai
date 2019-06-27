@@ -9,7 +9,7 @@ import collections
 APP_NAME = "Mahjong"
 
 # シード値を設定
-seed = time.time()
+seed = 1561653221.4244769#time.time()
 random.seed(seed)
 print("seed = {}".format(seed))
 
@@ -106,9 +106,9 @@ yaku_name = {
     Yaku.CHINRO:     "清老頭",
     Yaku.SUKANTSU:   "四槓子",
     Yaku.CHUREN:     "九蓮宝燈",
-    Yaku.TENHOU:      "天和",
-    Yaku.CHIHOU:      "地和",
-    Yaku.RENHOU:      "人和",
+    Yaku.TENHOU:     "天和",
+    Yaku.CHIHOU:     "地和",
+    Yaku.RENHOU:     "人和",
     Yaku.KOKUSHI13:  "国士無双十三面待ち",
     Yaku.SUTTAN:     "四暗刻単騎待ち",
     Yaku.CHUREN9:    "純正九蓮宝燈",
