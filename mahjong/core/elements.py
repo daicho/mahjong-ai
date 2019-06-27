@@ -9,7 +9,7 @@ import collections
 APP_NAME = "Mahjong"
 
 # シード値を設定
-seed = 1561606939.82084 #time.time()
+seed = time.time()
 random.seed(seed)
 print("seed = {}".format(seed))
 

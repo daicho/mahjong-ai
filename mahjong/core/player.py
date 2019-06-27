@@ -12,6 +12,7 @@ class Player(metaclass=ABCMeta):
         self.kawa = Kawa()
         self.richi = False
         self.ippatsu = False
+        self.rinshan = False
 
         self.game = None
         self.chicha = None
@@ -52,13 +53,16 @@ class Player(metaclass=ABCMeta):
         index = -1 if self.richi else self.select()
         pop_hai = self.tehai.pop(index)
 
-        if self.richi:
+        if self.ippatsu:
             self.ippatsu = False
-        else:
-            # 立直
-            if self.tehai.shanten() == 0 and self.tehai.menzen:
-                self.richi = self.do_richi()
-                self.ippatsu = True
+
+        if self.rinshan:
+            self.rinshan = False
+
+        # 立直
+        if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
+            self.richi = self.do_richi()
+            self.ippatsu = True
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
         self.kawa.append(pop_hai, tsumogiri, self.richi)
@@ -74,15 +78,18 @@ class Player(metaclass=ABCMeta):
     # 暗槓
     def ankan(self, hais):
         self.tehai.ankan(hais)
+        self.rinshan = True        
 
     # 加槓
     def kakan(self, hai):
         self.tehai.kakan(hai)
+        self.rinshan = True        
 
     # 明槓
     def minkan(self, hais, target, whose):
         target.furo = True
         self.tehai.minkan(hais, target, self.relative(whose))
+        self.rinshan = True        
 
     # ドラを除いた役
     def teyaku(self, tsumo):
@@ -146,6 +153,10 @@ class Player(metaclass=ABCMeta):
             # 一発
             if self.ippatsu:
                 yaku_common.append(Yaku.IPPATSU)
+
+            # 嶺上開花
+            if self.rinshan:
+                yaku_common.append(Yaku.RINSYAN)
 
             # タンヤオ
             if self.tehai.menzen or self.game.yakus[Yaku.TANYAO][1]:
