@@ -86,6 +86,55 @@ class Tehai():
     def sort(self):
         self.hais.sort()
 
+    # 和了時の面子の組み合わせを探索
+    def combi_agari(self):
+        return_combi = []
+
+        # 全ての雀頭候補を取り出す
+        for kind, count in self.table.items():
+            if count >= 2:
+                self.table[kind] -= 2
+
+                # 0...順子 1...暗刻
+                mentsu_combi = itertools.product([0, 1], repeat=4 - len(self.furos))
+
+                # 左から順番に面子を取り出し
+                for cur_combi in mentsu_combi:
+                    temp_combi = self.furos + [Element([self.find(kind), self.find(kind)], EK.JANTOU)]
+                    temp_table = copy.deepcopy(self.table)
+
+                    for mentsu_kind in cur_combi:
+                        # 開始点
+                        for i in range(10):
+                            for j in range(10):
+                                if temp_table[(i, j)]:
+                                    break
+                            else:
+                                continue
+                            break
+
+                        if mentsu_kind == 0:
+                            # 順子
+                            if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
+                                temp_combi.append(Element([self.find((i, j)), self.find((i, j + 1)), self.find((i, j + 2))], EK.SHUNTSU))
+                                for k in range(3):
+                                    temp_table[(i, j + k)] -= 1
+                            else:
+                                break
+                        else:
+                            # 暗刻
+                            if temp_table[(i, j)] >= 3:
+                                temp_combi.append(Element([self.find((i, j)), self.find((i, j)), self.find((i, j))], EK.ANKO))
+                                temp_table[(i, j)] -= 3
+                            else:
+                                break
+                    else:
+                        return_combi.append(temp_combi)
+
+                self.table[kind] += 2
+
+        return return_combi
+
     # 暗槓可能な牌
     def ankan_able(self):
         for kind, count in self.table.items():

@@ -6,9 +6,9 @@ from .. import graphic as gp
 class Game():
     kaze_name = ["東", "南", "西", "北"]
 
-    def __init__(self, mjhai_set, yaku, players, point):
+    def __init__(self, mjhai_set, yakus, players, point):
         self.mjhai_set = mjhai_set
-        self.yaku = yaku
+        self.yakus = yakus
 
         self.players_num = len(players)
         self.players = random.sample(players, self.players_num)
@@ -147,7 +147,7 @@ class Game():
                 print("{}：ツモ".format(self.cur_player.name))
                 for cur_yaku_list in self.cur_player.yaku(True):
                     for cur_yaku in cur_yaku_list:
-                        print(self.yaku[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+                        print(self.yakus[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
 
                 return self.cur_player.jikaze() == 0, False
 
@@ -184,7 +184,7 @@ class Game():
                         print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
                         for cur_yaku_list in check_player.yaku(False):
                             for cur_yaku in cur_yaku_list:
-                                print(self.yaku[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
+                                print(self.yakus[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
 
                         end = True
                         if check_player.jikaze() == 0:
@@ -251,9 +251,9 @@ class Game():
 class GraphicalGame(Game):
     kaze_name = ["東", "南", "西", "北"]
 
-    def __init__(self, mjhai_set, yaku, players, point, view=None, open=False):
+    def __init__(self, mjhai_set, yakus, players, point, view=None, open=False):
         self.screen = gp.Screen(self, view, open)
-        super().__init__(mjhai_set, yaku, players, point)
+        super().__init__(mjhai_set, yakus, players, point)
 
     # 配牌
     def haipai(self):

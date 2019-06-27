@@ -86,55 +86,6 @@ class Player(metaclass=ABCMeta):
 
     # ドラを除いた役
     def teyaku(self, tsumo):
-        # 和了時の面子の組み合わせを探索
-        def combi_agari():
-            return_combi = []
-
-            # 全ての雀頭候補を取り出す
-            for kind, count in self.tehai.table.items():
-                if count >= 2:
-                    self.tehai.table[kind] -= 2
-
-                    # 0...順子 1...暗刻
-                    mentsu_combi = itertools.product([0, 1], repeat=4 - len(self.tehai.furos))
-
-                    # 左から順番に面子を取り出し
-                    for cur_combi in mentsu_combi:
-                        temp_combi = self.tehai.furos + [Element([self.tehai.find(kind), self.tehai.find(kind)], EK.JANTOU)]
-                        temp_table = copy.deepcopy(self.tehai.table)
-
-                        for mentsu_kind in cur_combi:
-                            # 開始点
-                            for i in range(10):
-                                for j in range(10):
-                                    if temp_table[(i, j)]:
-                                        break
-                                else:
-                                    continue
-                                break
-
-                            if mentsu_kind == 0:
-                                # 順子
-                                if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
-                                    temp_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j + 1)), self.tehai.find((i, j + 2))], EK.SHUNTSU))
-                                    for k in range(3):
-                                        temp_table[(i, j + k)] -= 1
-                                else:
-                                    break
-                            else:
-                                # 暗刻
-                                if temp_table[(i, j)] >= 3:
-                                    temp_combi.append(Element([self.tehai.find((i, j)), self.tehai.find((i, j)), self.tehai.find((i, j))], EK.ANKO))
-                                    temp_table[(i, j)] -= 3
-                                else:
-                                    break
-                        else:
-                            return_combi.append(temp_combi)
-
-                    self.tehai.table[kind] += 2
-
-            return return_combi
-
         if self.tehai.shanten() > -1:
             return
 
@@ -197,7 +148,7 @@ class Player(metaclass=ABCMeta):
                 yaku_common.append(Yaku.IPPATSU)
 
             # タンヤオ
-            if self.tehai.menzen or self.game.yaku[Yaku.TANYAO][1]:
+            if self.tehai.menzen or self.game.yakus[Yaku.TANYAO][1]:
                 for kind, count in all_table.items():
                     if count > 0 and not 2 <= kind[1] <= 8:
                         break
@@ -231,7 +182,7 @@ class Player(metaclass=ABCMeta):
                 yield yaku_common + [Yaku.CHITOI]
 
         # 全ての組み合わせでの役
-        for cur_combi in combi_agari():
+        for cur_combi in self.tehai.combi_agari():
             yaku_list = yakuman_common[:]
 
             # 四暗刻
@@ -386,7 +337,7 @@ class Player(metaclass=ABCMeta):
                     yaku_dora.append(Yaku.AKADORA)
 
         for cur_yaku in self.teyaku(tsumo):
-            yield yaku_dora + cur_yaku
+            yield cur_yaku + (yaku_dora if not self.game.yakus[cur_yaku[0]][2] else [])
 
     # ポン
     def pon(self, hais, target, whose):
