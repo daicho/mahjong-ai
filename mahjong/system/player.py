@@ -61,8 +61,9 @@ class Player(metaclass=ABCMeta):
 
         # 立直
         if not self.richi and self.tehai.shanten() == 0 and self.tehai.menzen:
-            self.richi = self.do_richi()
-            self.ippatsu = True
+            if self.do_richi():
+                self.richi = True
+                self.ippatsu = True
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
         self.kawa.append(pop_hai, tsumogiri, self.richi)
