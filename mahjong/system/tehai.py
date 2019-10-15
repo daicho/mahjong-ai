@@ -100,7 +100,7 @@ class Tehai():
 
                 # 左から順番に面子を取り出し
                 for cur_combi in mentsu_combi:
-                    temp_combi = self.furos + [Element([self.find(kind), self.find(kind)], EK.JANTOU)]
+                    temp_combi = self.furos + [Element([self.find(kind), self.find(kind)], ElementKind.JANTOU)]
                     temp_table = copy.deepcopy(self.table)
 
                     for mentsu_kind in cur_combi:
@@ -116,7 +116,7 @@ class Tehai():
                         if mentsu_kind == 0:
                             # 順子
                             if temp_table[(i, j)] and temp_table[(i, j + 1)] and temp_table[(i, j + 2)]:
-                                temp_combi.append(Element([self.find((i, j)), self.find((i, j + 1)), self.find((i, j + 2))], EK.SHUNTSU))
+                                temp_combi.append(Element([self.find((i, j)), self.find((i, j + 1)), self.find((i, j + 2))], ElementKind.SHUNTSU))
                                 for k in range(3):
                                     temp_table[(i, j + k)] -= 1
                             else:
@@ -124,7 +124,7 @@ class Tehai():
                         else:
                             # 暗刻
                             if temp_table[(i, j)] >= 3:
-                                temp_combi.append(Element([self.find((i, j)), self.find((i, j)), self.find((i, j))], EK.ANKO))
+                                temp_combi.append(Element([self.find((i, j)), self.find((i, j)), self.find((i, j))], ElementKind.ANKO))
                                 temp_table[(i, j)] -= 3
                             else:
                                 break
@@ -144,7 +144,7 @@ class Tehai():
     # 加槓可能な牌
     def kakan_able(self):
         for furo in self.furos:
-            if furo.kind == EK.MINKO:
+            if furo.kind == ElementKind.MINKO:
                 for kind, count in self.table.items():
                     # 明刻と同じ牌だったら
                     if count > 0 and furo.hais[0].kind == kind:
@@ -172,12 +172,12 @@ class Tehai():
     # 暗槓
     def ankan(self, hais):
         append_hais = [self.remove(hai) for hai in hais]
-        self.furos.append(Element(append_hais, EK.ANKAN))
+        self.furos.append(Element(append_hais, ElementKind.ANKAN))
 
     # 加槓
     def kakan(self, hai):
         for furo in self.furos:
-            if furo.kind == EK.MINKO:
+            if furo.kind == ElementKind.MINKO:
                 # 明刻と同じ牌だったら
                 if furo.hais[0].kind == hai.kind:
                     furo.kakan(self.remove(hai))
@@ -188,7 +188,7 @@ class Tehai():
 
         append_hais = [self.remove(hai) for hai in hais]
         append_hais.insert(int((direct - 1) * 1.5), target)
-        self.furos.append(FuroElement(append_hais, EK.MINKAN, direct))
+        self.furos.append(FuroElement(append_hais, ElementKind.MINKAN, direct))
 
     # ポン
     def pon(self, hais, target, direct):
@@ -196,7 +196,7 @@ class Tehai():
 
         append_hais = [self.remove(hai) for hai in hais]
         append_hais.insert(direct - 1, target)
-        self.furos.append(PonElement(append_hais, EK.MINKO, direct))
+        self.furos.append(PonElement(append_hais, ElementKind.MINKO, direct))
 
     # チー
     def chi(self, hais, target, direct):
@@ -204,7 +204,7 @@ class Tehai():
 
         append_hais = [self.remove(hai) for hai in hais]
         append_hais.insert(direct - 1, target)
-        self.furos.append(FuroElement(append_hais, EK.MINSHUN, direct))
+        self.furos.append(FuroElement(append_hais, ElementKind.MINSHUN, direct))
 
     # 表示
     def show(self):

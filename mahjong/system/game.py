@@ -301,3 +301,24 @@ class GraphicalGame(Game):
         renchan, ryukyoku = super().start_kyoku()
         self.screen.draw_result()
         return renchan, ryukyoku
+
+class GameReader():
+    def __init__(self, mjhai_set, yakus, players, point):
+        self.mjhai_set = mjhai_set
+        self.yakus = yakus
+
+        self.players_num = len(players)
+        self.players = random.sample(players, self.players_num)
+
+        for i, player in enumerate(self.players):
+            player.setup(self, i, point)
+
+        self.bakaze = 0  # 場風
+        self.kyoku = 0   # 局
+        self.honba = 0   # 本場
+        self.kyotaku = 0 # 供託
+
+        self.turn = self.kyoku
+        self.cur_player = self.players[self.turn]
+        self.yama = Yama(self.mjhai_set) # 牌山
+        self.doras = []

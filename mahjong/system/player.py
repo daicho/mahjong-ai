@@ -205,14 +205,14 @@ class Player(metaclass=ABCMeta):
             yaku_list = yakuman_common[:]
 
             # 四暗刻
-            if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 4:
+            if sum(1 for element in cur_combi if element.kind == ElementKind.ANKO or element.kind == ElementKind.ANKAN) == 4:
                 yaku_list.append(Yaku.SUANKO)
 
             # 大四喜・小四喜
             append_yaku = Yaku.DAISUSHI
             for i in range(3, 7):
                 for element in cur_combi:
-                    if element.kind == EK.JANTOU and element.hais[0].kind[0] == i:
+                    if element.kind == ElementKind.JANTOU and element.hais[0].kind[0] == i:
                         append_yaku = Yaku.SHOUSUSHI
                         break
 
@@ -238,7 +238,7 @@ class Player(metaclass=ABCMeta):
 
                 if self.tehai.menzen:
                     # 平和
-                    if sum(1 for element in cur_combi if element.kind == EK.SHUNTSU) == 4:
+                    if sum(1 for element in cur_combi if element.kind == ElementKind.SHUNTSU) == 4:
                         yaku_list.append(Yaku.PINFU)
 
                     # 一盃口・二盃口
@@ -309,7 +309,7 @@ class Player(metaclass=ABCMeta):
                             yaku_list.append(Yaku.YAKUHAI)
 
                 # 三暗刻
-                if sum(1 for element in cur_combi if element.kind == EK.ANKO or element.kind == EK.ANKAN) == 3:
+                if sum(1 for element in cur_combi if element.kind == ElementKind.ANKO or element.kind == ElementKind.ANKAN) == 3:
                     yaku_list.append(Yaku.SANANKO)
 
                 # 対々和

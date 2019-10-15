@@ -104,12 +104,12 @@ def draw_tehai(tehai, back=False):
     for furo in tehai.furos:
         for i, hai in enumerate(furo.hais):
             # 麻雀牌
-            if furo.kind == mj.EK.ANKAN and (i == 0 or i == 3):
+            if furo.kind == mj.ElementKind.ANKAN and (i == 0 or i == 3):
                 mjhai_draw = mjhai_img["back"]
             else:
                 mjhai_draw = mjhai_img[hai.name]
 
-            if furo.kind == mj.EK.KAKAN and i == 3:
+            if furo.kind == mj.ElementKind.KAKAN and i == 3:
                 # 加槓
                 create_img.paste(
                     draw_side(mjhai_draw),

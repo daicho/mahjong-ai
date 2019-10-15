@@ -166,7 +166,7 @@ class MjHai():
         return self.kind + (self.dora,) > other.kind + (other.dora,)
 
 # 面子の種類
-class EK(enum.Enum):
+class ElementKind(enum.Enum):
     JANTOU  = enum.auto()
     SHUNTSU = enum.auto()
     MINSHUN = enum.auto()
@@ -208,11 +208,11 @@ class Element():
 
     # 順子かどうか
     def is_shuntsu(self):
-        return self.kind in [EK.SHUNTSU, EK.MINSHUN]
+        return self.kind in [ElementKind.SHUNTSU, ElementKind.MINSHUN]
 
     # 刻子かどうか
     def is_kotsu(self):
-        return self.kind in [EK.ANKO, EK.MINKO, EK.ANKAN, EK.MINKAN, EK.KAKAN]
+        return self.kind in [ElementKind.ANKO, ElementKind.MINKO, ElementKind.ANKAN, ElementKind.MINKAN, ElementKind.KAKAN]
 
 # 副露した面子
 class FuroElement(Element):
@@ -224,7 +224,7 @@ class FuroElement(Element):
 class PonElement(FuroElement):
     # 加槓
     def kakan(self, hai):
-        self.kind = EK.KAKAN
+        self.kind = ElementKind.KAKAN
         self.hais.append(hai)
         self.table[hai.kind] += 1
 
