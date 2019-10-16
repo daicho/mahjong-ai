@@ -27,9 +27,9 @@ class Tenari(player.Player):
                     remain_hai.remove(hai)
 
             # 河
-            for hai in player.kawa.hais:
-                if not hai.furo:
-                    remain_hai.remove(hai)
+            for kawa_hai in player.kawa.hais:
+                if not kawa_hai.furo:
+                    remain_hai.remove(kawa_hai.hai)
 
         # ドラ
         for dora in self.game.yama.doras:

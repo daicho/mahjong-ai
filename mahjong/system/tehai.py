@@ -152,22 +152,22 @@ class Tehai():
 
     # 明槓可能な牌
     def minkan_able(self, target):
-        if self.table[target.kind] >= 3:
-            yield self.find_multi([target.kind for i in range(3)])
+        if self.table[target.hai.kind] >= 3:
+            yield self.find_multi([target.hai.kind for i in range(3)])
 
     # ポン可能な牌
     def pon_able(self, target):
-        if self.table[target.kind] >= 2:
-            yield self.find_multi([target.kind for i in range(2)])
+        if self.table[target.hai.kind] >= 2:
+            yield self.find_multi([target.hai.kind for i in range(2)])
 
     # チー可能な牌
     def chi_able(self, target):
         for i in range(-2, 1):
             for j in range(3):
-                if i + j and self.table[(target.kind[0], target.kind[1] + i + j)] == 0:
+                if i + j and self.table[(target.hai.kind[0], target.hai.kind[1] + i + j)] == 0:
                     break
             else:
-                yield self.find_multi([(target.kind[0], target.kind[1] + i + j) for j in range(3) if i + j])
+                yield self.find_multi([(target.hai.kind[0], target.hai.kind[1] + i + j) for j in range(3) if i + j])
 
     # 暗槓
     def ankan(self, hais):
@@ -195,7 +195,7 @@ class Tehai():
         self.menzen = False
 
         append_hais = [self.remove(hai) for hai in hais]
-        append_hais.insert(direct - 1, target)
+        append_hais.insert(direct - 1, target.hai)
         self.furos.append(PonElement(append_hais, ElementKind.MINKO, direct))
 
     # チー
@@ -203,7 +203,7 @@ class Tehai():
         self.menzen = False
 
         append_hais = [self.remove(hai) for hai in hais]
-        append_hais.insert(direct - 1, target)
+        append_hais.insert(direct - 1, target.hai)
         self.furos.append(FuroElement(append_hais, ElementKind.MINSHUN, direct))
 
     # 表示

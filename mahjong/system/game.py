@@ -135,7 +135,6 @@ class Game():
         print()
 
         self.haipai() # 配牌
-        self.add_dora()
 
         while self.yama.remain > 0:
             # ツモ
@@ -147,7 +146,7 @@ class Game():
                 print("{}：ツモ".format(self.cur_player.name))
                 for cur_yaku_list in self.cur_player.yaku(True):
                     for cur_yaku in cur_yaku_list:
-                        print(self.yakus[cur_yaku][not self.cur_player.tehai.menzen], yaku_name[cur_yaku])
+                        print(self.yakus[cur_yaku][not self.cur_player.tehai.menzen], YAKU_NAME[cur_yaku])
 
                 return self.cur_player.jikaze() == 0, False
 
@@ -184,7 +183,7 @@ class Game():
                         print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
                         for cur_yaku_list in check_player.yaku(False):
                             for cur_yaku in cur_yaku_list:
-                                print(self.yakus[cur_yaku][not check_player.tehai.menzen], yaku_name[cur_yaku])
+                                print(self.yakus[cur_yaku][not check_player.tehai.menzen], YAKU_NAME[cur_yaku])
 
                         end = True
                         if check_player.jikaze() == 0:

@@ -66,15 +66,14 @@ class Player(metaclass=ABCMeta):
                 self.ippatsu = True
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
-        self.kawa.append(pop_hai, tsumogiri, self.richi)
+        pop_kawa_hai = self.kawa.append(pop_hai, tsumogiri, self.richi)
         self.tehai.sort()
 
-        return pop_hai
+        return pop_kawa_hai
 
     # ロン
     def ron(self, target, whose):
         target.set_houju()
-        self.tehai.tsumo(target)
 
     # 暗槓
     def ankan(self, hais):
@@ -88,7 +87,7 @@ class Player(metaclass=ABCMeta):
 
     # 明槓
     def minkan(self, hais, target, whose):
-        target.furo = True
+        target.set_furo()
         self.tehai.minkan(hais, target, self.relative(whose))
         self.rinshan = True        
 
@@ -164,7 +163,7 @@ class Player(metaclass=ABCMeta):
                 if tsumo:
                     yaku_common.append(Yaku.HAITEI)
                 else:
-                    yaku_common.append(Yaku.HOUTEI)
+                    yaku_common.append(Yaku.HOTEI)
 
             # タンヤオ
             if self.tehai.menzen or self.game.yakus[Yaku.TANYAO][1]:
@@ -213,7 +212,7 @@ class Player(metaclass=ABCMeta):
             for i in range(3, 7):
                 for element in cur_combi:
                     if element.kind == ElementKind.JANTOU and element.hais[0].kind[0] == i:
-                        append_yaku = Yaku.SHOUSUSHI
+                        append_yaku = Yaku.SHOSUSHI
                         break
 
                     elif element.is_kotsu() and element.hais[0].kind[0] == i:
@@ -274,7 +273,7 @@ class Player(metaclass=ABCMeta):
                         else:
                             break
                     else:
-                        yaku_list.append(Yaku.DOUJUN)
+                        yaku_list.append(Yaku.DOJUN)
                         break
 
                 # 三色同刻
@@ -286,7 +285,7 @@ class Player(metaclass=ABCMeta):
                         else:
                             break
                     else:
-                        yaku_list.append(Yaku.DOUKO)
+                        yaku_list.append(Yaku.DOKO)
                         break
 
                 # 役牌
@@ -360,12 +359,12 @@ class Player(metaclass=ABCMeta):
 
     # ポン
     def pon(self, hais, target, whose):
-        target.furo = True
+        target.set_furo()
         self.tehai.pon(hais, target, self.relative(whose))
 
     # チー
     def chi(self, hais, target, whose):
-        target.furo = True
+        target.set_furo()
         self.tehai.chi(hais, target, self.relative(whose))
 
     # ツモチェック
@@ -375,7 +374,7 @@ class Player(metaclass=ABCMeta):
 
     # ロンチェック
     def check_ron(self, target, whose):
-        self.tehai.tsumo(target)
+        self.tehai.tsumo(target.hai)
         for cur_yaku in self.teyaku(False):
             self.tehai.pop()
             return self.do_ron(target, whose)

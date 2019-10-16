@@ -92,10 +92,6 @@ def draw_tehai(tehai, back=False):
         # 麻雀牌
         mjhai_draw = mjhai_img["back" if back else tehai.tsumo_hai.name]
 
-        # 他家からの牌は赤く
-        if type(tehai.tsumo_hai) is mj.KawaMjHai:
-            mjhai_draw = draw_mix(mjhai_draw, (255, 63, 0, 47))
-
         create_img.paste(mjhai_draw, (x, MJHAI_HEIGHT))
         x += MJHAI_HEIGHT
 
@@ -117,7 +113,7 @@ def draw_tehai(tehai, back=False):
                 )
             else:
                 # 他家からの牌は横にする
-                if type(hai) is mj.KawaMjHai:
+                if furo.kind != mj.ElementKind.ANKAN and furo.direct == i + 1:
                     create_img.paste(draw_side(mjhai_draw), (x - MJHAI_HEIGHT, MJHAI_HEIGHT))
                     x -= MJHAI_HEIGHT
                 else:
@@ -134,24 +130,25 @@ def draw_kawa(kawa):
     y = 0
     already_richi = False
 
-    for hai in kawa.hais:
+    for kawa_hai in kawa.hais:
+
         paste_img = Image.new("RGB", (MJHAI_WIDTH, MJHAI_HEIGHT))
-        paste_img.paste(mjhai_img[hai.name])
+        paste_img.paste(mjhai_img[kawa_hai.hai.name])
 
         # ツモ切りは暗くする
-        if hai.tsumogiri:
+        if kawa_hai.tsumogiri:
             paste_img = draw_mix(paste_img, (0, 0, 0, 47))
 
         # 鳴かれた牌は青くする
-        if hai.furo:
+        if kawa_hai.furo:
             paste_img = draw_mix(paste_img, (0, 63, 255, 47))
 
         # 放銃した牌は赤くする
-        if hai.houju:
+        if kawa_hai.hoju:
             paste_img = draw_mix(paste_img, (255, 63, 0, 47))
 
         # 立直宣言牌は横にする
-        if not already_richi and hai.richi:
+        if not already_richi and kawa_hai.richi:
             already_richi = True
             create_img.paste(draw_side(paste_img), (x, y))
             x += MJHAI_HEIGHT
