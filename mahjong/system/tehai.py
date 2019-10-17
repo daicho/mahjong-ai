@@ -187,7 +187,7 @@ class Tehai():
         self.menzen = False
 
         append_hais = [self.remove(hai) for hai in hais]
-        append_hais.insert(int((direct - 1) * 1.5), target)
+        append_hais.insert(int((direct - 1) * 1.5), target.hai)
         self.furos.append(FuroElement(append_hais, ElementKind.MINKAN, direct))
 
     # ポン

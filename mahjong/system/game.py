@@ -21,10 +21,14 @@ class Game():
         self.honba = 0   # 本場
         self.kyotaku = 0 # 供託
 
+        # 番
         self.turn = self.kyoku
         self.cur_player = self.players[self.turn]
-        self.yama = Yama(self.mjhai_set) # 牌山
-        self.doras = []
+
+        # 牌山
+        self.yama = Yama(self.mjhai_set)
+        self.doras = [self.dora_kind(self.yama.doras[0].kind)]
+        self.uradoras = [self.dora_kind(self.yama.uradoras[0].kind)]
 
     # 局を表す文字列
     def kyoku_name(self):
@@ -51,7 +55,8 @@ class Game():
     # ドラ追加
     def add_dora(self):
         new_dora = self.yama.add_dora()
-        self.doras.append((self.dora_kind(new_dora[0].kind), self.dora_kind(new_dora[1].kind)))
+        self.doras.append(self.dora_kind(self.yama.doras[-1].kind))
+        self.uradoras.append(self.dora_kind(self.yama.uradoras[-1].kind))
 
     # 配牌
     def haipai(self):
@@ -123,8 +128,8 @@ class Game():
         # リセット
         self.change_player(self.kyoku)
         self.yama = Yama(self.mjhai_set)
-        self.doras = []
-        self.uradoras = []
+        self.doras = [self.dora_kind(self.yama.doras[0].kind)]
+        self.uradoras = [self.dora_kind(self.yama.uradoras[0].kind)]
 
         for player in self.players:
             player.reset()

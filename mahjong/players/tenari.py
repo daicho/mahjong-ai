@@ -33,7 +33,11 @@ class Tenari(player.Player):
 
         # ドラ
         for dora in self.game.yama.doras:
-            remain_hai.remove(dora[0])
+            remain_hai.remove(dora)
+
+        # 裏ドラ
+        for uradora in self.game.yama.uradoras:
+            remain_hai.remove(uradora)
 
         for i in range(len(self.tehai)):
             # 1枚ずつ切ってみる

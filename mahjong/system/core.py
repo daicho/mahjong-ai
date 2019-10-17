@@ -142,7 +142,7 @@ class MjHai():
       1-9...数牌
     """
 
-    color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chn"]
+    color_name = ["p", "s", "m", "Ton", "Nan", "Sha", "Pei", "Hak", "Hat", "Chu"]
 
     def __init__(self, kind, dora=False):
         self.kind = kind # 種類
@@ -239,12 +239,6 @@ class KawaMjHai():
         self.furo = False
         self.hoju = False
 
-    def set_furo(self):
-        self.furo = True
-
-    def set_houju(self):
-        self.hoju = True
-
 # 河
 class Kawa():
     def __init__(self):
@@ -254,7 +248,6 @@ class Kawa():
     def append(self, hai, tsumogiri=False, richi=False):
         append_hai = KawaMjHai(hai, tsumogiri, richi)
         self.hais.append(append_hai)
-        return append_hai
 
 # 山
 class Yama():
@@ -263,6 +256,7 @@ class Yama():
         random.shuffle(self.hais)
         self.remain = len(self.hais) - 14
         self.doras = []
+        self.uradoras = []
         self.add_dora()
 
     # 取り出し
@@ -272,6 +266,5 @@ class Yama():
 
     # ドラを増やす
     def add_dora(self):
-        new_dora = (self.hais[len(self.doras) * 2], self.hais[len(self.doras) * 2 + 1])
-        self.doras.append(new_dora)
-        return new_dora
+        self.doras.append(self.hais[len(self.doras) * 2])
+        self.uradoras.append(self.hais[len(self.doras) * 2 + 1])

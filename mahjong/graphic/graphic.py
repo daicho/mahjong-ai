@@ -212,13 +212,21 @@ def draw_dora(yama, uradora):
     create_img = Image.new("RGBA", (5 * MJHAI_WIDTH, 2 * MJHAI_HEIGHT))
 
     for i in range(5):
-        for j in range(2):
-            if i < len(yama.doras) and (j == 0 or uradora):
-                paste_img = mjhai_img[yama.doras[i][j].name]
-            else:
-                paste_img = mjhai_img["back"]
+        # ドラ
+        if i < len(yama.doras):
+            paste_img = mjhai_img[yama.doras[i].name]
+        else:
+            paste_img = mjhai_img["back"]
 
-            create_img.paste(paste_img, (i * MJHAI_WIDTH, j * MJHAI_HEIGHT))
+        create_img.paste(paste_img, (i * MJHAI_WIDTH, 0))
+
+        # 裏ドラ
+        if i < len(yama.doras) and uradora:
+            paste_img = mjhai_img[yama.uradoras[i].name]
+        else:
+            paste_img = mjhai_img["back"]
+
+        create_img.paste(paste_img, (i * MJHAI_WIDTH, MJHAI_HEIGHT))
 
     return create_img
 

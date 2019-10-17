@@ -66,14 +66,15 @@ class Player(metaclass=ABCMeta):
                 self.ippatsu = True
 
         tsumogiri = (index == len(self.tehai.hais) or index == -1)
-        pop_kawa_hai = self.kawa.append(pop_hai, tsumogiri, self.richi)
+        self.kawa.append(pop_hai, tsumogiri, self.richi)
         self.tehai.sort()
 
-        return pop_kawa_hai
+        return self.kawa.hais[-1]
 
     # ロン
     def ron(self, target, whose):
-        target.set_houju()
+        target.hoju = True
+        self.tehai.tsumo(target.hai)
 
     # 暗槓
     def ankan(self, hais):
@@ -87,7 +88,7 @@ class Player(metaclass=ABCMeta):
 
     # 明槓
     def minkan(self, hais, target, whose):
-        target.set_furo()
+        target.furo = True
         self.tehai.minkan(hais, target, self.relative(whose))
         self.rinshan = True        
 
@@ -345,10 +346,11 @@ class Player(metaclass=ABCMeta):
         for hai in self.tehai.hais + [self.tehai.tsumo_hai] + [hai for furo in self.tehai.furos for hai in furo.hais]:
             if hai is not None:
                 for dora in self.game.doras:
-                    if hai.kind == dora[0]:
+                    if hai.kind == dora:
                         yaku_dora.append(Yaku.DORA)
 
-                    if self.richi and hai.kind == dora[1]:
+                for uradora in self.game.uradoras:
+                    if hai.kind == uradora and self.richi:
                             yaku_dora.append(Yaku.URADORA)
 
                 if hai.dora:
@@ -359,12 +361,12 @@ class Player(metaclass=ABCMeta):
 
     # ポン
     def pon(self, hais, target, whose):
-        target.set_furo()
+        target.furo = True
         self.tehai.pon(hais, target, self.relative(whose))
 
     # チー
     def chi(self, hais, target, whose):
-        target.set_furo()
+        target.furo = True
         self.tehai.chi(hais, target, self.relative(whose))
 
     # ツモチェック
