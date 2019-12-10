@@ -69,6 +69,11 @@ class Player(metaclass=ABCMeta):
         self.kawa.append(pop_hai, tsumogiri, self.richi)
         self.tehai.sort()
 
+        dataset = [self.tehai.table[(0, 5)]] + [0] * 19
+        for i, kawahai in enumerate(self.kawa.hais):
+            dataset[i + 1] = kawahai.hai.id
+        print(dataset, sep=",")
+
         return self.kawa.hais[-1]
 
     # ロン
@@ -91,6 +96,63 @@ class Player(metaclass=ABCMeta):
         target.furo = True
         self.tehai.minkan(hais, target, self.relative(whose))
         self.rinshan = True        
+
+    # ポン
+    def pon(self, hais, target, whose):
+        target.furo = True
+        self.tehai.pon(hais, target, self.relative(whose))
+
+    # チー
+    def chi(self, hais, target, whose):
+        target.furo = True
+        self.tehai.chi(hais, target, self.relative(whose))
+
+    # ツモチェック
+    def check_tsumo(self):
+        for cur_yaku in self.teyaku(True):
+            return self.do_tsumo()
+
+    # ロンチェック
+    def check_ron(self, target, whose):
+        self.tehai.tsumo(target.hai)
+        for cur_yaku in self.teyaku(False):
+            self.tehai.pop()
+            return self.do_ron(target, whose)
+
+        self.tehai.pop()
+
+    # 暗槓チェック
+    def check_ankan(self):
+        for cur_hais in self.tehai.ankan_able():
+            if self.do_ankan(cur_hais):
+                return cur_hais
+
+    # 加槓チェック
+    def check_kakan(self):
+        for cur_hai in self.tehai.kakan_able():
+            if self.do_kakan(cur_hai):
+                return cur_hai
+
+    # 明槓チェック
+    def check_minkan(self, target, whose):
+        if not self.richi:
+            for cur_hais in self.tehai.minkan_able(target):
+                if self.do_minkan(cur_hais, target, whose):
+                    return cur_hais
+
+    # ポンチェック
+    def check_pon(self, target, whose):
+        if not self.richi:
+            for cur_hais in self.tehai.pon_able(target):
+                if self.do_pon(cur_hais, target, whose):
+                    return cur_hais
+
+    # チーチェック
+    def check_chi(self, target, whose):
+        if not self.richi and self.relative(whose) == 3:
+            for cur_hais in self.tehai.chi_able(target):
+                if self.do_chi(cur_hais, target, whose):
+                    return cur_hais
 
     # ドラを除いた役
     def teyaku(self, tsumo):
@@ -358,63 +420,6 @@ class Player(metaclass=ABCMeta):
 
         for cur_yaku in self.teyaku(tsumo):
             yield cur_yaku + (yaku_dora if not self.game.yakus[cur_yaku[0]][2] else [])
-
-    # ポン
-    def pon(self, hais, target, whose):
-        target.furo = True
-        self.tehai.pon(hais, target, self.relative(whose))
-
-    # チー
-    def chi(self, hais, target, whose):
-        target.furo = True
-        self.tehai.chi(hais, target, self.relative(whose))
-
-    # ツモチェック
-    def check_tsumo(self):
-        for cur_yaku in self.teyaku(True):
-            return self.do_tsumo()
-
-    # ロンチェック
-    def check_ron(self, target, whose):
-        self.tehai.tsumo(target.hai)
-        for cur_yaku in self.teyaku(False):
-            self.tehai.pop()
-            return self.do_ron(target, whose)
-
-        self.tehai.pop()
-
-    # 暗槓チェック
-    def check_ankan(self):
-        for cur_hais in self.tehai.ankan_able():
-            if self.do_ankan(cur_hais):
-                return cur_hais
-
-    # 加槓チェック
-    def check_kakan(self):
-        for cur_hai in self.tehai.kakan_able():
-            if self.do_kakan(cur_hai):
-                return cur_hai
-
-    # 明槓チェック
-    def check_minkan(self, target, whose):
-        if not self.richi:
-            for cur_hais in self.tehai.minkan_able(target):
-                if self.do_minkan(cur_hais, target, whose):
-                    return cur_hais
-
-    # ポンチェック
-    def check_pon(self, target, whose):
-        if not self.richi:
-            for cur_hais in self.tehai.pon_able(target):
-                if self.do_pon(cur_hais, target, whose):
-                    return cur_hais
-
-    # チーチェック
-    def check_chi(self, target, whose):
-        if not self.richi and self.relative(whose) == 3:
-            for cur_hais in self.tehai.chi_able(target):
-                if self.do_chi(cur_hais, target, whose):
-                    return cur_hais
 
     # 選択
     @abstractmethod

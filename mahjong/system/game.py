@@ -80,26 +80,37 @@ class Game():
         self.cur_player.ankan(hais)
         self.add_dora()
 
+        for player in self.players:
+            player.ippatsu = False
+
     # 加槓
     def kakan(self, hai):
         self.cur_player.kakan(hai)
         self.add_dora()
+        for player in self.players:
+            player.ippatsu = False
 
     # 明槓
     def minkan(self, hais, target, player):
         player.minkan(hais, target, self.cur_player)
         self.change_player(player.chicha)
         self.add_dora()
+        for player in self.players:
+            player.ippatsu = False
 
     # ポン
     def pon(self, hais, target, player):
         player.pon(hais, target, self.cur_player)
         self.change_player(player.chicha)
+        for player in self.players:
+            player.ippatsu = False
 
     # チー
     def chi(self, hais, target, player):
         player.chi(hais, target, self.cur_player)
         self.change_player(player.chicha)
+        for player in self.players:
+            player.ippatsu = False
 
     # プレイヤーのツモ順を変更
     def change_player(self, chicha):
@@ -136,8 +147,8 @@ class Game():
 
     # 局開始
     def start_kyoku(self):
-        print(self.kyoku_name())
-        print()
+        #print(self.kyoku_name())
+        #print()
 
         self.haipai() # 配牌
 
@@ -148,10 +159,10 @@ class Game():
 
             # ツモ判定
             if self.cur_player.check_tsumo():
-                print("{}：ツモ".format(self.cur_player.name))
+                #print("{}：ツモ".format(self.cur_player.name))
                 for cur_yaku_list in self.cur_player.yaku(True):
                     for cur_yaku in cur_yaku_list:
-                        print(self.yakus[cur_yaku][not self.cur_player.tehai.menzen], YAKU_NAME[cur_yaku])
+                        pass#print(self.yakus[cur_yaku][not self.cur_player.tehai.menzen], YAKU_NAME[cur_yaku])
 
                 return self.cur_player.jikaze() == 0, False
 
@@ -168,8 +179,8 @@ class Game():
                 continue
 
             # コンソール表示
-            print("{} [残り{}]".format(self.cur_player.name, self.yama.remain))
-            self.cur_player.tehai.show()
+            #print("{} [残り{}]".format(self.cur_player.name, self.yama.remain))
+            #self.cur_player.tehai.show()
 
             # 打牌
             check_hai = self.dahai()
@@ -185,10 +196,10 @@ class Game():
                     if check_player.check_ron(check_hai, self.cur_player):
                         self.ron(check_hai, check_player)
 
-                        print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
+                        #print("{}→{}：ロン".format(self.cur_player.name, check_player.name))
                         for cur_yaku_list in check_player.yaku(False):
                             for cur_yaku in cur_yaku_list:
-                                print(self.yakus[cur_yaku][not check_player.tehai.menzen], YAKU_NAME[cur_yaku])
+                                pass#print(self.yakus[cur_yaku][not check_player.tehai.menzen], YAKU_NAME[cur_yaku])
 
                         end = True
                         if check_player.jikaze() == 0:
@@ -227,13 +238,13 @@ class Game():
             if furo:
                 continue
 
-            print()
+            #print()
             self.next_player()
 
-        print("流局")
+        #print("流局")
 
         for player in self.players:
-            print("{}：{}".format(player.name, "テンパイ" if player.tehai.shanten() <= 0 else "ノーテン"))
+            pass#print("{}：{}".format(player.name, "テンパイ" if player.tehai.shanten() <= 0 else "ノーテン"))
 
         return self.players[self.kyoku].tehai.shanten() <= 0, True
 

@@ -11,7 +11,7 @@ APP_NAME = "Mahjong"
 # シード値を設定
 seed = time.time()
 random.seed(seed)
-print("seed = {}".format(seed))
+#print("seed = {}".format(seed))
 
 # 役の種類
 class Yaku(enum.Enum):
@@ -154,6 +154,14 @@ class MjHai():
             self.kind[1] if self.kind[1] else "",
             "@" if self.dora else ""
         )
+
+        # ID
+        if self.kind[0] <= 1:
+            self.id = self.kind[0] * 9 + self.kind[1]
+        elif self.kind[0] == 2:
+            self.id = 19 if self.kind[1] == 1 else 20
+        else:
+            self.id = self.kind[0] + 18
 
     # 比較演算子
     def __eq__(self, other):

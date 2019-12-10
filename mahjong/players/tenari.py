@@ -115,6 +115,35 @@ class Tenari(player.Player):
         temp_tehai.chi(hais, target, self.relative(whose))
         return temp_tehai.shanten() < self.tehai.shanten()
 
+# 面子手のみ
+class Menzen(Tenari):
+    def shanten_ex(self):
+        return self.tehai.shanten_normal()
+
+    def do_tsumo(self):
+        return True
+
+    def do_ron(self, target, whose):
+        return True
+
+    def do_richi(self):
+        return False
+
+    def do_ankan(self, target):
+        return False
+
+    def do_minkan(self, hais, target, whose):
+        return False
+
+    def do_kakan(self, target):
+        return False
+
+    def do_pon(self, hais, target, whose):
+        return False
+
+    def do_chi(self, hais, target, whose):
+        return False
+
 # 土田 (チートイだけ)
 class Tsuchida(Tenari):
     # シャンテン数
